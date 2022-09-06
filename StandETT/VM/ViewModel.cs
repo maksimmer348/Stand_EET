@@ -81,7 +81,6 @@ public class ViewModel : Notify
         #endregion
 
 
-
         // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
     }
 
@@ -657,10 +656,13 @@ public class ViewModel : Notify
                 DataBits = selectDevice.GetConfigDevice().DataBits;
                 Dtr = selectDevice.GetConfigDevice().Dtr;
 
+
                 //обновление команд выбранного устройства
                 selectedDeviceCommand.Source = value?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
                 OnPropertyChanged(nameof(SelectedDeviceCommand));
+                OnPropertyChanged(nameof(IndexTerminatorReceive));
+                OnPropertyChanged(nameof(IndexTerminatorTransmit));
             }
             catch (Exception e)
             {
@@ -783,6 +785,22 @@ public class ViewModel : Notify
         set => Set(ref selectTerminatorTransmit, value);
     }
 
+
+    private int indexTerminatorTransmit;
+
+    public int IndexTerminatorTransmit
+    {
+        get
+        {
+            var item = Terminators.FirstOrDefault(x =>
+                x.Type == SelectTerminatorTransmit.Type && x.TypeEncod == SelectTerminatorTransmit.TypeEncod);
+            indexTerminatorTransmit = Terminators.IndexOf(item);
+
+            return indexTerminatorTransmit;
+        }
+        set => Set(ref indexTerminatorTransmit, value);
+    }
+
     private bool isXor;
 
     /// <summary>
@@ -824,6 +842,22 @@ public class ViewModel : Notify
         set => Set(ref selectTerminatorReceive, value);
     }
 
+    private int indexTerminatorReceive;
+
+    public int IndexTerminatorReceive
+    {
+        get
+        {
+            var item = Terminators.FirstOrDefault(x =>
+                x.Type == SelectTerminatorReceive.Type && x.TypeEncod == SelectTerminatorReceive.TypeEncod);
+            indexTerminatorReceive = Terminators.IndexOf(item);
+
+            return indexTerminatorReceive;
+        }
+        set => Set(ref indexTerminatorReceive, value);
+    }
+    
+    
     private TypeCmd typeMessageCmdLib;
 
     /// <summary>
@@ -920,6 +954,7 @@ public class ViewModel : Notify
     /// </summary>
     public ICommand RemoveCmdFromDeviceCmd { get; }
 
+
     Task OnRemoveCmdFromDeviceCmdExecuted(object p)
     {
         try
@@ -945,7 +980,6 @@ public class ViewModel : Notify
     {
         return true;
     }
-
 
     #endregion
 

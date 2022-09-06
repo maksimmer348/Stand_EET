@@ -36,14 +36,14 @@ public class BaseLibCmd
     public void CreateTerminators()
     {
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Text));
-        Terminators.Add(new Terminator("LF Text(\\n)", TypeTerminator.LF, "\n", TypeCmd.Text));
         Terminators.Add(new Terminator("CR Text(\\r)", TypeTerminator.CR, "\r", TypeCmd.Text));
-        Terminators.Add(new Terminator("LFCR Text(\\n\\r)", TypeTerminator.LFCR, "\n\r", TypeCmd.Text));
+        Terminators.Add(new Terminator("LF Text(\\n)", TypeTerminator.LF, "\n", TypeCmd.Text));
+        Terminators.Add(new Terminator("CRLF Text(\\r\\n)", TypeTerminator.LFCR, "\r\n", TypeCmd.Text));
 
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Hex));
-        Terminators.Add(new Terminator("LF Hex(\\n)", TypeTerminator.LF, "0A", TypeCmd.Hex));
         Terminators.Add(new Terminator("CR Hex(\\r)", TypeTerminator.CR, "0D", TypeCmd.Hex));
-        Terminators.Add(new Terminator("LFCR Hex(\\n\\r)", TypeTerminator.LFCR, "0D0A", TypeCmd.Hex));
+        Terminators.Add(new Terminator("LF Hex(\\n)", TypeTerminator.LF, "0A", TypeCmd.Hex));
+        Terminators.Add(new Terminator("CRLF Hex(\\r\\n)", TypeTerminator.LFCR, "0A0D", TypeCmd.Hex));
     }
 
     /// <summary>

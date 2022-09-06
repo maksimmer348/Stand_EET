@@ -216,30 +216,7 @@ public class BaseDevice : Notify
             throw new Exception("Файл конфига отсутствует");
         }
     }
-
-    /// <summary>
-    /// Проверка устройства на ответ на статусную команду
-    /// </summary>
-    /// <param name="checkCmd">Команда проверки не из библиотеки (если пусто будет исользована команда "Status" и прибор из библиотеки )</param>
-    /// <param name="delay">Задержка на проверку (если 0 будет исользована из библиотеки)</param>
-    /// <param name="terminator">Терминатор строки</param>
-    /// <returns>Успешна ли попытка коннекта</returns>
-    /// <exception cref="Exception">Такого устройства, нет в библиотеке команд</exception>
-    public void CheckedConnectDevice(string checkCmd = "", int delay = 0, string terminator = "")
-    {
-        //если строка команды пустая
-        if (string.IsNullOrWhiteSpace(checkCmd))
-        {
-            //используем команду статус которя возмет текущий прибор и введет в него команду статус
-            TransmitCmdInLib("Status");
-        }
-        else
-        {
-            //используем ручной ввод
-            port.TransmitCmdTextString(cmd: checkCmd, delay: delay, terminator: terminator);
-        }
-    }
-
+    
     /// <summary>
     /// Отправка в устройство и прием СТАНДАРТНЫХ (есть в библиотеке команд) команд из устройства
     /// </summary>

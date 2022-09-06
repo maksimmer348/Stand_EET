@@ -456,7 +456,7 @@
                                 <DataGridTextColumn Header="Xor" Binding="{Binding Value.IsXor}" Width="*"/>
                                 <DataGridTextColumn Header="Разделитель(TX)" Binding="{Binding Value.Terminator.Name}" Width="*"/>
                                 <DataGridTextColumn Header="Прием (RX)" Binding="{Binding Value.Receive}" Width="*"/>
-                                <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.Terminator.Name}" Width="*"/>
+                                <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.ReceiveTerminator.Name}" Width="*"/>
                                 <DataGridTextColumn Header="Тип сообщения (TX,RX)" Binding="{Binding Value.MessageType}" Width="*"/>
                                 <DataGridTextColumn Header="Задержка" Binding="{Binding Value.Delay}" Width="*" />
                             </DataGrid.Columns>
@@ -507,7 +507,7 @@
                                 <TextBlock VerticalAlignment="Center" Text="Разделитель (TX)" />
                                 <ComboBox
                                     ItemsSource="{Binding Terminators}"
-                                    SelectedItem="{Binding SelectTerminatorTransmit}"
+                                    SelectedItem="{Binding SelectTerminatorTransmit}" SelectedIndex="{Binding IndexTerminatorTransmit}"
                                     MinWidth="100">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
@@ -527,6 +527,7 @@
                                 <ComboBox
                                     ItemsSource="{Binding Terminators}"
                                     SelectedItem="{Binding SelectTerminatorReceive}"
+                                    SelectedIndex="{Binding IndexTerminatorReceive}"
                                     MinWidth="100">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>

@@ -128,20 +128,12 @@ public class SerialInput : ISerialLib
     {
         if (string.IsNullOrEmpty(cmd))
         {
-            throw new Exception($"SerialInput exception: Команда - не должны быть пустыми");
+            throw new Exception($"Команда - не должна быть пустой");
         }
-
-        if (delay == 0)
-        {
-            delay = 100;
-        }
-
         if (string.IsNullOrEmpty(terminator))
         {
             terminator = "\r\n";
         }
-
-        Delay = delay;
         var message = System.Text.Encoding.UTF8.GetBytes(cmd + terminator);
         try
         {
@@ -159,24 +151,15 @@ public class SerialInput : ISerialLib
         if (string.IsNullOrEmpty(cmd))
         {
             throw new Exception($"SerialInput exception: Команда - не должна быть пустой");
+            return;
         }
-
-        if (delay == 0)
-        {
-            delay = 100;
-        }
-
-        // if (string.IsNullOrEmpty(terminator))
-        // {
-        //     terminator = "0A0D";
-        // }
-
-        Delay = delay;
-
+        
         //преобразуем входную строку команды в байтовый массив команды
         var cmdMsg = ISerialLib.StringToByteArray(cmd);
+        
         //создаем список чтобы можно было легче приклеить xor сумму к массиву команды
         var t = new List<byte>(cmdMsg);
+        
         if (isXor)
         {
             //массив команды складываем xor 
@@ -188,7 +171,7 @@ public class SerialInput : ISerialLib
         //преобразуме терминатор в строку
         if (terminator != null)
         {
-            var term = ISerialLib.StringToByteArray(terminator); //+ terminator);
+            var term = ISerialLib.StringToByteArray(terminator);
             t.AddRange(term);
         }
 
@@ -199,7 +182,7 @@ public class SerialInput : ISerialLib
         catch (Exception e)
         {
             throw new Exception(
-                $"SerialInput exception: Команда \"{cmdMsg}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
+                $"Команда \"{cmdMsg}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
         }
     }
 }
