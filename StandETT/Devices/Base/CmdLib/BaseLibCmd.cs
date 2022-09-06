@@ -1,0 +1,249 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+
+namespace StandETT;
+
+//TODO сделать инстантом -> OK
+//TODO добавиьт сериализацию команд потом (не обязательно)
+public class BaseLibCmd
+{
+    private static BaseLibCmd instance;
+    public List<Terminator> Terminators = new();
+
+    public string Name { get; private set; }
+    private static object syncRoot = new();
+
+    public static BaseLibCmd getInstance()
+    {
+        if (instance == null)
+        {
+            lock (syncRoot)
+            {
+                if (instance == null)
+                    instance = new BaseLibCmd();
+            }
+        }
+
+        return instance;
+    }
+
+    public Dictionary<DeviceIdentCmd, DeviceCmd> DeviceCommands { get; set; } =
+        new();
+
+
+    public void CreateTerminators()
+    {
+        Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Text));
+        Terminators.Add(new Terminator("LF Text(\\n)", TypeTerminator.LF, "\n", TypeCmd.Text));
+        Terminators.Add(new Terminator("CR Text(\\r)", TypeTerminator.CR, "\r", TypeCmd.Text));
+        Terminators.Add(new Terminator("LFCR Text(\\n\\r)", TypeTerminator.LFCR, "\n\r", TypeCmd.Text));
+
+        Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Hex));
+        Terminators.Add(new Terminator("LF Hex(\\n)", TypeTerminator.LF, "0A", TypeCmd.Hex));
+        Terminators.Add(new Terminator("CR Hex(\\r)", TypeTerminator.CR, "0D", TypeCmd.Hex));
+        Terminators.Add(new Terminator("LFCR Hex(\\n\\r)", TypeTerminator.LFCR, "0D0A", TypeCmd.Hex));
+    }
+
+    /// <summary>
+    /// Добавление команды в общую билиотеку команд
+    /// </summary>
+    /// <param name="nameCmd">Имя команды</param>
+    /// <param name="nameDevice">Прибор для которого эта команда предназначена</param>
+    /// <param name="transmit">Команда котороую нужно передать в прибор</param>
+    /// <param name="terminator">Терминатор отправляемой строки</param>
+    /// <param name="receive">Ответ от прибора на команду</param>
+    /// <param name="receiveTerminator">Терминатор принимаемой строки</param>
+    /// <param name="delay">Задержка между передачей команды и приемом ответа</param>
+    /// <param name="type">Тип ответа (по умолчанию текстовый)</param>
+    /// <param name="isXor"></param>
+    public void AddCommand(string nameCmd, string nameDevice, string transmit, string receive,
+        int delay, TypeTerminator terminator = TypeTerminator.None,
+        TypeTerminator receiveTerminator = TypeTerminator.None, TypeCmd type = TypeCmd.Text,
+        bool isXor = false)
+    {
+        var tTx = Terminators.First(x => x.Type == terminator && x.TypeEncod == type);
+        var tRx = Terminators.First(x => x.Type == receiveTerminator && x.TypeEncod == type);
+        try
+        {
+            var tempIdentCmd = new DeviceIdentCmd
+            {
+                NameCmd = nameCmd,
+                NameDevice = nameDevice
+            };
+            var tempCmd = new DeviceCmd
+            {
+                Transmit = transmit,
+                Terminator = tTx,
+                Receive = receive,
+                ReceiveTerminator = tRx,
+                MessageType = type,
+                Delay = delay,
+                IsXor = isXor
+            };
+
+            DeviceCommands.Add(tempIdentCmd, tempCmd);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Удаление команды устройства
+    /// </summary>
+    /// <param name="nameCommand">Имя удаляемой команды</param>
+    /// <param name="nameDevice">Имя устройства команду которого удаляют</param>
+    public void DeleteCommand(string nameCommand, string nameDevice)
+    {
+        try
+        {
+            var select = DeviceCommands
+                .Where(x => x.Key.NameCmd == nameCommand)
+                .FirstOrDefault(x => x.Key.NameDevice == nameDevice).Key;
+
+            if (DeviceCommands.ContainsKey(select))
+            {
+                Console.WriteLine(
+                    $"была удалена команда {select.NameCmd} для прибора тип {select.NameDevice}, имя прибора {select.NameDevice}");
+                //уведомить
+
+                DeviceCommands.Remove(select);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+
+    //TODO нужно ли переписвать
+    /// <summary>
+    ///  Изменить значение команды по ключу
+    /// </summary>
+    /// <param name="nameCommandOld">Название изменяемой команды</param>
+    /// <param name="nameDeviceOld">Название прибора для кторого будет изменена команда</param>
+    /// <param name="transmitNew">Новое значение передваемой команды (если пусто исользуется старая команда)</param>
+    /// <param name="terminatorNew">Новое значение терминатора отправляемой строки</param>
+    /// <param name="receiveNew">Новое значение принримаемой команды (если пусто исользуется старая команда)</param>
+    /// <param name="receiveTerminatorNew">Новое значение терминатора принимаемой строки</param>
+    /// <param name="delayNew">Новое значение задержки (если 0 исользуется старая задержка)</param
+    /// <param name="typeNew">Новое значение типа сообщения (если пусто исользуется старый тип)</param>
+    public void ChangeCommand(string nameCommandOld, string nameDeviceOld, string transmitNew = null,
+        TypeTerminator terminatorNew = TypeTerminator.None,
+        TypeTerminator receiveTerminatorNew = TypeTerminator.None,
+        string receiveNew = null,  int delayNew = 0, TypeCmd typeNew = TypeCmd.Text)
+    {
+        try
+        {
+            var select = DeviceCommands
+                .Where(x => x.Key.NameCmd == nameCommandOld)
+                .FirstOrDefault(x => x.Key.NameDevice == nameDeviceOld).Key;
+
+            if (DeviceCommands.ContainsKey(select))
+            {
+                var tTx = Terminators.First(x => x.Type == terminatorNew && x.TypeEncod == typeNew);
+                var tRx = Terminators.First(x => x.Type == receiveTerminatorNew && x.TypeEncod == typeNew);
+                
+                var tempCmd = new DeviceCmd();
+                tempCmd.Transmit = transmitNew;
+                tempCmd.Terminator = tTx;
+                tempCmd.Receive = receiveNew;
+                tempCmd.ReceiveTerminator = tRx;
+                tempCmd.Delay = delayNew;
+                tempCmd.MessageType = typeNew;
+                tempCmd.Receive = receiveNew;
+
+                if (string.IsNullOrWhiteSpace(transmitNew))
+                {
+                    tempCmd.Transmit = DeviceCommands[select].Transmit;
+                }
+
+                if (terminatorNew == TypeTerminator.None)
+                {
+                    tempCmd.Terminator = DeviceCommands[select].Terminator;
+                }
+
+                if (string.IsNullOrWhiteSpace(receiveNew))
+                {
+                    tempCmd.Receive = DeviceCommands[select].Receive;
+                }
+
+                if (receiveTerminatorNew == TypeTerminator.None)
+                {
+                    tempCmd.ReceiveTerminator = DeviceCommands[select].ReceiveTerminator;
+                }
+
+                if (delayNew == 0)
+                {
+                    tempCmd.Delay = DeviceCommands[select].Delay;
+                }
+
+                if (typeNew == TypeCmd.Text)
+                {
+                    tempCmd.MessageType = DeviceCommands[select].MessageType;
+                }
+
+                DeviceCommands[select] = tempCmd;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+}
+
+public class Terminator
+{
+    /// <summary>
+    /// Имя
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Имя
+    /// </summary>
+    public TypeTerminator Type { get; set; }
+
+    /// <summary>
+    /// Тип
+    /// </summary>
+    public string ReceiveTerminator { get; set; }
+
+    /// <summary>
+    /// Тип
+    /// </summary>
+    public TypeCmd TypeEncod { get; set; }
+
+
+    public Terminator(string name, TypeTerminator type, string receiveTerminator, TypeCmd typeEncod)
+    {
+        Name = name;
+        Type = type;
+        ReceiveTerminator = receiveTerminator;
+        TypeEncod = typeEncod;
+    }
+}
+
+public enum TypeTerminator
+{
+    None,
+
+    /// <summary>
+    /// \n
+    /// </summary>
+    LF,
+
+    /// <summary>
+    ///  \r
+    /// </summary>
+    CR,
+
+    /// <summary>
+    ///  \r\n
+    /// </summary>
+    LFCR,
+}

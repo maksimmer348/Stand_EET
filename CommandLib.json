@@ -1,0 +1,102 @@
+[
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "LFCR text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "72192",
+      "ReceiveTerminator": {
+        "Name": "LF text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "LFCR text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "880-2.88",
+      "ReceiveTerminator": {
+        "Name": "LF text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "LFCR text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "78255A",
+      "ReceiveTerminator": {
+        "Name": "LF text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4980",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "FF",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true
+    }
+  }
+]
