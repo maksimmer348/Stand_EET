@@ -79,6 +79,17 @@ public class Stand1 : Notify
         set => Set(ref percentCurrentTest, value);
     }
 
+    private double countTimes;
+
+    /// <summary>
+    /// Попытко поклдючения
+    /// </summary>
+    public double CountTimes
+    {
+        get => countTimes;
+        set => Set(ref countTimes, value);
+    }
+
     #endregion
 
     //---
@@ -188,7 +199,7 @@ public class Stand1 : Notify
     /// <param name="status">Статус включения (default = Off)</param>
     void SetStatusEnabledCurrentVip(Vip vip, OnOffStatus status = OnOffStatus.Off)
     {
-        vip.StatusOnOff = status;
+        //vip.StatusOnOff = status;
     }
 
     #endregion
@@ -357,7 +368,7 @@ public class Stand1 : Notify
 
     //--
 
-    #region Проверка на команду
+    #region --Проверка на команду
 
     //--Событие команды коннект
 
@@ -413,7 +424,7 @@ public class Stand1 : Notify
             {
                 if (string.IsNullOrEmpty(cmd))
                 {
-                    var result = await CheckConnectDevice(device, token: token);
+                    var result = await CheckConnectDevice(device, cmd: "Status", token: token);
                     delays.Add(result.cmd.Delay);
                 }
                 else
@@ -449,6 +460,11 @@ public class Stand1 : Notify
         }
     }
 
+    private async Task WriteCommands(BaseDevice device, string cmd, CancellationToken token)
+    {
+        
+    }
+
     /// <summary>
     /// Проверка устройсва пингуются ли оно 
     /// </summary>
@@ -465,11 +481,11 @@ public class Stand1 : Notify
         {
             if (string.IsNullOrEmpty(cmd))
             {
-                isWrite = await WriteCommand(device, "Status", 0, token: token);
+                isWrite = await WriteCommandLib(device, "Status", 0, token: token);
             }
             else
             {
-                isWrite = await WriteCommand(device, cmd, 0, token: token);
+                isWrite = await WriteCommandLib(device, cmd, 0, token: token);
             }
 
             //если отправка в прибор без исключения, то получаем команду и заждержку из библиотеки (device) 
@@ -501,6 +517,7 @@ public class Stand1 : Notify
             throw new Exception(e.Message);
         }
     }
+    
 
     /// <summary>
     /// Заспись в устроство простой команды
@@ -512,7 +529,7 @@ public class Stand1 : Notify
     /// <param name="token"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    private async Task<(bool result, DeviceCmd cmd)> WriteCommand(BaseDevice device, string cmd,
+    private async Task<(bool result, DeviceCmd cmd)> WriteCommandLib(BaseDevice device, string cmd,
         int externalDelay = 0, string parameter = null, CancellationToken token = default)
     {
         DeviceCmd dataInLib = null;
@@ -521,23 +538,29 @@ public class Stand1 : Notify
             //Отпрвляем имя команды и параметр в устройство (device) и получаем из метода команду библиотеки
             dataInLib = device.TransmitCmdInLib(cmd, parameter);
 
-            if (externalDelay > 0 && dataInLib != null)
+            for (int i = 0; i < 2; i++)
             {
-                if (dataInLib.Delay == 0)
+                if (externalDelay == 0 && dataInLib != null)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100), token);
+                    if (dataInLib.Delay == 0)
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(100), token);
+                    }
+                    else
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(dataInLib.Delay), token);
+                    }
                 }
-                else
+
+                if (externalDelay > 0)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(dataInLib.Delay), token);
+                    await Task.Delay(TimeSpan.FromMilliseconds(externalDelay), token);
                 }
-            }
-            else
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(externalDelay), token);
+
+                return (true, dataInLib);
             }
 
-            return (true, dataInLib);
+            return (false, dataInLib);
         }
         //елси задлаче была прервана заранее полняем следующий код
         catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -572,7 +595,7 @@ public class Stand1 : Notify
             //получаем команду и заждержку из библиотеки (device) 
             dataInLib = device.TransmitCmdInLib(cmd);
 
-            await WriteCommand(device, cmd, dataInLib.Delay, parameter, token);
+            await WriteCommandLib(device, cmd, dataInLib.Delay, parameter, token);
 
             var isGdmCheck = CheckGdm(device, cmd, dataInLib.Receive, matches, tempChecks);
 
@@ -759,7 +782,7 @@ public class Stand1 : Notify
 
     private void OnReceive(BaseDevice device, string receive)
     {
-        Receive?.Invoke(device, receive);
+        
     }
 
     #endregion
@@ -791,6 +814,7 @@ public class Stand1 : Notify
                 }
                 else
                 {
+                    await Task.Delay(TimeSpan.FromMilliseconds(5000));
                     SetStatusStand(20);
                     errorDevices = await CheckConnectDevices(checkDevices, token: ctsCheckDevice.Token);
                     SetStatusDevices(errorDevices, StatusDeviceTest.Error);
@@ -838,7 +862,7 @@ public class Stand1 : Notify
         throw new NotImplementedException();
     }
 
-   
+
     public void SerializeDevice()
     {
         deviceAndLibCreator.SerializeDevices(allDevices.ToList());

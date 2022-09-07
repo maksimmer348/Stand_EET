@@ -5,16 +5,17 @@ using System.Linq;
 
 namespace StandETT;
 
-//TODO сделать инстантом -> OK
-//TODO добавиьт сериализацию команд потом (не обязательно)
+
 public class BaseLibCmd
 {
     private static BaseLibCmd instance;
     public List<Terminator> Terminators = new();
 
+    
     public string Name { get; private set; }
+    
+    
     private static object syncRoot = new();
-
     public static BaseLibCmd getInstance()
     {
         if (instance == null)
@@ -96,26 +97,15 @@ public class BaseLibCmd
     /// </summary>
     /// <param name="nameCommand">Имя удаляемой команды</param>
     /// <param name="nameDevice">Имя устройства команду которого удаляют</param>
-    public void DeleteCommand(string nameCommand, string nameDevice)
+    public void DeleteCommand(DeviceIdentCmd cmd)
     {
         try
         {
-            var select = DeviceCommands
-                .Where(x => x.Key.NameCmd == nameCommand)
-                .FirstOrDefault(x => x.Key.NameDevice == nameDevice).Key;
-
-            if (DeviceCommands.ContainsKey(select))
-            {
-                Console.WriteLine(
-                    $"была удалена команда {select.NameCmd} для прибора тип {select.NameDevice}, имя прибора {select.NameDevice}");
-                //уведомить
-
-                DeviceCommands.Remove(select);
-            }
+            DeviceCommands.Remove(cmd);
         }
         catch (Exception e)
         {
-            throw new Exception(e.Message);
+            throw new Exception("Команда не была удалена ошибка -" + e.Message);
         }
     }
 
@@ -134,7 +124,7 @@ public class BaseLibCmd
     public void ChangeCommand(string nameCommandOld, string nameDeviceOld, string transmitNew = null,
         TypeTerminator terminatorNew = TypeTerminator.None,
         TypeTerminator receiveTerminatorNew = TypeTerminator.None,
-        string receiveNew = null,  int delayNew = 0, TypeCmd typeNew = TypeCmd.Text)
+        string receiveNew = null, int delayNew = 0, TypeCmd typeNew = TypeCmd.Text)
     {
         try
         {
@@ -146,7 +136,7 @@ public class BaseLibCmd
             {
                 var tTx = Terminators.First(x => x.Type == terminatorNew && x.TypeEncod == typeNew);
                 var tRx = Terminators.First(x => x.Type == receiveTerminatorNew && x.TypeEncod == typeNew);
-                
+
                 var tempCmd = new DeviceCmd();
                 tempCmd.Transmit = transmitNew;
                 tempCmd.Terminator = tTx;

@@ -161,6 +161,8 @@ public class ViewModel : Notify
 
     #region --Команды
 
+    //--
+
     #region Команды --Общие
 
     /// <summary>
@@ -305,14 +307,19 @@ public class ViewModel : Notify
 
     #endregion
 
+    //--
+
     #region Команды --Подключение устройств --0 tab
 
     #endregion
 
+    //--
 
     #region Команды --Подключение Випов --1 tab
 
     #endregion
+
+    //--
 
     #region Команды --Настройки устройств --2 tab
 
@@ -346,10 +353,10 @@ public class ViewModel : Notify
             AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Baud, StopBits, Parity,
                 DataBits, Dtr);
 
-            selectedDeviceCommand.Source =
+            selectedDeviceCmd.Source =
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
-            OnPropertyChanged(nameof(SelectedDeviceCommand));
+            OnPropertyChanged(nameof(SelectedDeviceCmd));
 
             stand.SerializeDevice();
         }
@@ -366,7 +373,92 @@ public class ViewModel : Notify
         return true;
     }
 
+
+    /// <summary>
+    /// Команда добавить команду к устройству
+    /// </summary>
+    public ICommand AddCmdFromDeviceCmd { get; }
+
+    Task OnAddCmdFromDeviceCmdExecuted(object p)
+    {
+        try
+        {
+            //получение текущего индекса
+            var index = IndexSelectCmd;
+
+            libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, ReceiveCmdLib, DelayCmdLib,
+                SelectTerminatorTransmit.Type,
+                SelectTerminatorReceive.Type, TypeMessageCmdLib, IsXor);
+
+            //обновление датагрида
+            selectedDeviceCmd.Source =
+                SelectDevice?.LibCmd.DeviceCommands.Where(x =>
+                    x.Key.NameDevice == selectDevice.Name);
+            OnPropertyChanged(nameof(SelectedDeviceCmd));
+
+
+            IndexSelectCmd = index + 1;
+
+            stand.SerializeLib();
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    bool CanAddCmdFromDeviceCmdExecuted(object p)
+    {
+        return true;
+    }
+
+
+    /// <summary>
+    /// Команда Удалить команду устройства
+    /// </summary>
+    public ICommand RemoveCmdFromDeviceCmd { get; }
+
+    Task OnRemoveCmdFromDeviceCmdExecuted(object p)
+    {
+        try
+        {
+            var index = IndexSelectCmd;
+
+            libCmd.DeleteCommand(SelectedCmdLib.Key);
+            selectedDeviceCmd.Source =
+                SelectDevice?.LibCmd.DeviceCommands.Where(x =>
+                    x.Key.NameDevice == selectDevice.Name);
+
+
+            OnPropertyChanged(nameof(SelectedDeviceCmd));
+
+            if (index > 0)
+            {
+                IndexSelectCmd = index - 1;
+            }
+
+            stand.SerializeLib();
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message);
+        }
+
+
+        return Task.CompletedTask;
+    }
+
+
+    bool CanRemoveCmdFromDeviceCmdExecuted(object p)
+    {
+        return true;
+    }
+
     #endregion
+
+    //--
 
     #region Команды --Настройки Типа Випов --3 tab
 
@@ -451,10 +543,23 @@ public class ViewModel : Notify
         set => Set(ref textCurrentTest, value);
     }
 
+
+    private string textCountTimes;
+
+    public string TextCountTimes
+    {
+        get => textCountTimes;
+        set => Set(ref textCountTimes, value);
+    }
+
+    public double CountTimes => stand.CountTimes;
+
+    //
+
     private double selectTypeVipIndex;
 
     /// <summary>
-    /// Уведомляет какая кладка сейчас открыта
+    /// Уведомляет какая вкладка сейчас открыта
     /// </summary>
     public double SelectTypeVipIndex
     {
@@ -474,6 +579,7 @@ public class ViewModel : Notify
             if (stand.TestRun == TypeOfTestRun.Stop)
             {
                 TextCurrentTest = "Стенд остановлен";
+
                 AllTabsDisable();
                 PrimaryCheckDevicesTab = true;
             }
@@ -489,6 +595,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
             {
                 TextCurrentTest = " Предпроверка устройств";
+                TextCountTimes = "Попытка предпроверки:";
                 AllTabsDisable();
                 PrimaryCheckDevicesTab = true;
             }
@@ -496,6 +603,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
             {
                 TextCurrentTest = " Предпроверка устройств ОК";
+                TextCountTimes = "Всего попыток:";
                 PrimaryCheckDevicesTab = true;
                 PrimaryCheckVipsTab = true;
             }
@@ -505,6 +613,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
             {
                 TextCurrentTest = " Предпроверка Випов";
+                TextCountTimes = "Попытка предпроверки Випов:";
                 AllTabsDisable();
                 PrimaryCheckVipsTab = true;
             }
@@ -512,6 +621,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
             {
                 TextCurrentTest = " Предпроверка Випов Ок";
+                TextCountTimes = "Всего попыток:";
                 PrimaryCheckDevicesTab = true;
                 CheckVipsTab = true;
             }
@@ -521,6 +631,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.DeviceOperation)
             {
                 TextCurrentTest = $" Включение устройства";
+                TextCountTimes = "Попытка включения:";
                 AllTabsDisable();
                 CheckVipsTab = true;
             }
@@ -528,6 +639,7 @@ public class ViewModel : Notify
             else if (stand.TestRun == TypeOfTestRun.DeviceOperationReady)
             {
                 TextCurrentTest = " Включение устройства Ок";
+                TextCountTimes = "Всего попыток:";
                 AllTabsEnable();
             }
 
@@ -626,12 +738,12 @@ public class ViewModel : Notify
 
     #region --Выбор и --настройки прибора
 
-    private readonly CollectionViewSource selectedDeviceCommand = new();
+    private readonly CollectionViewSource selectedDeviceCmd = new();
 
     /// <summary>
     /// Для показа/обновление команд выбранного устройства
     /// </summary>
-    public ICollectionView? SelectedDeviceCommand => selectedDeviceCommand?.View;
+    public ICollectionView? SelectedDeviceCmd => selectedDeviceCmd?.View;
 
     private BaseDevice selectDevice;
 
@@ -658,9 +770,9 @@ public class ViewModel : Notify
 
 
                 //обновление команд выбранного устройства
-                selectedDeviceCommand.Source = value?.LibCmd.DeviceCommands.Where(x =>
+                selectedDeviceCmd.Source = value?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
-                OnPropertyChanged(nameof(SelectedDeviceCommand));
+                OnPropertyChanged(nameof(SelectedDeviceCmd));
                 OnPropertyChanged(nameof(IndexTerminatorReceive));
                 OnPropertyChanged(nameof(IndexTerminatorTransmit));
             }
@@ -792,9 +904,16 @@ public class ViewModel : Notify
     {
         get
         {
-            var item = Terminators.FirstOrDefault(x =>
-                x.Type == SelectTerminatorTransmit.Type && x.TypeEncod == SelectTerminatorTransmit.TypeEncod);
-            indexTerminatorTransmit = Terminators.IndexOf(item);
+            try
+            {
+                var item = Terminators.FirstOrDefault(x =>
+                    x.Type == SelectTerminatorTransmit.Type && x.TypeEncod == SelectTerminatorTransmit.TypeEncod);
+                indexTerminatorTransmit = Terminators.IndexOf(item);
+            }
+            catch (Exception e)
+            {
+                indexTerminatorTransmit = 0;
+            }
 
             return indexTerminatorTransmit;
         }
@@ -848,16 +967,23 @@ public class ViewModel : Notify
     {
         get
         {
-            var item = Terminators.FirstOrDefault(x =>
-                x.Type == SelectTerminatorReceive.Type && x.TypeEncod == SelectTerminatorReceive.TypeEncod);
-            indexTerminatorReceive = Terminators.IndexOf(item);
+            try
+            {
+                var item = Terminators.FirstOrDefault(x =>
+                    x.Type == SelectTerminatorReceive.Type && x.TypeEncod == SelectTerminatorReceive.TypeEncod);
+                indexTerminatorReceive = Terminators.IndexOf(item);
+            }
+            catch (Exception e)
+            {
+                indexTerminatorTransmit = 0;
+            }
 
             return indexTerminatorReceive;
         }
         set => Set(ref indexTerminatorReceive, value);
     }
-    
-    
+
+
     private TypeCmd typeMessageCmdLib;
 
     /// <summary>
@@ -911,74 +1037,18 @@ public class ViewModel : Notify
             }
 
             OnPropertyChanged(nameof(SelectedCmdLib));
+            OnPropertyChanged(nameof(IndexTerminatorTransmit));
+            OnPropertyChanged(nameof(IndexTerminatorReceive));
         }
     }
 
 
-    /// <summary>
-    /// Команда добавить команду к устройству
-    /// </summary>
-    public ICommand AddCmdFromDeviceCmd { get; }
+    private int indexSelectCmd;
 
-    Task OnAddCmdFromDeviceCmdExecuted(object p)
+    public int IndexSelectCmd
     {
-        try
-        {
-            libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, ReceiveCmdLib, DelayCmdLib,
-                SelectTerminatorTransmit.Type,
-                SelectTerminatorReceive.Type, TypeMessageCmdLib, IsXor);
-
-            selectedDeviceCommand.Source =
-                SelectDevice?.LibCmd.DeviceCommands.Where(x =>
-                    x.Key.NameDevice == selectDevice.Name);
-            OnPropertyChanged(nameof(SelectedDeviceCommand));
-
-            stand.SerializeLib();
-        }
-        catch (Exception e)
-        {
-            MessageBox.Show(e.Message);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    bool CanAddCmdFromDeviceCmdExecuted(object p)
-    {
-        return true;
-    }
-
-
-    /// <summary>
-    /// Команда Удалить команду устройства
-    /// </summary>
-    public ICommand RemoveCmdFromDeviceCmd { get; }
-
-
-    Task OnRemoveCmdFromDeviceCmdExecuted(object p)
-    {
-        try
-        {
-            libCmd.DeleteCommand(selectedCmdLib.Key.NameCmd, selectedCmdLib.Key.NameDevice);
-            selectedDeviceCommand.Source =
-                SelectDevice?.LibCmd.DeviceCommands.Where(x =>
-                    x.Key.NameDevice == selectDevice.Name);
-            OnPropertyChanged(nameof(SelectedDeviceCommand));
-
-            stand.SerializeLib();
-        }
-        catch (Exception e)
-        {
-            MessageBox.Show(e.Message);
-        }
-
-
-        return Task.CompletedTask;
-    }
-
-    bool CanRemoveCmdFromDeviceCmdExecuted(object p)
-    {
-        return true;
+        get => indexSelectCmd;
+        set => Set(ref indexSelectCmd, value);
     }
 
     #endregion

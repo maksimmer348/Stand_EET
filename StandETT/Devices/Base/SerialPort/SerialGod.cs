@@ -13,9 +13,8 @@ public class SerialGod : ISerialLib
     public string GetPortNum { get; set; }
 
     public int Delay { get; set; }
-    public bool IsConnect { get; set; }
-    public Action<bool> ConnectionStatusChanged { get; set; }
-    public Action<byte[]> MessageReceived { get; set; }
+    public Action<bool> PortConnecting { get; set; }
+    public Action<byte[]> Receiving { get; set; }
 
 
     public void SetPort(string pornName, int baud, int stopBits, int parity, int dataBits, bool dtr = false)
@@ -40,7 +39,7 @@ public class SerialGod : ISerialLib
         try
         {
             var isConnect = port.Open();
-            ConnectionStatusChanged?.Invoke(isConnect);
+            PortConnecting?.Invoke(isConnect);
 
             return isConnect;
         }
@@ -136,7 +135,7 @@ public class SerialGod : ISerialLib
 
                     //возвращаем строку
                     var ss = ISerialLib.StringToByteArray(s);
-                    MessageReceived.Invoke(ss);
+                    Receiving.Invoke(ss);
                     return s;
                 }
 

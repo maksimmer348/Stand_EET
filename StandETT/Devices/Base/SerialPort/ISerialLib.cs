@@ -36,13 +36,13 @@ public interface ISerialLib
     /// <summary>
     /// Событие конекта к порту 
     /// </summary>
-    Action<bool> ConnectionStatusChanged { get; set; }
+    Action<bool> PortConnecting { get; set; }
 
     /// <summary>
     /// Событие ответа устройства
     /// </summary>
-    Action<byte[]> MessageReceived { get; set; }
-
+    Action<byte[]> Receiving { get; set; }
+    
     /// <summary>
     /// Настройка порта 
     /// </summary>

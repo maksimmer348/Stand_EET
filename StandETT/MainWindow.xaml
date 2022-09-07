@@ -51,12 +51,12 @@
                             <Setter Property="Margin" Value="10, 5,10,0" />
 
                             <Setter Property="HorizontalAlignment" Value="Stretch" />
-                            <Setter Property="MinWidth" Value="200" />
+                            <Setter Property="MinWidth" Value="100" />
                         </Style>
 
                         <Style TargetType="ComboBox">
                             <Setter Property="Margin" Value="10, 5,10,0" />
-                            <Setter Property="MinWidth" Value="150" />
+                            <Setter Property="MinWidth" Value="100" />
                             <Setter Property="SelectedIndex" Value="0" />
                         </Style>
                         <Style TargetType="CheckBox">
@@ -375,15 +375,20 @@
                 <Grid Style="{StaticResource GridSettingsTypeVip}" ShowGridLines="True" Background="#FFE5E5E5">
 
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.4*" />
+                        <ColumnDefinition MinWidth="180" Width="0.25*" />
+                        <ColumnDefinition Width="3"/>
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.4*"></RowDefinition>
                     </Grid.RowDefinitions>
 
+                    <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
+                                  HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+
                     <Grid ShowGridLines="True" Grid.Column="0" VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch">
+
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.15*" />
                             <RowDefinition />
@@ -430,11 +435,11 @@
                             <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
 
                             <Button Command="{Binding SaveSettingsCmd}" DockPanel.Dock="Right"
-                                    Content="Сохранить настройки устройств" />
+                                    Content="Сохранить устройства" />
                         </StackPanel>
                     </Grid>
 
-                    <Grid Grid.Column="1">
+                    <Grid Grid.Column="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="3*"></RowDefinition>
                             <RowDefinition Height="0.5*"></RowDefinition>
@@ -442,8 +447,9 @@
                         </Grid.RowDefinitions> 
 
                         <DataGrid Grid.Row="0" DockPanel.Dock="Top" IsReadOnly="True"
-                                  ItemsSource="{Binding SelectedDeviceCommand, UpdateSourceTrigger=PropertyChanged}"
+                                  ItemsSource="{Binding SelectedDeviceCmd, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedItem="{Binding SelectedCmdLib}"
+                                  SelectedIndex="{Binding IndexSelectCmd, Mode=TwoWay}"
                                   AutoGenerateColumns="False"
                                   
                                   CanUserDeleteRows="False" CanUserAddRows="False"
@@ -458,7 +464,7 @@
                                 <DataGridTextColumn Header="Прием (RX)" Binding="{Binding Value.Receive}" Width="*"/>
                                 <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.ReceiveTerminator.Name}" Width="*"/>
                                 <DataGridTextColumn Header="Тип сообщения (TX,RX)" Binding="{Binding Value.MessageType}" Width="*"/>
-                                <DataGridTextColumn Header="Задержка" Binding="{Binding Value.Delay}" Width="*" />
+                                <DataGridTextColumn Header="Задержка мс" Binding="{Binding Value.Delay}" Width="*" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -490,9 +496,10 @@
                                     <ColumnDefinition></ColumnDefinition>
                                     <ColumnDefinition Width="0.4*"></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
+
                                 <StackPanel>
                                     <TextBlock Text="Передача (TX)" />
-                                    <TextBox Text="{Binding TransmitCmdLib}" MinWidth="100" />
+                                    <TextBox Text="{Binding TransmitCmdLib}" MinWidth="90" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Margin="0,0,0,2" Text="Xor (TX)" />
@@ -554,6 +561,7 @@
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                             </Grid.ColumnDefinitions>
+                            
                             <Button Content="Создать" Margin="10,0,5,0" Command="{Binding AddCmdFromDeviceCmd}" />
                             <Button Grid.Column="1" Content="Удалить" Margin="5,0,10,0"
                                     Command="{Binding RemoveCmdFromDeviceCmd}" />
@@ -810,6 +818,8 @@
                                VerticalAlignment="Center" Text="{Binding TextCurrentTest}" />
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center" Text="{Binding TextCurrentTestDevice}" />
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center" Text="{Binding CountTimes}" />
                 </StackPanel>
 
                 <!--//-->

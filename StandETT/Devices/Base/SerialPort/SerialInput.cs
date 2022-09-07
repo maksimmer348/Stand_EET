@@ -10,13 +10,14 @@ namespace StandETT;
 
 public class SerialInput : ISerialLib
 {
-    protected SerialPortInput port;
+    protected SerialPortInput Port;
     public bool Dtr { get; set; }
     public string GetPortNum { get; set; }
+    
     public int Delay { get; set; }
 
-    public Action<bool> ConnectionStatusChanged { get; set; }
-    public Action<byte[]> MessageReceived { get; set; }
+    public Action<bool> PortConnecting { get; set; }
+    public Action<byte[]> Receiving { get; set; }
 
     /// <summary>
     /// Адаптер значений для библиотеки 
@@ -59,12 +60,12 @@ public class SerialInput : ISerialLib
     public void SetPort(string pornName, int baud, int stopBits, int parity, int dataBits, bool dtr = false)
     {
         var adaptSettings = SetPortAdapter(stopBits, parity, dataBits);
-        port = new SerialPortInput(new NullLogger<SerialPortInput>());
-        port.ConnectionStatusChanged += OnPortConnectionStatusChanged;
-        port.MessageReceived += OnPortMessageReceived;
+        Port = new SerialPortInput(new NullLogger<SerialPortInput>());
+        Port.ConnectionStatusChanged += OnPortConnectionStatusChanged;
+        Port.MessageReceived += OnPortMessageReceived;
         try
         {
-            port.SetPort(pornName, baud, adaptSettings.Item1, adaptSettings.Item2, adaptSettings.Item3);
+            Port.SetPort(pornName, baud, adaptSettings.Item1, adaptSettings.Item2, adaptSettings.Item3);
         }
         catch (Exception e)
         {
@@ -80,13 +81,13 @@ public class SerialInput : ISerialLib
     {
         try
         {
-            if (!port.IsConnected)
+            if (!Port.IsConnected)
             {
                 //Debug.WriteLine($"SerialInput message: {GetPortNum} включаен");
-                return port.Connect();
+                return Port.Connect();
             }
 
-            if (port.IsConnected)
+            if (Port.IsConnected)
             {
                 return true;
             }
@@ -105,7 +106,7 @@ public class SerialInput : ISerialLib
         try
         {
             //Debug.WriteLine($"SerialInput message: {GetPortNum} отключен");
-            port.Disconnect();
+            Port.Disconnect();
         }
         catch (Exception e)
         {
@@ -116,12 +117,12 @@ public class SerialInput : ISerialLib
 
     public void OnPortConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
     {
-        ConnectionStatusChanged.Invoke(args.Connected);
+        PortConnecting.Invoke(args.Connected);
     }
 
     public void OnPortMessageReceived(object sender, MessageReceivedEventArgs args)
     {
-        MessageReceived.Invoke(args.Data);
+        Receiving.Invoke(args.Data);
     }
 
     public void TransmitCmdTextString(string cmd, int delay = 0, string terminator = null)
@@ -137,7 +138,7 @@ public class SerialInput : ISerialLib
         var message = System.Text.Encoding.UTF8.GetBytes(cmd + terminator);
         try
         {
-            port.SendMessage(message);
+            Port.SendMessage(message);
         }
         catch (Exception e)
         {
@@ -177,7 +178,7 @@ public class SerialInput : ISerialLib
 
         try
         {
-            port.SendMessage(t.ToArray());
+            Port.SendMessage(t.ToArray());
         }
         catch (Exception e)
         {

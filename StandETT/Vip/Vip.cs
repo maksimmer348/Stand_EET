@@ -61,28 +61,7 @@ public class Vip : BaseDevice
     /// </summary>
     [JsonIgnore]
     public RelayVipError ErrorVip { get; set; }
-
-    private OnOffStatus statusOnOff;
-
-    public OnOffStatus StatusOnOff
-    {
-        get => statusOnOff;
-        set => Set(ref statusOnOff, value, nameof(OnOffColor));
-    }
-
-    public object OnOffColor
-    {
-        get
-        {
-            return StatusOnOff switch
-            {
-                OnOffStatus.Off => Brushes.Red,
-                OnOffStatus.On => Brushes.Green,
-                _ => Brushes.DarkGray
-            };
-        }
-    }
-
+    
 
     public void SetUnityPort(ISerialLib unityPort)
     {

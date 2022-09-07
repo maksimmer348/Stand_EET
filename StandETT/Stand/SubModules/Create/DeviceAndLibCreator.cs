@@ -84,7 +84,6 @@ class DeviceAndLibCreator
     {
         //десериализация библиотеки команд  
         Dictionary<DeviceIdentCmd, DeviceCmd> deserializeLib = serializer.DeserializeLib();
-        //Dictionary<DeviceIdentCmd, DeviceCmd> deserializeLib = null;
         libCmd.CreateTerminators();
         if (deserializeLib == null)
         {
@@ -109,18 +108,18 @@ class DeviceAndLibCreator
     {
         foreach (var device in devices)
         {
-            device.ConnectPort = OnCheckConnectPort;
-            device.ConnectDevice = OnCheckDevice;
-            device.Receive = OnReceive;
+            device.PortConnecting += OnConnectPort;
+            device.DeviceConnecting += OnConnectDevice;
+            device.DeviceReceiving += OnReceive;
         }
     }
 
-    private void OnCheckDevice(BaseDevice device, bool connect, string receive)
+    private void OnConnectDevice(BaseDevice device, bool connect, string receive)
     {
         stand1.CheckDevice?.Invoke(device, connect, receive);
     }
 
-    private void OnCheckConnectPort(BaseDevice device, bool connect)
+    private void OnConnectPort(BaseDevice device, bool connect)
     {
         stand1.CheckPort?.Invoke(device, connect);
     }

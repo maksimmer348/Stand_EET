@@ -24,8 +24,9 @@ public class MainRelay : BaseDevice
 
     public MainRelay(string name) : base(name)
     {
+        //TODO вохмонжо вернуть
         //relays = relaysVips.ToList();
-        ReceiveRelay += ReceiveRelayMessage;
+        //ReceiveRelay += ReceiveRelayMessage;
     }
 
     public void TransmitCmdInLibRelay(BaseDevice device, string cmd)
@@ -37,9 +38,7 @@ public class MainRelay : BaseDevice
             throw new Exception(
                 $"BaseDevice exception: Такое устройство - {IsDeviceType}/{Name} или команда - \"Status\" в библиотеке не найдены");
         }
-
-        CmdDelay = selectCmd.Delay;
-
+        
         if (selectCmd.MessageType == TypeCmd.Hex)
         {
             TypeReceive = TypeCmd.Hex;
@@ -77,20 +76,20 @@ public class MainRelay : BaseDevice
             {
                 if (cmdInLib.cmd.Key.NameCmd == "On")
                 {
-                    ConnectDevice?.Invoke(cmdInLib.baseDevice, true, "Is on");
+                    DeviceConnecting?.Invoke(cmdInLib.baseDevice, true, "Is on");
                     return;
                 }
-                ConnectDevice?.Invoke(cmdInLib.baseDevice, true, receive);
+                DeviceConnecting?.Invoke(cmdInLib.baseDevice, true, receive);
             }
         }
         catch (ArgumentOutOfRangeException e)
         {
-            ConnectDevice?.Invoke(cmdInLib.baseDevice, false, receive);
+            DeviceConnecting?.Invoke(cmdInLib.baseDevice, false, receive);
             return;
         }
         catch (Exception e)
         {
-            ConnectDevice?.Invoke(cmdInLib.baseDevice, false, receive);
+            DeviceConnecting?.Invoke(cmdInLib.baseDevice, false, receive);
             return;
         }
     }
