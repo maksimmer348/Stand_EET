@@ -10,12 +10,12 @@ namespace StandETT;
 
 public class Stand1 : Notify
 {
-    #region --Модули проверок и испытаний стенда
+    #region --Создание устройств
 
     /// <summary>
     /// Создание устройств стенда
     /// </summary>
-    private DeviceAndLibCreator deviceAndLibCreator;
+    private SetAllDevices deviceAndLibCreator;
 
     #endregion
 
@@ -133,7 +133,7 @@ public class Stand1 : Notify
 
     public Stand1()
     {
-        deviceAndLibCreator = new DeviceAndLibCreator(this);
+        deviceAndLibCreator = new SetAllDevices(this);
 
         allDevices = new ObservableCollection<BaseDevice>(deviceAndLibCreator.SetDevices());
         AllDevices = new ReadOnlyObservableCollection<BaseDevice>(allDevices);
@@ -143,9 +143,8 @@ public class Stand1 : Notify
 
         LibCmd.DeviceCommands = deviceAndLibCreator.SetLib();
 
-        CheckPort += OnCheckConnectPort;
-        CheckDevice += OnCheckDevice;
-        Receive += OnReceive;
+        deviceAndLibCreator.PortConnecting += Port_Connecting;
+        deviceAndLibCreator.DeviceReceiving += Device_Receiving;
 
         SetStatusStand();
     }
@@ -208,30 +207,10 @@ public class Stand1 : Notify
 
     #region Порт
 
-    //--Событие порта
-
     /// <summary>
     /// Временное хранилище проверенных (работоспособных) приборов
     /// </summary>
     private List<BaseDevice> verifiedDevices = new();
-
-    /// <summary>
-    /// Событие поверки порта на коннект 
-    /// </summary>/// <param name="baseDevice"></param>
-    /// <param name="connect"></param>
-    void OnCheckConnectPort(BaseDevice device, bool connect)
-    {
-        //если есть коннект 
-        if (connect)
-        {
-            //добавляем в проверенные приборы
-            verifiedDevices.Add(device);
-            //сброс токена порта
-            ctsPortDevice.Cancel();
-        }
-    }
-
-    //--Событие порта
 
     /// <summary>
     /// Проверка на физические существования портов (нескольких)
@@ -277,6 +256,12 @@ public class Stand1 : Notify
 
             await Task.Delay(TimeSpan.FromMilliseconds(delay));
 
+            foreach (var device in checkDevices)
+            {
+                device.TransmitCmdInLib("Status");
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
             //после задержки в этом списке будут устройства не прошедшие проверку
             var errorDevices = GetErrorDevices(checkDevices);
             return errorDevices;
@@ -370,38 +355,6 @@ public class Stand1 : Notify
 
     #region --Проверка на команду
 
-    //--Событие команды коннект
-
-    /// <summary>
-    /// Событие проверки устройства на коннект
-    /// </summary>
-    /// <param name="baseDevice"></param>
-    /// <param name="connect"></param>
-    private void OnCheckDevice(BaseDevice device, bool connect, string receive = null)
-    {
-        //для вьюмодели
-
-        //если коннект есть добавляем в список годных, текущее устройство
-        if (connect)
-        {
-            verifiedDevices.Add(device);
-        }
-
-        if (device is not Vip)
-        {
-            //если список проверяемых устройств будет равен списку всех утсройст этого типа
-            var isCheck = Devices.Except(verifiedDevices).ToList();
-
-            //сбрасываем задержку тк все приборы ответили
-            if (!isCheck.Any())
-            {
-                ctsCheckDevice.Cancel();
-            }
-        }
-    }
-
-    //--Событие команды коннект
-
     /// <summary>
     /// Проверка устройств пингуются ли они 
     /// </summary>
@@ -460,11 +413,6 @@ public class Stand1 : Notify
         }
     }
 
-    private async Task WriteCommands(BaseDevice device, string cmd, CancellationToken token)
-    {
-        
-    }
-
     /// <summary>
     /// Проверка устройсва пингуются ли оно 
     /// </summary>
@@ -481,11 +429,11 @@ public class Stand1 : Notify
         {
             if (string.IsNullOrEmpty(cmd))
             {
-                isWrite = await WriteCommandLib(device, "Status", 0, token: token);
+                // isWrite = await WriteCommand(device, "Status", 0, token: token);
             }
             else
             {
-                isWrite = await WriteCommandLib(device, cmd, 0, token: token);
+                //   isWrite = await WriteCommand(device, cmd, , token: token);
             }
 
             //если отправка в прибор без исключения, то получаем команду и заждержку из библиотеки (device) 
@@ -517,7 +465,9 @@ public class Stand1 : Notify
             throw new Exception(e.Message);
         }
     }
-    
+
+    bool errorStatus = false;
+    bool receiveIsOk = false;
 
     /// <summary>
     /// Заспись в устроство простой команды
@@ -529,18 +479,34 @@ public class Stand1 : Notify
     /// <param name="token"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    private async Task<(bool result, DeviceCmd cmd)> WriteCommandLib(BaseDevice device, string cmd,
-        int externalDelay = 0, string parameter = null, CancellationToken token = default)
+    private async Task<bool> WriteCommand(BaseDevice device, string cmd,
+        bool externalDelay = false, string parameter = null, CancellationToken token = default)
     {
         DeviceCmd dataInLib = null;
         try
         {
-            //Отпрвляем имя команды и параметр в устройство (device) и получаем из метода команду библиотеки
-            dataInLib = device.TransmitCmdInLib(cmd, parameter);
+            //отпрвляем имя команды и параметр в устройство (device) 
+            device.TransmitCmdInLib(cmd, parameter);
+            //получаем из метода команду библиотеки
+            dataInLib = device.CurrentCmd;
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 3; i++)
             {
-                if (externalDelay == 0 && dataInLib != null)
+                if (externalDelay)
+                {
+                    if (errorStatus)
+                    {
+                        continue;
+                    }
+
+                    if (receiveIsOk)
+                    {
+                        
+                    }
+                    continue;
+                }
+
+                if (!externalDelay)
                 {
                     if (dataInLib.Delay == 0)
                     {
@@ -552,21 +518,16 @@ public class Stand1 : Notify
                     }
                 }
 
-                if (externalDelay > 0)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(externalDelay), token);
-                }
-
-                return (true, dataInLib);
+                return false;
             }
 
-            return (false, dataInLib);
+            return false;
         }
         //елси задлаче была прервана заранее полняем следующий код
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             token = new();
-            return (true, dataInLib);
+            return true;
         }
         catch (Exception e)
         {
@@ -593,9 +554,9 @@ public class Stand1 : Notify
         try
         {
             //получаем команду и заждержку из библиотеки (device) 
-            dataInLib = device.TransmitCmdInLib(cmd);
+            device.TransmitCmdInLib(cmd);
 
-            await WriteCommandLib(device, cmd, dataInLib.Delay, parameter, token);
+            //await WriteCommand(device, cmd, dataInLib.Delay, parameter, token);
 
             var isGdmCheck = CheckGdm(device, cmd, dataInLib.Receive, matches, tempChecks);
 
@@ -719,7 +680,9 @@ public class Stand1 : Notify
         try
         {
             //данные из листа приема от устройств
+
             var receive = receiveDevices[device];
+
             var receiveStr = receive.Last();
 
             if (receiveLib != null && !string.IsNullOrWhiteSpace(receiveLib))
@@ -746,6 +709,9 @@ public class Stand1 : Notify
             throw new Exception(e.Message);
         }
     }
+
+    //TODO изменить
+    private Dictionary<BaseDevice, List<string>> receiveDevices = new();
 
     /// <summary>
     /// Преобразовние строк вида "SQU +2.00000000E+02,+4.000E+00,+2.00E+00" в стандартные строки вида 200, 4, 20
@@ -775,16 +741,6 @@ public class Stand1 : Notify
         }
     }
 
-    /// <summary>
-    /// Бибилиотека принимаемых от устройств данных key - Устройство с данными, value - список данных
-    /// </summary>
-    private Dictionary<BaseDevice, List<string>> receiveDevices = new();
-
-    private void OnReceive(BaseDevice device, string receive)
-    {
-        
-    }
-
     #endregion
 
     //---
@@ -806,6 +762,7 @@ public class Stand1 : Notify
                 SetStatusDevices(checkDevices);
 
                 var errorDevices = await CheckConnectPorts(checkDevices);
+                return true;
                 if (errorDevices.Any())
                 {
                     SetStatusDevices(errorDevices, StatusDeviceTest.Error);
@@ -853,6 +810,35 @@ public class Stand1 : Notify
     //---
 
     #region Обработка событий с приборов
+
+    private void Port_Connecting(BaseDevice device, bool isConnect)
+    {
+        if (isConnect)
+        {
+            verifiedDevices.Add(device);
+        }
+
+        if (device is not Vip)
+        {
+            //если список проверяемых устройств будет равен списку всех утсройств этого типа
+            var isCheck = Devices.Except(verifiedDevices).ToList();
+
+            //сбрасываем задержку тк все приборы ответили
+            if (!isCheck.Any())
+            {
+                ctsCheckDevice.Cancel();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Бибилиотека принимаемых от устройств данных key - Устройство с данными, value - список данных
+    /// </summary>
+    private Dictionary<BaseDevice, List<string>> ReceiveInDevice = new Dictionary<BaseDevice, List<string>>();
+
+    private void Device_Receiving(BaseDevice device, byte[] receive, DeviceCmd cmd)
+    {
+    }
 
     #endregion
 

@@ -42,7 +42,11 @@ public interface ISerialLib
     /// Событие ответа устройства
     /// </summary>
     Action<byte[]> Receiving { get; set; }
-    
+    /// <summary>
+    /// Событие ошибки устройства
+    /// </summary>
+    public Action<string> ErrorPort { get; set; }
+
     /// <summary>
     /// Настройка порта 
     /// </summary>

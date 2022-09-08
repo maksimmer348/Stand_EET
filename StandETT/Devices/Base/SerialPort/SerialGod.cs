@@ -15,6 +15,7 @@ public class SerialGod : ISerialLib
     public int Delay { get; set; }
     public Action<bool> PortConnecting { get; set; }
     public Action<byte[]> Receiving { get; set; }
+    public Action<string> ErrorPort { get; set; }
 
 
     public void SetPort(string pornName, int baud, int stopBits, int parity, int dataBits, bool dtr = false)

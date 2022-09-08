@@ -13,12 +13,14 @@ public class SerialInput : ISerialLib
     protected SerialPortInput Port;
     public bool Dtr { get; set; }
     public string GetPortNum { get; set; }
-    
+
     public int Delay { get; set; }
 
     public Action<bool> PortConnecting { get; set; }
     public Action<byte[]> Receiving { get; set; }
 
+    public Action<string> ErrorPort { get; set; }
+    
     /// <summary>
     /// Адаптер значений для библиотеки 
     /// </summary>
@@ -63,6 +65,9 @@ public class SerialInput : ISerialLib
         Port = new SerialPortInput(new NullLogger<SerialPortInput>());
         Port.ConnectionStatusChanged += OnPortConnectionStatusChanged;
         Port.MessageReceived += OnPortMessageReceived;
+        Port.ErrorPort += PortOnErrorPort;
+        Port.ExceptionPort += PortOnErrorPort;
+
         try
         {
             Port.SetPort(pornName, baud, adaptSettings.Item1, adaptSettings.Item2, adaptSettings.Item3);
@@ -76,6 +81,43 @@ public class SerialInput : ISerialLib
         GetPortNum = pornName;
     }
 
+    private void PortOnErrorPort(Exception e)
+    {
+        ErrorPort?.Invoke(e.Message);
+    }
+
+    private void PortOnErrorPort(SerialError e)
+    {
+        if (e == SerialError.NoError)
+        {
+            ErrorPort?.Invoke("Indicates no error");
+        }
+        if (e == SerialError.RXOver)
+        {
+            ErrorPort?.Invoke("Driver buffer has reached 80% full");
+        }
+
+        if (e == SerialError.Overrun)
+        {
+            ErrorPort?.Invoke("Driver has detected an overflow");
+        }
+
+        if (e == SerialError.RXParity)
+        {
+            ErrorPort?.Invoke("Parity error detected");
+        }
+
+        if (e == SerialError.Frame)
+        {
+            ErrorPort?.Invoke("Frame error detected");
+        }
+
+        if (e == SerialError.TXFull)
+        {
+            ErrorPort?.Invoke("Transmit buffer is full");
+        }
+    }
+
 
     public bool Open()
     {
@@ -83,7 +125,6 @@ public class SerialInput : ISerialLib
         {
             if (!Port.IsConnected)
             {
-                //Debug.WriteLine($"SerialInput message: {GetPortNum} включаен");
                 return Port.Connect();
             }
 
@@ -105,7 +146,6 @@ public class SerialInput : ISerialLib
     {
         try
         {
-            //Debug.WriteLine($"SerialInput message: {GetPortNum} отключен");
             Port.Disconnect();
         }
         catch (Exception e)
@@ -131,10 +171,12 @@ public class SerialInput : ISerialLib
         {
             throw new Exception($"Команда - не должна быть пустой");
         }
+
         if (string.IsNullOrEmpty(terminator))
         {
             terminator = "\r\n";
         }
+
         var message = System.Text.Encoding.UTF8.GetBytes(cmd + terminator);
         try
         {
@@ -154,13 +196,13 @@ public class SerialInput : ISerialLib
             throw new Exception($"SerialInput exception: Команда - не должна быть пустой");
             return;
         }
-        
+
         //преобразуем входную строку команды в байтовый массив команды
         var cmdMsg = ISerialLib.StringToByteArray(cmd);
-        
+
         //создаем список чтобы можно было легче приклеить xor сумму к массиву команды
         var t = new List<byte>(cmdMsg);
-        
+
         if (isXor)
         {
             //массив команды складываем xor 

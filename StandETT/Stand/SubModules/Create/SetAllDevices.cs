@@ -6,9 +6,23 @@ using System.Threading.Tasks;
 
 namespace StandETT;
 
-class DeviceAndLibCreator
+class SetAllDevices
 {
     //---
+
+    #region События созданных устройств
+
+    /// <summary>
+    /// Событие проверки коннекта к порту
+    /// </summary>
+    public Action<BaseDevice, bool> PortConnecting;
+
+    /// <summary>
+    /// Событие проверки коннекта к устройству
+    /// </summary>
+    public Action<BaseDevice, byte[], DeviceCmd> DeviceReceiving;
+
+    #endregion
 
     #region Создание устройств и библиотек
 
@@ -18,7 +32,7 @@ class DeviceAndLibCreator
 
     BaseLibCmd libCmd = BaseLibCmd.getInstance();
 
-    public DeviceAndLibCreator(Stand1 stand1)
+    public SetAllDevices(Stand1 stand1)
     {
         this.stand1 = stand1;
     }
@@ -31,27 +45,27 @@ class DeviceAndLibCreator
         List<BaseDevice> temp = new List<BaseDevice>();
         if (serializer.DeserializeDevices() == null || !serializer.DeserializeDevices().Any())
         {
-            BaseDevice voltMeter = new VoltMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 0 };
-            voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
-            temp.Add(voltMeter);
-
+            // BaseDevice voltMeter = new VoltMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 0 };
+            // voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
+            // temp.Add(voltMeter);
             //
-            BaseDevice thermoCurrentMeter = new ThermoCurrentMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 2 };
-            thermoCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
-            temp.Add(thermoCurrentMeter);
-
-            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 1, ColumnIndex = 1 };
-            supply.SetConfigDevice(TypePort.SerialInput, "COM5", 115200, 1, 0, 8);
-            temp.Add(supply);
-
-            // TODO вернуть 
-            // BaseDevice smallLoad = new SmallLoad("SMLL LOAD-87") { RowIndex = 1, ColumnIndex = 3 };
-            // smallLoad.SetConfigDevice(TypePort.SerialInput, "COM60", 2400, 1, 0, 8);
-            // temp.Add(smallLoad);
-
-            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 1, ColumnIndex = 4 };
-            bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
-            temp.Add(bigLoad);
+            // //
+            // BaseDevice thermoCurrentMeter = new ThermoCurrentMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 2 };
+            // thermoCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
+            // temp.Add(thermoCurrentMeter);
+            //
+            // BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 1, ColumnIndex = 1 };
+            // supply.SetConfigDevice(TypePort.SerialInput, "COM5", 115200, 1, 0, 8);
+            // temp.Add(supply);
+            //
+            // // TODO вернуть 
+            // // BaseDevice smallLoad = new SmallLoad("SMLL LOAD-87") { RowIndex = 1, ColumnIndex = 3 };
+            // // smallLoad.SetConfigDevice(TypePort.SerialInput, "COM60", 2400, 1, 0, 8);
+            // // temp.Add(smallLoad);
+            //
+            // BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 1, ColumnIndex = 4 };
+            // bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
+            // temp.Add(bigLoad);
 
             //TODO вернуть 
             // BaseDevice heat = new Heat("Heat") { RowIndex = 1, ColumnIndex = 5 };
@@ -108,26 +122,27 @@ class DeviceAndLibCreator
     {
         foreach (var device in devices)
         {
-            device.PortConnecting += OnConnectPort;
-            device.DeviceConnecting += OnConnectDevice;
-            device.DeviceReceiving += OnReceive;
+            device.PortConnecting += Port_Connecting;
+            device.DeviceReceiving += Device_Receiving;
         }
     }
 
-    private void OnConnectDevice(BaseDevice device, bool connect, string receive)
+    /// <summary>
+    /// Обработка события прнятого сообщения из устройства
+    /// </summary>
+    private void Device_Receiving(BaseDevice device, byte[] receive, DeviceCmd cmd)
     {
-        stand1.CheckDevice?.Invoke(device, connect, receive);
+        DeviceReceiving?.Invoke(device, receive, cmd);
     }
 
-    private void OnConnectPort(BaseDevice device, bool connect)
+    /// <summary>
+    /// Обработка события коннект выбраного компорта
+    /// </summary>
+    private void Port_Connecting(BaseDevice device, bool isConnect)
     {
-        stand1.CheckPort?.Invoke(device, connect);
+        PortConnecting.Invoke(device, isConnect);
     }
 
-    private void OnReceive(BaseDevice device, string receive)
-    {
-        stand1.Receive?.Invoke(device, receive);
-    }
 
     public void SerializeLib()
     {

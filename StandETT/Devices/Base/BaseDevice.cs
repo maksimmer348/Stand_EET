@@ -36,6 +36,28 @@ public class BaseDevice : Notify
         set => Set(ref name, value);
     }
 
+    private string nameCurrentCmd;
+
+    /// <summary>
+    /// Имя теукщей команды устройства может и не содержватся в библиотеке
+    /// </summary>
+    public string NameCurrentCmd
+    {
+        get => nameCurrentCmd;
+        set => Set(ref nameCurrentCmd, value);
+    }
+
+    /// <summary>
+    /// Текущая команда устройства может из библиотеки
+    /// </summary>
+    private DeviceCmd selectCmd;
+
+    public DeviceCmd CurrentCmd
+    {
+        get => selectCmd;
+        set => Set(ref selectCmd, value);
+    }
+
     #endregion
 
     //---
@@ -95,6 +117,17 @@ public class BaseDevice : Notify
             };
         }
     }
+    
+    private string errorStatus;
+
+    /// <summary>
+    /// Статус ошибки
+    /// </summary>
+    public string ErrorStatus
+    {
+        get => errorStatus;
+        set => Set(ref errorStatus, value);
+    }
 
     #endregion
 
@@ -112,6 +145,17 @@ public class BaseDevice : Notify
     /// </summary>
     [JsonIgnore]
     protected ISerialLib port { get; set; }
+
+    /// <summary>
+    /// Текущая команда устройства может из библиотеки
+    /// </summary>
+    private bool portIsOpen;
+
+    public bool PortIsOpen
+    {
+        get => portIsOpen;
+        set => Set(ref portIsOpen, value);
+    }
 
     /// <summary>
     /// Тип сообщения
@@ -137,14 +181,24 @@ public class BaseDevice : Notify
     [JsonIgnore] public Action<BaseDevice, bool> PortConnecting;
 
     /// <summary>
-    /// Событие проверки коннекта к устройству
+    /// Событие приема данных с устройства
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, bool, string> DeviceConnecting;
+    [JsonIgnore] public Action<BaseDevice, byte[], DeviceCmd> DeviceReceiving;
 
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, string> DeviceReceiving;
+    [JsonIgnore] public Action<BaseDevice, string> Error;
+
+    // /// <summary>
+    // /// Событие проверки коннекта к устройству
+    // /// </summary>
+    // [JsonIgnore] public Action<BaseDevice, bool, string> DeviceConnecting;
+
+    // /// <summary>
+    // /// Событие приема данных с устройства
+    // /// </summary>
+    // [JsonIgnore] public Action<BaseDevice, string> DeviceReceiving;
 
     #endregion
 
@@ -211,6 +265,7 @@ public class BaseDevice : Notify
     /// <returns></returns>
     public bool Open()
     {
+        PortIsOpen = true;
         return port.Open();
     }
 
@@ -232,7 +287,7 @@ public class BaseDevice : Notify
     public void Start()
     {
         SetPort();
-        port.Open();
+        PortIsOpen = port.Open();
         port.Dtr = Config.Dtr;
     }
 
@@ -256,7 +311,9 @@ public class BaseDevice : Notify
     {
         port.PortConnecting += Port_Connecting;
         port.Receiving += Device_Receiving;
+        port.ErrorPort += Device_Error;
     }
+
 
     /// <summary>
     /// Получить конфиг данные порта устройства 
@@ -277,46 +334,85 @@ public class BaseDevice : Notify
 
     #endregion
 
+    //----
+
+    #region ---Обработка события
+
+    /// <summary>
+    /// Обработка события коннект выбраного компорта
+    /// </summary>
+    private void Port_Connecting(bool isConnect)
+    {
+        PortConnecting.Invoke(this, isConnect);
+    }
+
+    /// <summary>
+    /// Обработка события прнятого сообщения из устройства
+    /// </summary>
+    private void Device_Receiving(byte[] data)
+    {
+        
+        DeviceReceiving?.Invoke(this, data, CurrentCmd);
+    }
+
+    private void Device_Error(string e)
+    {
+        errorStatus =$"Ошибка уcтройства {Name}, {e}";
+        Error?.Invoke(this, e);
+    }
+
+    #endregion
+
+    //----
+
+    #region отправка в устройство команд
+
     /// <summary>
     /// Отправка в устройство (есть в библиотеке команд) команд из устройства
     /// </summary>
     /// <param name="nameCommand">Имя команды (например Status)</param>
     /// <param name="parameter">Ответ от устройств из команды (Receive)</param>
-    public DeviceCmd TransmitCmdInLib(string nameCommand, string parameter = null)
+    public void TransmitCmdInLib(string nameCommand, string parameter = null)
     {
-        currentCmd = nameCommand;
+        NameCurrentCmd = nameCommand;
 
-        var selectCmd = GetLibItem(nameCommand, Name);
+        CurrentCmd = GetLibItem(nameCommand, Name);
 
-        if (selectCmd == null)
+        if (CurrentCmd == null)
         {
             throw new Exception(
                 $"Такое устройство - {IsDeviceType}/{Name} или команда - {nameCommand}, в библиотеке не найдены");
         }
 
-        if (selectCmd.MessageType == TypeCmd.Hex)
+        if (CurrentCmd.MessageType == TypeCmd.Hex)
         {
             TypeReceive = TypeCmd.Hex;
-            if (selectCmd.IsXor)
+            if (CurrentCmd.IsXor)
             {
-                port.TransmitCmdHexString(selectCmd.Transmit + parameter, selectCmd.Delay,
-                    selectCmd.Terminator.ReceiveTerminator, true);
+                port.TransmitCmdHexString(CurrentCmd.Transmit + parameter, CurrentCmd.Delay,
+                    CurrentCmd.Terminator.ReceiveTerminator, true);
             }
             else
             {
-                port.TransmitCmdHexString(selectCmd.Transmit + parameter, selectCmd.Delay,
-                    selectCmd.Terminator.ReceiveTerminator);
+                port.TransmitCmdHexString(CurrentCmd.Transmit + parameter, CurrentCmd.Delay,
+                    CurrentCmd.Terminator.ReceiveTerminator);
             }
         }
         else
         {
             TypeReceive = TypeCmd.Text;
-            port.TransmitCmdTextString(selectCmd.Transmit + parameter, selectCmd.Delay,
-                selectCmd.Terminator.ReceiveTerminator);
+            port.TransmitCmdTextString(CurrentCmd.Transmit + parameter, CurrentCmd.Delay,
+                CurrentCmd.Terminator.ReceiveTerminator);
         }
 
-        return selectCmd;
+        //return CurrentCmd;
     }
+
+    #endregion
+
+    //----
+
+    #region Вспомогтальные методы
 
     /// <summary>
     /// Выбор команды из библиотеки основываясь на ее имени и имени прибора
@@ -337,123 +433,26 @@ public class BaseDevice : Notify
         }
     }
 
-    protected ( KeyValuePair<DeviceIdentCmd, DeviceCmd> cmd, BaseDevice baseDevice) GetLibItemInReceive(
-        string receiveCmd,
-        string deviceName,
-        List<BaseDevice> baseDevices)
-    {
-        try
-        {
-            var deviceCmd = LibCmd.DeviceCommands
-                .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Value.Receive == receiveCmd);
-            var baceDevice = baseDevices.FirstOrDefault(x => x.Name == deviceName);
+    //TODO вернуть
+    // protected ( KeyValuePair<DeviceIdentCmd, DeviceCmd> cmd, BaseDevice baseDevice) GetLibItemInReceive(
+    //     string receiveCmd,
+    //     string deviceName,
+    //     List<BaseDevice> baseDevices)
+    // {
+    //     try
+    //     {
+    //         var deviceCmd = LibCmd.DeviceCommands
+    //             .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Value.Receive == receiveCmd);
+    //         var baceDevice = baseDevices.FirstOrDefault(x => x.Name == deviceName);
+    //
+    //         return (deviceCmd, baceDevice);
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         throw new Exception($"Exception: Проблема с библиотекой команд {e.Message}");
+    //     }
+    // }
 
-            return (deviceCmd, baceDevice);
-        }
-        catch (Exception e)
-        {
-            throw new Exception($"Exception: Проблема с библиотекой команд {e.Message}");
-        }
-    }
-
-
-    string currentCmd = string.Empty;
-
-    /// <summary>
-    /// Обработка события коннект выбраного компорта
-    /// </summary>
-    private void Port_Connecting(bool isConnect)
-    {
-        PortConnecting.Invoke(this, isConnect);
-    }
-
-    
-    
-    /// <summary>
-    /// Обработка события прнятого сообщения из устройства
-    /// </summary>
-    private void Device_Receiving(byte[] data)
-    {
-        DeviceCmd? selectCmd = null;
-        string receive = string.Empty;
-        if (!string.IsNullOrEmpty(currentCmd))
-        {
-            CheckReceive(selectCmd, receive);
-        }
-       
-       
-        
-        var thisType = GetType().Name;
-        
-        //TODO вероятно вернуть
-        // if (GetType().Name == nameof(RelayMeter))
-        // {
-        //     if (TypeReceive == TypeCmd.Text)
-        //     {
-        //         receive = Encoding.UTF8.GetString(data);
-        //         
-        //         DeviceConnecting.Invoke(this, true, receive);
-        //         return;
-        //     }
-        //
-        //     if (TypeReceive == TypeCmd.Hex)
-        //     {
-        //         foreach (var d in data)
-        //         {
-        //             receive += Convert.ToByte(d).ToString("x2");
-        //         }
-        //
-        //         if (receive.Contains(selectCmd.Receive))
-        //         {
-        //             DeviceConnecting.Invoke(this, true, receive);
-        //             return;
-        //         }
-        //     }
-        //
-        //     DeviceConnecting.Invoke(this, false, receive);
-        //     return;
-        // }
-
-        if (TypeReceive == TypeCmd.Text)
-        {
-            receive = Encoding.UTF8.GetString(data);
-
-            if (receive.Contains(selectCmd.Receive))
-            {
-                DeviceConnecting.Invoke(this, true, receive);
-                return;
-            }
-
-            DeviceReceiving?.Invoke(this, receive);
-            return;
-        }
-
-        if (TypeReceive == TypeCmd.Hex)
-        {
-            foreach (var d in data)
-            {
-                receive += Convert.ToByte(d).ToString("x2");
-            }
-
-            if (receive.Contains(selectCmd.Receive.ToLower()))
-            {
-                DeviceConnecting.Invoke(this, true, receive);
-                return;
-            }
-
-            DeviceReceiving.Invoke(this, ISerialLib.GetStringHexInText(receive));
-            return;
-        }
-    }
-
-    private void CheckReceive(DeviceCmd selectCmd, string receive)
-    {
-        if (currentCmd == "Status")
-        {
-            selectCmd = GetLibItem("Status", Name);
-            currentCmd = string.Empty;
-        }
-    }
-
-    
+    #endregion
 }
+
