@@ -4,19 +4,67 @@ using Newtonsoft.Json;
 
 namespace StandETT;
 
-public class Vip : BaseDevice
+public class Vip : Notify
 {
-    public bool IsTested { get; set; }
+    #region --Индентификация Випа
 
+    //
+    //расположение в таблице окна пограммы
+    public int RowIndex { get; set; }
 
-    private StatusDeviceTest statusTest;
+    public int ColumnIndex { get; set; }
 
+    //
+    public string IsDeviceType { get; set; }
+    public int Id { get; set; }
+
+    [JsonIgnore] private string name;
+
+    [JsonIgnore]
+    public string Name
+    {
+        get => name;
+        set => Set(ref name, value, nameof(StatusColor));
+    }
+
+    /// <summary>
+    /// Тип Випа - регулирует максимальные значения температуры напряжения и пр.
+    /// </summary>
+    public TypeVip Type = TypeVip.getInstance();
+
+    #endregion
+
+    #region --Статусы випа
+
+    private bool isTested;
+
+    [JsonIgnore]
+    public bool IsTested
+    {
+        get => isTested;
+        set
+        {
+            Set(ref isTested, value);
+            Relay.IsTested = value;
+        }
+    }
+    
+    private string errorStatusRelay;
+    public string ErrorStatusRelay
+    {
+        get => Relay.ErrorStatus;
+        set => Set(ref errorStatusRelay, value);
+    }
+    [JsonIgnore] private StatusDeviceTest statusTest;
+
+    [JsonIgnore]
     public StatusDeviceTest StatusTest
     {
         get => statusTest;
         set => Set(ref statusTest, value, nameof(StatusColor));
     }
 
+    [JsonIgnore]
     public Brush StatusColor =>
         StatusTest switch
         {
@@ -25,30 +73,34 @@ public class Vip : BaseDevice
             _ => Brushes.DarkGray
         };
 
+    [JsonIgnore] private OnOffStatus statusOnOff;
 
     /// <summary>
-    /// Тип Випа - регулирует максимальные значения температуры напряжения и пр.
+    /// Статус Output или Включения устройства
     /// </summary>
-    public TypeVip Type { get; set; }
-
-
-    //Текущие значения на Випе
-    private double voltageOut1;
-
-    public double VoltageOut1
+    [JsonIgnore]
+    public OnOffStatus StatusOnOff
     {
-        get => voltageOut1;
-        set => Set(ref voltageOut1, value);
+        get => statusOnOff;
+        set => Set(ref statusOnOff, value, nameof(OnOffColor));
     }
 
-
-    public double VoltageOut2 { get; set; }
-    public double CurrentIn { get; set; }
-    public double Temperature { get; set; }
-    public double VoltageIn { get; set; }
-
-
-    public int Id { get; set; }
+    /// <summary>
+    /// Цвет статуса Output или Включения устройства
+    /// </summary>
+    [JsonIgnore]
+    public object OnOffColor
+    {
+        get
+        {
+            return StatusOnOff switch
+            {
+                OnOffStatus.Off => Brushes.Red,
+                OnOffStatus.On => Brushes.Green,
+                _ => Brushes.DarkGray
+            };
+        }
+    }
 
     /// <summary>
     /// Статус выхода устройства
@@ -61,21 +113,43 @@ public class Vip : BaseDevice
     /// </summary>
     [JsonIgnore]
     public RelayVipError ErrorVip { get; set; }
-    
 
-    public void SetUnityPort(ISerialLib unityPort)
+    #endregion
+
+    #region --Устройства випа
+
+    /// <summary>
+    /// Релейный модуль Випа
+    /// </summary>
+    public RelayVip Relay { get; set; }
+
+    #endregion
+
+    #region Значения Випа
+
+    //Текущие значения на Випе
+    private double voltageOut1;
+
+    public double VoltageOut1
     {
-        port = unityPort;
+        get => voltageOut1;
+        set => Set(ref voltageOut1, value);
     }
 
-    //
-    //расположение в таблице окна пограммы
-    public int RowIndex { get; set; }
-    public int ColumnIndex { get; set; }
+    public double VoltageOut2 { get; set; }
+    public double CurrentIn { get; set; }
+    public double Temperature { get; set; }
+    public double VoltageIn { get; set; }
 
 
-    //
-    public Vip(int i, string name, string addrRelay) : base(name)
+
+    #endregion
+
+    public Vip(int id, RelayVip relayVip)
     {
+        Id = id;
+        IsDeviceType = $"Вип {id}";
+        Relay = relayVip;
+        Relay.Id = id;
     }
 }

@@ -33,6 +33,8 @@ public interface ISerialLib
     /// <returns></returns>
     public void Close();
 
+    public void DiscardInBuffer();
+    
     /// <summary>
     /// Событие конекта к порту 
     /// </summary>
@@ -133,7 +135,7 @@ public interface ISerialLib
 
         return "";
     }
-
+   
     /// <summary>
     /// Xor калькулятор для хекс строки 
     /// </summary>
@@ -150,4 +152,6 @@ public interface ISerialLib
 
         return (byte)xor;
     }
+
+    void DtrEnable();
 }

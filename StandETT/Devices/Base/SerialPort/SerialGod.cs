@@ -13,10 +13,16 @@ public class SerialGod : ISerialLib
     public string GetPortNum { get; set; }
 
     public int Delay { get; set; }
+    public void DiscardInBuffer()
+    {
+        port.DiscardInBuffer();
+    }
+
     public Action<bool> PortConnecting { get; set; }
     public Action<byte[]> Receiving { get; set; }
     public Action<string> ErrorPort { get; set; }
 
+    
 
     public void SetPort(string pornName, int baud, int stopBits, int parity, int dataBits, bool dtr = false)
     {
@@ -33,6 +39,7 @@ public class SerialGod : ISerialLib
         }
     }
 
+    
   
 
     public bool Connect()
@@ -191,5 +198,10 @@ public class SerialGod : ISerialLib
     public void TransmitCmdHexString(string cmd, int delay = 0, string terminator = null, bool isXor = false)
     {
         TransmitCmdTextString(ISerialLib.GetStringHexInText(cmd), delay, ISerialLib.GetStringHexInText(terminator));
+    }
+
+    public void DtrEnable()
+    {
+        port.DtrEnable = true;
     }
 }

@@ -5,10 +5,18 @@
 /// </summary>
 public enum TypeOfTestRun
 {
-    None,
+    None = 0,
+    Stoped,
     Stop,
+  
     PrimaryCheckDevices,
     PrimaryCheckDevicesReady,
+    CheckPortsReady,
+    CheckPorts,
+    
+    WriteDevicesCmd = 10,
+    WriteDevicesCmdReady = 11,
+    
     PrimaryCheckVips,
     PrimaryCheckVipsReady,
     DeviceOperation,
@@ -22,5 +30,6 @@ public enum TypeOfTestRun
     CyclicMeasurement,
     CyclicMeasurementReady,
     CycleWait,
-    Error
+    Error,
+
 }

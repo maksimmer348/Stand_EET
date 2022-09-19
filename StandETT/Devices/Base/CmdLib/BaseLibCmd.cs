@@ -39,12 +39,12 @@ public class BaseLibCmd
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Text));
         Terminators.Add(new Terminator("CR Text(\\r)", TypeTerminator.CR, "\r", TypeCmd.Text));
         Terminators.Add(new Terminator("LF Text(\\n)", TypeTerminator.LF, "\n", TypeCmd.Text));
-        Terminators.Add(new Terminator("CRLF Text(\\r\\n)", TypeTerminator.LFCR, "\r\n", TypeCmd.Text));
+        Terminators.Add(new Terminator("CRLF Text(\\n\\r)", TypeTerminator.LFCR, "\n\r", TypeCmd.Text));
 
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Hex));
         Terminators.Add(new Terminator("CR Hex(\\r)", TypeTerminator.CR, "0D", TypeCmd.Hex));
         Terminators.Add(new Terminator("LF Hex(\\n)", TypeTerminator.LF, "0A", TypeCmd.Hex));
-        Terminators.Add(new Terminator("CRLF Hex(\\r\\n)", TypeTerminator.LFCR, "0A0D", TypeCmd.Hex));
+        Terminators.Add(new Terminator("CRLF Hex(\\n\\r)", TypeTerminator.LFCR, "0D0A", TypeCmd.Hex));
     }
 
     /// <summary>
@@ -53,21 +53,24 @@ public class BaseLibCmd
     /// <param name="nameCmd">Имя команды</param>
     /// <param name="nameDevice">Прибор для которого эта команда предназначена</param>
     /// <param name="transmit">Команда котороую нужно передать в прибор</param>
-    /// <param name="terminator">Терминатор отправляемой строки</param>
-    /// <param name="receive">Ответ от прибора на команду</param>
-    /// <param name="receiveTerminator">Терминатор принимаемой строки</param>
     /// <param name="delay">Задержка между передачей команды и приемом ответа</param>
+    /// <param name="receive">Ответ от прибора на команду</param>
+    /// <param name="terminator">Терминатор отправляемой строки</param>
+    /// <param name="receiveTerminator">Терминатор принимаемой строки</param>
     /// <param name="type">Тип ответа (по умолчанию текстовый)</param>
     /// <param name="isXor"></param>
-    public void AddCommand(string nameCmd, string nameDevice, string transmit, string receive,
-        int delay, TypeTerminator terminator = TypeTerminator.None,
+    /// <param name="lengthCmdLib"></param>
+    public void AddCommand(string nameCmd, string nameDevice, string transmit,
+        int delay, string receive = null, TypeTerminator terminator = TypeTerminator.None,
         TypeTerminator receiveTerminator = TypeTerminator.None, TypeCmd type = TypeCmd.Text,
-        bool isXor = false)
+        bool isXor = false, string length = "0")
     {
         var tTx = Terminators.First(x => x.Type == terminator && x.TypeEncod == type);
         var tRx = Terminators.First(x => x.Type == receiveTerminator && x.TypeEncod == type);
+
         try
         {
+            
             var tempIdentCmd = new DeviceIdentCmd
             {
                 NameCmd = nameCmd,
@@ -81,7 +84,8 @@ public class BaseLibCmd
                 ReceiveTerminator = tRx,
                 MessageType = type,
                 Delay = delay,
-                IsXor = isXor
+                IsXor = isXor,
+                Length = length
             };
 
             DeviceCommands.Add(tempIdentCmd, tempCmd);

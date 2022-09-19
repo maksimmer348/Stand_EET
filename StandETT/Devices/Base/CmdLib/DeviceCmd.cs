@@ -22,10 +22,12 @@ public class DeviceCmd
     /// Ответ от устройства
     /// </summary>
     public string Receive { get; set; }
+
     /// <summary>
     /// Очончание ответа от устройства
     /// </summary>
     public Terminator ReceiveTerminator { get; set; }
+
     /// <summary>
     /// Тип команды  и ответа от устройства (hex/text) 
     /// </summary>
@@ -35,17 +37,19 @@ public class DeviceCmd
     /// Задержка между передачей команды и приемом ответа 
     /// </summary>
     public int Delay { get; set; }
+
     /// <summary>
     ///  Производитль ли над командой xor операцию
     /// </summary>
     public bool IsXor { get; set; }
-    
+
+    public string Length { get; set; }
 
     protected bool Equals(DeviceCmd other)
     {
-        return Transmit == other.Transmit && Terminator == other.Terminator && Receive == 
-            other.Receive && ReceiveTerminator == other.ReceiveTerminator && MessageType == 
-            other.MessageType && Delay == other.Delay && IsXor == other.IsXor;
+        return Transmit == other.Transmit && Equals(Terminator, other.Terminator) && Receive == other.Receive &&
+               Equals(ReceiveTerminator, other.ReceiveTerminator) && MessageType == other.MessageType &&
+               Delay == other.Delay && IsXor == other.IsXor && Length == other.Length;
     }
 
     public override bool Equals(object obj)
@@ -58,6 +62,7 @@ public class DeviceCmd
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Transmit, Terminator, Receive, ReceiveTerminator, (int)MessageType, Delay, IsXor);
+        return HashCode.Combine(Transmit, Terminator, Receive, ReceiveTerminator, (int)MessageType, Delay, IsXor,
+            Length);
     }
 }

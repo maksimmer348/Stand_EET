@@ -166,6 +166,9 @@
                                     <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                TextWrapping="Wrap"
                                                Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Text="{Binding ErrorStatus, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -209,7 +212,7 @@
                         <TextBlock Margin="10" DockPanel.Dock="Left">Выбор типа ВИПа</TextBlock>
                     </DockPanel>
 
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding AllPrepareVips}" Grid.IsSharedSizeScope="True">
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Vips}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Grid ShowGridLines="True">
@@ -244,13 +247,16 @@
                                             VerticalAlignment="Center">
                                     <Rectangle Margin="2" MinHeight="20" MinWidth="20"
                                                HorizontalAlignment="Center"
-                                               VerticalAlignment="Center" Fill="{Binding Relay.StatusColor}" />
+                                               VerticalAlignment="Center"  DataContext="{Binding Path=Relay}" Fill="{Binding StatusColor}" />
                                     <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                TextWrapping="Wrap"
-                                               Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                                               Text="{Binding IsDeviceType, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               TextWrapping="Wrap" DataContext="{Binding Path=Relay}"
+                                               Text="{Binding ErrorStatus, UpdateSourceTrigger=PropertyChanged}" />
                                     <TextBox DockPanel.Dock="Left" Margin="2" MinHeight="20" MinWidth="150"
                                              HorizontalAlignment="Center" VerticalAlignment="Center"
-                                             Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
+                                             Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
                                 </StackPanel>
                             </DataTemplate>
@@ -414,9 +420,24 @@
 
 
                         <StackPanel Grid.Row="1">
-                            <TextBlock Text="Имя Устройства" />
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="0.5*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <TextBox Text="{Binding NameDevice , UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Имя Устройства" />
+                                <TextBox Grid.Row="1" Grid.Column="0"
+                                         Text="{Binding NameDevice , UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <TextBlock  Grid.Column="1" Text="Префикс" />
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                        MinWidth="40" Text="{Binding Prefix , UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsPrefix}"/>
+                            </Grid>
 
                             <TextBlock Text="Имя компорта" />
                             <TextBox Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged}" />
@@ -430,8 +451,12 @@
                             <TextBlock Text="Дата бит компорта" />
                             <TextBox Text="{Binding DataBits}" />
 
-                            <TextBlock Text="DTR" />
+                            <TextBlock Text="Время на перепроверку (мс)" />
+                            <TextBox Text="{Binding AllTimeChecked  }" />
 
+                            <TextBlock Text="Количество перепроверок (раз)" />
+                            <TextBox Text="{Binding CountChecked}" />
+                            <TextBlock Text="DTR" />
                             <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
 
                             <Button Command="{Binding SaveSettingsCmd}" DockPanel.Dock="Right"
@@ -444,7 +469,7 @@
                             <RowDefinition Height="3*"></RowDefinition>
                             <RowDefinition Height="0.5*"></RowDefinition>
                             <RowDefinition Height="0.2*"></RowDefinition>
-                        </Grid.RowDefinitions> 
+                        </Grid.RowDefinitions>
 
                         <DataGrid Grid.Row="0" DockPanel.Dock="Top" IsReadOnly="True"
                                   ItemsSource="{Binding SelectedDeviceCmd, UpdateSourceTrigger=PropertyChanged}"
@@ -465,6 +490,7 @@
                                 <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.ReceiveTerminator.Name}" Width="*"/>
                                 <DataGridTextColumn Header="Тип сообщения (TX,RX)" Binding="{Binding Value.MessageType}" Width="*"/>
                                 <DataGridTextColumn Header="Задержка мс" Binding="{Binding Value.Delay}" Width="*" />
+                                <DataGridTextColumn Header="Длина" Binding="{Binding Value.Length}" Width="*" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -473,13 +499,10 @@
 
                             <Grid.RowDefinitions>
                                 <RowDefinition></RowDefinition>
-                              
+                                <RowDefinition></RowDefinition>
                             </Grid.RowDefinitions>
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
@@ -529,7 +552,7 @@
                                 <TextBlock Text="Прием (RX)" />
                                 <TextBox Text="{Binding ReceiveCmdLib}" MinWidth="100" />
                             </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="4">
+                            <StackPanel Grid.Row="1" Grid.Column="0">
                                 <TextBlock VerticalAlignment="Center" Text="Разделитель (RX)" />
                                 <ComboBox
                                     ItemsSource="{Binding Terminators}"
@@ -545,13 +568,17 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="5">
+                            <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock VerticalAlignment="Center" Text="Тип сообщения(RX,TX)" />
                                 <TextBox Margin="5,0,5,0" Text="{Binding TypeMessageCmdLib}" MinWidth="100" />
                             </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="6">
+                            <StackPanel Grid.Row="1" Grid.Column="2">
                                 <TextBlock VerticalAlignment="Center" Text="Задержка мс" />
                                 <TextBox Text="{Binding DelayCmdLib}" MinWidth="100" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="3">
+                                <TextBlock VerticalAlignment="Center" Text="Длина" />
+                                <TextBox Text="{Binding LengthCmdLib}" MinWidth="100" />
                             </StackPanel>
 
                         </Grid>
@@ -561,7 +588,7 @@
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            
+
                             <Button Content="Создать" Margin="10,0,5,0" Command="{Binding AddCmdFromDeviceCmd}" />
                             <Button Grid.Column="1" Content="Удалить" Margin="5,0,10,0"
                                     Command="{Binding RemoveCmdFromDeviceCmd}" />
@@ -804,7 +831,7 @@
 
                 <ProgressBar Grid.Column="0" Value="{Binding PercentCurrentTest, Mode=OneWay}" Maximum="100"
                              MinWidth="150"
-                             MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                             MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{Binding ProgressColor}" />
                 <TextBlock Grid.Column="0"
                            Text="{Binding StringFormat={}{0}%,Path=PercentCurrentTest, UpdateSourceTrigger=Explicit}"
                            HorizontalAlignment="Center"
@@ -817,9 +844,9 @@
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center" Text="{Binding TextCurrentTest}" />
                     <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding TextCurrentTestDevice}" />
+                               VerticalAlignment="Center" Text="{Binding TestCurrentDevice}" />
                     <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding CountTimes}" />
+                               VerticalAlignment="Center" Text="{Binding CurrentCountChecked}" />
                 </StackPanel>
 
                 <!--//-->
@@ -827,15 +854,15 @@
                 <DockPanel LastChildFill="False" Grid.Column="3">
 
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
-                            Command="{Binding NextCmd}" Content="Далее" />
+                            Command="{Binding NextCmd}" Content="Далее" IsEnabled="{Binding NextBtnEnabled}"/>
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
-                            Command="{Binding CancelAllTestCmd}" Content="Остановить" />
+                            Command="{Binding CancelAllTestCmd}" Content="Остановить" IsEnabled="{Binding CancelAllTestBtnEnabled}"/>
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Content="Начать/повторить тест"
-                            Command="{Binding StartTestDevicesCmd}" />
+                            Command="{Binding StartTestDevicesCmd}" IsEnabled="{Binding StartTestDevicesBtnEnabled}"/>
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Content="Открыть конфиг"
-                            Command="{Binding OpenSettingsDevicesCmd}" />
+                            Command="{Binding DeviceConfigCmd}" IsEnabled="{Binding DeviceConfigBtnEnabled}" />
                 </DockPanel>
 
                 <!--//-->

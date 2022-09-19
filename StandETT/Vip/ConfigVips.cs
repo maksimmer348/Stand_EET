@@ -94,8 +94,8 @@ public class ConfigVips : Notify
         try
         {
             TypeVips.Add(type);
-            Console.WriteLine($"Создан тип Випа {type.Type}, максимальная тепмпература {type.MaxTemperature}," +
-                              $" максимальнный предварительный ток 1 {type.PrepareMaxVoltageOut1}, " +
+            Console.WriteLine($"Создан тип Випа {type.Type}, максимальная тепмпература {type.MaxTemperature}, " +
+                              $"максимальнный предварительный ток 1 {type.PrepareMaxVoltageOut1}, " +
                               $"максимальнный предварительный ток 2 {type.PrepareMaxVoltageOut2}");
             //уведомить
         }
@@ -166,7 +166,7 @@ public class ConfigVips : Notify
             //     throw new Exception($"Название добавляемого Випа - {name}, уже есть в списке");
             // }
 
-            var vip = new Vip(1, "1", "1")
+            var vip = new Vip(1, new RelayVip(id,name))
             {
                 Name = name,
                 Type = TypeVips[indexTypeVip],

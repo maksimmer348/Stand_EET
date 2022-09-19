@@ -36,11 +36,19 @@ public class BaseDevice : Notify
         set => Set(ref name, value);
     }
 
+    private string prefix;
+    public string Prefix
+    {
+        get => prefix;
+        set => Set(ref prefix, value);
+    }
+
     private string nameCurrentCmd;
 
     /// <summary>
     /// Имя теукщей команды устройства может и не содержватся в библиотеке
     /// </summary>
+    [JsonIgnore]
     public string NameCurrentCmd
     {
         get => nameCurrentCmd;
@@ -52,10 +60,20 @@ public class BaseDevice : Notify
     /// </summary>
     private DeviceCmd selectCmd;
 
+    [JsonIgnore]
     public DeviceCmd CurrentCmd
     {
         get => selectCmd;
         set => Set(ref selectCmd, value);
+    }
+
+    private string currentParameter;
+
+    [JsonIgnore]
+    public string CurrentParameter
+    {
+        get => currentParameter;
+        set => Set(ref currentParameter, value);
     }
 
     #endregion
@@ -63,6 +81,8 @@ public class BaseDevice : Notify
     //---
 
     #region --Статусы устройства
+
+    [JsonIgnore] public AllDeviceError AllDeviceError = new AllDeviceError();
 
     [JsonIgnore] private StatusDeviceTest statusTest;
 
@@ -117,12 +137,13 @@ public class BaseDevice : Notify
             };
         }
     }
-    
+
     private string errorStatus;
 
     /// <summary>
     /// Статус ошибки
     /// </summary>
+    [JsonIgnore]
     public string ErrorStatus
     {
         get => errorStatus;
@@ -151,6 +172,7 @@ public class BaseDevice : Notify
     /// </summary>
     private bool portIsOpen;
 
+    [JsonIgnore]
     public bool PortIsOpen
     {
         get => portIsOpen;
@@ -162,7 +184,6 @@ public class BaseDevice : Notify
     /// </summary>
     [JsonIgnore]
     protected TypeCmd TypeReceive { get; set; }
-
 
     /// <summary>
     /// Класс библиотеки
@@ -183,12 +204,12 @@ public class BaseDevice : Notify
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, byte[], DeviceCmd> DeviceReceiving;
+    [JsonIgnore] public Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
 
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, string> Error;
+    [JsonIgnore] public Action<BaseDevice, string> DeviceError;
 
     // /// <summary>
     // /// Событие проверки коннекта к устройству
@@ -207,7 +228,7 @@ public class BaseDevice : Notify
     #region --Вспомогательные поля
 
     //
-    Stopwatch stopwatch = new();
+    [JsonIgnore] Stopwatch stopwatch = new();
     //
 
     //
@@ -215,6 +236,8 @@ public class BaseDevice : Notify
     public int RowIndex { get; set; }
 
     public int ColumnIndex { get; set; }
+
+
     //
 
     #endregion
@@ -247,7 +270,8 @@ public class BaseDevice : Notify
     /// <param name="dataBits">Data bits count</param>
     /// <param name="dtr"></param>
     /// <returns></returns>
-    public void SetConfigDevice(TypePort typePort, string portName, int baud, int stopBits, int parity, int dataBits,
+    public virtual void SetConfigDevice(TypePort typePort, string portName, int baud, int stopBits, int parity,
+        int dataBits,
         bool dtr = true)
     {
         Config.TypePort = typePort;
@@ -263,7 +287,7 @@ public class BaseDevice : Notify
     /// Открыть компорт устройства
     /// </summary>
     /// <returns></returns>
-    public bool Open()
+    public virtual bool Open()
     {
         PortIsOpen = true;
         return port.Open();
@@ -273,7 +297,7 @@ public class BaseDevice : Notify
     /// Закрыть компорт устройства
     /// </summary>
     /// <returns></returns>
-    public void Close()
+    public virtual void Close()
     {
         if (port != null)
         {
@@ -281,10 +305,27 @@ public class BaseDevice : Notify
         }
     }
 
+    public virtual void DtrEnable()
+    {
+        if (port != null)
+        {
+            port.DtrEnable();
+        }
+    }
+
+
+    public virtual void ClearBuff()
+    {
+        if (port != null)
+        {
+            port.DiscardInBuffer();
+        }
+    }
+
     /// <summary>
     /// Применение настроек, подключение событий и старт устройства
     /// </summary>
-    public void Start()
+    public virtual void Start()
     {
         SetPort();
         PortIsOpen = port.Open();
@@ -305,6 +346,7 @@ public class BaseDevice : Notify
 
         SetInvoke();
         port.SetPort(Config.PortName, Config.Baud, Config.StopBits, Config.Parity, Config.DataBits);
+        port.Dtr = true;
     }
 
     public void SetInvoke()
@@ -320,7 +362,7 @@ public class BaseDevice : Notify
     /// </summary>
     /// <returns>Данные порта устройства</returns>
     /// <exception cref="DeviceException">Данные получить невзожноно</exception>
-    public ConfigDeviceParams GetConfigDevice()
+    public virtual ConfigDeviceParams GetConfigDevice()
     {
         try
         {
@@ -343,6 +385,7 @@ public class BaseDevice : Notify
     /// </summary>
     private void Port_Connecting(bool isConnect)
     {
+        ErrorStatus = string.Empty;
         PortConnecting.Invoke(this, isConnect);
     }
 
@@ -351,14 +394,29 @@ public class BaseDevice : Notify
     /// </summary>
     private void Device_Receiving(byte[] data)
     {
-        
-        DeviceReceiving?.Invoke(this, data, CurrentCmd);
+        ErrorStatus = string.Empty;
+        var receive = string.Empty;
+
+        if (CurrentCmd.MessageType == TypeCmd.Text)
+        {
+            receive = Encoding.UTF8.GetString(data);
+        }
+
+        if (TypeReceive == TypeCmd.Hex)
+        {
+            foreach (var d in data)
+            {
+                receive += Convert.ToByte(d).ToString("x2");
+            }
+        }
+
+        DeviceReceiving.Invoke(this, receive.ToLower(), CurrentCmd);
     }
 
     private void Device_Error(string e)
     {
-        errorStatus =$"Ошибка уcтройства {Name}, {e}";
-        Error?.Invoke(this, e);
+        //ErrorStatus = $"Ошибка уcтройства {Name}, {e}";
+        DeviceError?.Invoke(this, e);
     }
 
     #endregion
@@ -372,11 +430,20 @@ public class BaseDevice : Notify
     /// </summary>
     /// <param name="nameCommand">Имя команды (например Status)</param>
     /// <param name="parameter">Ответ от устройств из команды (Receive)</param>
-    public void TransmitCmdInLib(string nameCommand, string parameter = null)
+    public virtual void WriteCmd(string nameCommand, string parameter = null)
     {
         NameCurrentCmd = nameCommand;
+        CurrentParameter = parameter;
 
         CurrentCmd = GetLibItem(nameCommand, Name);
+
+        //
+        AllDeviceError.ErrorReceive = true;
+        AllDeviceError.ErrorParam = !string.IsNullOrEmpty(parameter);
+        AllDeviceError.ErrorTerminator = !string.IsNullOrEmpty(CurrentCmd.Terminator.ReceiveTerminator);
+        AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
+        AllDeviceError.ErrorTimeout = true;
+        //
 
         if (CurrentCmd == null)
         {
@@ -455,4 +522,3 @@ public class BaseDevice : Notify
 
     #endregion
 }
-

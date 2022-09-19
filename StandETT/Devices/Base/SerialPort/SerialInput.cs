@@ -16,11 +16,12 @@ public class SerialInput : ISerialLib
 
     public int Delay { get; set; }
 
+
     public Action<bool> PortConnecting { get; set; }
     public Action<byte[]> Receiving { get; set; }
 
     public Action<string> ErrorPort { get; set; }
-    
+
     /// <summary>
     /// Адаптер значений для библиотеки 
     /// </summary>
@@ -71,6 +72,8 @@ public class SerialInput : ISerialLib
         try
         {
             Port.SetPort(pornName, baud, adaptSettings.Item1, adaptSettings.Item2, adaptSettings.Item3);
+            Port.DtrEnableSP = true;
+            Port.DtrEnableSS = true;
         }
         catch (Exception e)
         {
@@ -92,6 +95,7 @@ public class SerialInput : ISerialLib
         {
             ErrorPort?.Invoke("Indicates no error");
         }
+
         if (e == SerialError.RXOver)
         {
             ErrorPort?.Invoke("Driver buffer has reached 80% full");
@@ -153,6 +157,18 @@ public class SerialInput : ISerialLib
             throw new Exception(
                 $"SerialInput exception: Порт \"{GetPortNum}\" не закрыт, ошибка - {e.Message}");
         }
+    }
+
+    public void DtrEnable()
+    {
+        Port.DtrEnableSP = true;
+        Port.DtrEnableSS = true;
+    }
+    public void DiscardInBuffer()
+    {
+        Port.Flush();
+        Port.DiscardOutBuffer();
+        Port.DiscardInBuffer();
     }
 
     public void OnPortConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
@@ -228,4 +244,6 @@ public class SerialInput : ISerialLib
                 $"Команда \"{cmdMsg}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
         }
     }
+
+   
 }

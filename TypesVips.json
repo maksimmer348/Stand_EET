@@ -1,0 +1,156 @@
+[
+  {
+    "BaseDeviceValues": [
+      {
+        "$type": "StandETT.BigLoadValues, StandETT",
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.HeatValues, StandETT",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.SupplyValues, StandETT",
+        "Voltage": "2",
+        "Current": "1",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.ThermoCurrentMeterValues, StandETT",
+        "CurrMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      }
+    ],
+    "Parameters": {
+      "BigLoadValues": {
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "HeatValues": {
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SupplyValues": {
+        "Voltage": "2",
+        "Current": "1",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "ThermoCurrentValues": {
+        "CurrMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltValues": {
+        "VoltMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      }
+    },
+    "Type": "Vip70",
+    "MaxTemperature": 70.0,
+    "MaxVoltageIn": 220.0,
+    "MaxVoltageOut1": 40.0,
+    "MaxVoltageOut2": 45.0,
+    "MaxCurrentIn": 2.5,
+    "PrepareMaxCurrentIn": 0.5,
+    "PrepareMaxVoltageOut1": 40.0,
+    "PrepareMaxVoltageOut2": 45.0,
+    "EnableTypeVipName": true,
+    "PercentAccuracyVoltages": 5.0,
+    "PercentAccuracyCurrent": 10.0,
+    "VoltageOut2Using": false
+  },
+  {
+    "BaseDeviceValues": [
+      {
+        "$type": "StandETT.BigLoadValues, StandETT",
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.HeatValues, StandETT",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.SupplyValues, StandETT",
+        "Voltage": "2",
+        "Current": "1",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.ThermoCurrentMeterValues, StandETT",
+        "CurrMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.VoltMeterValues, StandETT",
+        "VoltMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      }
+    ],
+    "Parameters": {
+      "BigLoadValues": {
+        "Freq": "200",
+        "Ampl": "3.3",
+        "Dco": "1.65",
+        "Squ": "20",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "HeatValues": {
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SupplyValues": {
+        "Voltage": "3",
+        "Current": "2",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "ThermoCurrentValues": {
+        "CurrMaxLimit": "10",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltValues": {
+        "VoltMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      }
+    },
+    "Type": "Vip71",
+    "MaxTemperature": 90.0,
+    "MaxVoltageIn": 120.0,
+    "MaxVoltageOut1": 20.0,
+    "MaxVoltageOut2": 25.0,
+    "MaxCurrentIn": 5.0,
+    "PrepareMaxCurrentIn": 0.5,
+    "PrepareMaxVoltageOut1": 20.0,
+    "PrepareMaxVoltageOut2": 25.0,
+    "EnableTypeVipName": true,
+    "PercentAccuracyVoltages": 5.0,
+    "PercentAccuracyCurrent": 10.0,
+    "VoltageOut2Using": false
+  }
+]

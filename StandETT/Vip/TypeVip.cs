@@ -7,6 +7,22 @@ namespace StandETT;
 
 public class TypeVip : Notify
 {
+    private static TypeVip instance;
+    private static object syncRoot = new();
+
+    public static TypeVip getInstance()
+    {
+        if (instance == null)
+        {
+            lock (syncRoot)
+            {
+                if (instance == null)
+                    instance = new TypeVip();
+            }
+        }
+        return instance;
+    }
+
     private string type;
 
     /// <summary>
@@ -119,10 +135,7 @@ public class VoltMeterValues : BaseDeviceValues
     [JsonIgnore]
     public ModeGdm Mode
     {
-        get
-        {
-            return mode;
-        }
+        get { return mode; }
         set
         {
             SetFuncVoltageGDM();
@@ -136,17 +149,14 @@ public class VoltMeterValues : BaseDeviceValues
 
     public string VoltMaxLimit
     {
-        get
-        {
-            return voltMaxLimit;
-        }
+        get { return voltMaxLimit; }
         set
         {
             SetFuncVoltageGDM();
             voltMaxLimit = value;
         }
     }
-  
+
     public VoltMeterValues(string voltMaxLimit, string outputOn, string outputOff) : base(outputOn, outputOff)
     {
         VoltMaxLimit = voltMaxLimit;
@@ -186,7 +196,6 @@ public class VoltMeterValues : BaseDeviceValues
             ReturnFuncGDM = "1";
         }
     }
-
 }
 
 public class ThermoCurrentMeterValues : BaseDeviceValues
@@ -199,10 +208,7 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
     [JsonIgnore]
     public ModeGdm Mode
     {
-        get
-        {
-            return mode;
-        }
+        get { return mode; }
         set
         {
             SetFuncVoltageGDM();
@@ -216,10 +222,7 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
 
     public string CurrMaxLimit
     {
-        get
-        {
-            return currMaxLimit;
-        }
+        get { return currMaxLimit; }
         set
         {
             SetFuncVoltageGDM();
@@ -279,7 +282,6 @@ public enum ModeGdm
     Voltage,
     Themperature,
     Current,
-
 }
 
 public class BaseDeviceValues
