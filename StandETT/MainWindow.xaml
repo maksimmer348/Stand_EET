@@ -466,9 +466,9 @@
 
                     <Grid Grid.Column="2">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="3*"></RowDefinition>
-                            <RowDefinition Height="0.5*"></RowDefinition>
-                            <RowDefinition Height="0.2*"></RowDefinition>
+                            <RowDefinition Height="2.6*"></RowDefinition>
+                            <RowDefinition Height="0.6*"></RowDefinition>
+                            <RowDefinition Height="0.13*"></RowDefinition>
                         </Grid.RowDefinitions>
 
                         <DataGrid Grid.Row="0" DockPanel.Dock="Top" IsReadOnly="True"
@@ -639,12 +639,16 @@
                             </ComboBox>
                         </StackPanel>
 
+
                         <StackPanel Grid.Row="1">
+                            <!--<d:Style.DataContext>
+                                <x:Type Type="local:TypeVip" />
+                            </d:Style.DataContext>-->
                             <TextBlock Text="Имя" />
-                            <TextBox Text="{Binding TypeVipNameSettings  ,UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox Text="{Binding TypeVipNameSettings }" />
 
                             <TextBlock Text="Максимальный ток 0 замера" />
-                            <TextBox Text="{Binding PrepareMaxCurrentIn }" />
+                            <TextBox Text="{Binding PrepareMaxCurrentIn}" />
 
                             <TextBlock Text="Максимальный ток" />
                             <TextBox Text="{Binding MaxCurrentIn}" />

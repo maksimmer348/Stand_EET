@@ -125,6 +125,7 @@ public class DeviceParameters
     public VoltMeterValues VoltValues { get; set; }
 }
 
+
 public class VoltMeterValues : BaseDeviceValues
 {
     [JsonIgnore] public string ReturnFuncGDM { get; set; }

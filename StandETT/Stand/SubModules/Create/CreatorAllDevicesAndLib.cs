@@ -248,43 +248,124 @@ class CreatorAllDevicesAndLib
     {
         //десериализация библиотеки команд  
         Dictionary<DeviceIdentCmd, DeviceCmd> deserializeLib = serializer.DeserializeLib();
+        //для ввода терминаторов строки
         libCmd.CreateTerminators();
+
+        //если нечего десеризоывать создается стандратная 
         if (deserializeLib == null)
         {
             //--
 
-            //статусы
-            libCmd.AddCommand("Status", "AFG-72112", "*idn?", 200, "72192",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
-            libCmd.AddCommand("Status", "PSW7-800-2.88", "*idn?", 200, "880-2.88",
-                TypeTerminator.LF, TypeTerminator.LF, type: TypeCmd.Text);
+            //статусы устройств
             libCmd.AddCommand("Status", "GDM-78255A", "*idn?", 200, "78255A",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
+                TypeTerminator.CRLF, TypeTerminator.LFCR, type: TypeCmd.Text);
+            libCmd.AddCommand("Status", "AFG-72112", "*idn?", 200, "72112",
+                TypeTerminator.CRLF, TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Status", "PSW7-800-2.88", "*idn?", 200, "800-2.88",
+                TypeTerminator.CRLF, TypeTerminator.LF, type: TypeCmd.Text);
             libCmd.AddCommand("Status", "MRS", "4980", 200, "FF", type: TypeCmd.Hex, isXor: true);
+            //статусы випы
+            libCmd.AddCommand("Status", "0", "4E502E", 200, "AD4B", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Status", "1", "4E512E", 200, "AE4B", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Status", "2", "4E522E", 200, "AF4B", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Status", "3", "4E532E", 200, "B04B", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Status", "C", "4E5C2E", 200, "B94B", type: TypeCmd.Hex, isXor: true, length: 8);
 
-            libCmd.AddCommand("Status", "0", "1", 200, "01", type: TypeCmd.Hex, isXor: true);
-            libCmd.AddCommand("Status", "0", "2", 200, "02", type: TypeCmd.Hex, isXor: true);
-            libCmd.AddCommand("Status", "1", "3", 200, "03", type: TypeCmd.Hex, isXor: true);
-            libCmd.AddCommand("Status", "2", "3", 200, "03", type: TypeCmd.Hex, isXor: true);
             //--
 
             //--
+            //команды устройств
+            //вольтметр и термомтер и амперметр 78255A
+
+            //set
+            libCmd.AddCommand("Set volt meter", "GDM-78255A", "conf:volt:dc ", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set curr meter", "GDM-78255A", "conf:curr:dc ", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set temp meter", "GDM-78255A", "conf:temp", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+           
+            //get
             libCmd.AddCommand("Get func", "GDM-78255A", "conf:stat:func?", 200, terminator: TypeTerminator.LFCR,
                 receiveTerminator: TypeTerminator.LF);
+            libCmd.AddCommand("Get curr meter", "GDM-78255A", "conf:stat:rang?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
             libCmd.AddCommand("Get volt meter", "GDM-78255A", "conf:stat:rang?", 200, terminator: TypeTerminator.LFCR,
                 receiveTerminator: TypeTerminator.LF);
-            libCmd.AddCommand("Set volt meter", "GDM-78255A", "conf:volt:dc ", 200, "78255A",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get all value", "GDM-78255A", "val1?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            //блок питания
+            //set
+            libCmd.AddCommand("Set volt", "PSW7-800-2.88", "SOUR:VOLT:LEV:IMM:AMPL ", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set curr", "PSW7-800-2.88", "SOUR:CURR:LEV:IMM:AMPL ", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set output on", "PSW7-800-2.88", "OUTPut 1", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set output off", "PSW7-800-2.88", "OUTPut 0", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            //get
+            libCmd.AddCommand("Get volt", "PSW7-800-2.88", "SOUR:VOLT:LEV:IMM:AMPL?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get curr", "PSW7-800-2.88", "SOUR:CURR:LEV:IMM:AMPL?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get output", "PSW7-800-2.88", "OUTPut?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
 
-            libCmd.AddCommand("Get curr meter", "GDM-78255A", "conf:stat:rang?", 200, "78255A",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
-            libCmd.AddCommand("Set curr meter", "GDM-78255A", "conf:curr:dc ", 200, "78255A",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
 
-            libCmd.AddCommand("Get volt", "GDM-78255A", "val1?", 200, "78255A",
-                TypeTerminator.LFCR, TypeTerminator.LF, type: TypeCmd.Text);
+            //большая нагрузка/генератор
+            //set
+            libCmd.AddCommand("Set freq", "AFG-72112", "SOUR1:FREQ ", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set dco", "AFG-72112", "SOUR1:DCO ", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set ampl", "AFG-72112", "SOUR1:AMPL ", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set squ", "AFG-72112", "SOUR1:SQU:DCYC ", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set output off", "AFG-72112", "OUTP OFF", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Set output on", "AFG-72112", "OUTP ON", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            //get
+            libCmd.AddCommand("Get freq", "AFG-72112", "SOUR1:FREQ?", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get squ", "AFG-72112", "SOUR1:SQU:DCYC?", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get ampl", "AFG-72112", "SOUR1:AMPL?", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get dco", "AFG-72112", "SOUR1:DCO?", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+            libCmd.AddCommand("Get output", "AFG-72112", "OUTPut?", 200,
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+
+            #region Relay
+
+            //реле измерителей
+            //вкл
+            libCmd.AddCommand("On 01", "MRS", "4901", 200, "01", type: TypeCmd.Hex, isXor: true, length: 6);
+            libCmd.AddCommand("On 02", "MRS", "4902", 200, "02", type: TypeCmd.Hex, isXor: true, length: 6);
+            libCmd.AddCommand("On 03", "MRS", "4903", 200, "03", type: TypeCmd.Hex, isXor: true, length: 6);
+            libCmd.AddCommand("On 04", "MRS", "4904", 200, "04", type: TypeCmd.Hex, isXor: true, length: 6);
+            libCmd.AddCommand("On 05", "MRS", "4905", 200, "05", type: TypeCmd.Hex, isXor: true, length: 6);
+            //реле випов
+            //вкл
+            libCmd.AddCommand("On", "0", "4E5061", 5500, "AD1", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("On", "1", "4E5161", 5500, "AE1", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("On", "2", "4E5261", 5500, "AF1", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("On", "3", "4E5361", 5500, "B01", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("On", "C", "4E5C61", 5500, "B91", type: TypeCmd.Hex, isXor: true, length: 8);
+            //выкл
+            libCmd.AddCommand("Off", "0", "4E50B8", 200, "AD99", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Off", "1", "4E51B8", 200, "AE99", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Off", "2", "4E52B8", 200, "AF99", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Off", "3", "4E53B8", 200, "B099", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Off", "C", "4E5CB8", 200, "B999", type: TypeCmd.Hex, isXor: true, length: 8);
+            //
+
+            #endregion
+
             //--
-
 
             deserializeLib = libCmd.DeviceCommands;
             SerializeLib();
@@ -300,7 +381,7 @@ class CreatorAllDevicesAndLib
     {
         mainRelayVip.PortConnecting += Port_Connecting;
         mainRelayVip.DeviceError += Device_Error;
-        
+
         foreach (var device in devices)
         {
             device.PortConnecting += Port_Connecting;

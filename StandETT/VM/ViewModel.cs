@@ -89,7 +89,7 @@ public class ViewModel : Notify
         //TODO убрать
         AllBtnsEnable();
         AllTabsEnable();
-        SelectTab = 1;
+        SelectTab = 2;
         //TODO убрать
 
         // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
@@ -224,6 +224,7 @@ public class ViewModel : Notify
         return true;
     }
 
+    //--reset--allreset
     /// <summary>
     /// Команда ОТМЕНИТЬ испытания
     /// </summary>
@@ -273,7 +274,7 @@ public class ViewModel : Notify
             }
             catch (Exception e)
             {
-                const string caption = "Ошибка предварительной проверки плат Випов";
+                const string caption = "Ошибка предварительной проверки реле Випов";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo);
 
@@ -288,14 +289,16 @@ public class ViewModel : Notify
         {
             try
             {
-                //if (mesZero)
-                {
-                    // var heat = await standTest.WaitForTestMode();
-                    // if (heat)
-                    // {
-                    //     await standTest.CyclicMeasurement();
-                    // }
-                }
+                bool mesZero = await stand.MeasurementZero();
+                
+                // if (mesZero)
+                // {
+                //     var heat = await standTest.WaitForTestMode();
+                //     if (heat)
+                //     {
+                //         await standTest.CyclicMeasurement();
+                //     }
+                // }
             }
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
@@ -592,6 +595,7 @@ public class ViewModel : Notify
             {
                 return stand.TestCurrentDevice?.IsDeviceType;
             }
+
             return stand.TestCurrentDevice?.IsDeviceType + " " + stand.TestCurrentDevice?.Name;
         }
     }
@@ -1268,9 +1272,9 @@ public class ViewModel : Notify
         set => Set(ref delayCmdLib, value);
     }
 
-    private string lengthCmdLib;
+    private int lengthCmdLib;
 
-    public string LengthCmdLib
+    public int LengthCmdLib
     {
         get => lengthCmdLib;
         set => Set(ref lengthCmdLib, value);
@@ -1295,7 +1299,7 @@ public class ViewModel : Notify
             SelectTerminatorReceive = SelectedCmdLib.Value.ReceiveTerminator;
             TypeMessageCmdLib = SelectedCmdLib.Value.MessageType;
             DelayCmdLib = SelectedCmdLib.Value.Delay;
-            LengthCmdLib = SelectedCmdLib.Value.Length;
+            LengthCmdLib = Convert.ToInt32(SelectedCmdLib.Value.Length);
 
             if (TypeMessageCmdLib == TypeCmd.Hex)
             {

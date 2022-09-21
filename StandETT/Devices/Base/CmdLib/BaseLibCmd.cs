@@ -5,17 +5,17 @@ using System.Linq;
 
 namespace StandETT;
 
-
 public class BaseLibCmd
 {
     private static BaseLibCmd instance;
     public List<Terminator> Terminators = new();
 
-    
+
     public string Name { get; private set; }
-    
-    
+
+
     private static object syncRoot = new();
+
     public static BaseLibCmd getInstance()
     {
         if (instance == null)
@@ -37,14 +37,19 @@ public class BaseLibCmd
     public void CreateTerminators()
     {
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Text));
+
         Terminators.Add(new Terminator("CR Text(\\r)", TypeTerminator.CR, "\r", TypeCmd.Text));
         Terminators.Add(new Terminator("LF Text(\\n)", TypeTerminator.LF, "\n", TypeCmd.Text));
-        Terminators.Add(new Terminator("CRLF Text(\\n\\r)", TypeTerminator.LFCR, "\n\r", TypeCmd.Text));
+        Terminators.Add(new Terminator("CRLF Text(\\r\\n)", TypeTerminator.CRLF, "\r\n", TypeCmd.Text));
+        Terminators.Add(new Terminator("LFCR Text(\\n\\r)", TypeTerminator.LFCR, "\n\r", TypeCmd.Text));
 
+        //
         Terminators.Add(new Terminator("None", TypeTerminator.None, null, TypeCmd.Hex));
+
         Terminators.Add(new Terminator("CR Hex(\\r)", TypeTerminator.CR, "0D", TypeCmd.Hex));
         Terminators.Add(new Terminator("LF Hex(\\n)", TypeTerminator.LF, "0A", TypeCmd.Hex));
-        Terminators.Add(new Terminator("CRLF Hex(\\n\\r)", TypeTerminator.LFCR, "0D0A", TypeCmd.Hex));
+        Terminators.Add(new Terminator("CRLF Hex(\\r\\n)", TypeTerminator.CRLF, "0D0A", TypeCmd.Hex));
+        Terminators.Add(new Terminator("LFCR Hex(\\n\\r)", TypeTerminator.LFCR, "0A0D", TypeCmd.Hex));
     }
 
     /// <summary>
@@ -63,14 +68,18 @@ public class BaseLibCmd
     public void AddCommand(string nameCmd, string nameDevice, string transmit,
         int delay, string receive = null, TypeTerminator terminator = TypeTerminator.None,
         TypeTerminator receiveTerminator = TypeTerminator.None, TypeCmd type = TypeCmd.Text,
-        bool isXor = false, string length = "0")
+        bool isXor = false, int length = 0)
     {
         var tTx = Terminators.First(x => x.Type == terminator && x.TypeEncod == type);
         var tRx = Terminators.First(x => x.Type == receiveTerminator && x.TypeEncod == type);
+        string lenghtStr = null;
+        if (length > 0)
+        {
+            lenghtStr = length.ToString();
+        }
 
         try
         {
-            
             var tempIdentCmd = new DeviceIdentCmd
             {
                 NameCmd = nameCmd,
@@ -85,7 +94,7 @@ public class BaseLibCmd
                 MessageType = type,
                 Delay = delay,
                 IsXor = isXor,
-                Length = length
+                Length = lenghtStr
             };
 
             DeviceCommands.Add(tempIdentCmd, tempCmd);
@@ -237,7 +246,12 @@ public enum TypeTerminator
     CR,
 
     /// <summary>
-    ///  \r\n
+    ///  \n\r
     /// </summary>
     LFCR,
+
+    /// <summary>
+    ///  \r\n
+    /// </summary>
+    CRLF
 }
