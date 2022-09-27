@@ -20,6 +20,7 @@ public class TypeVip : Notify
                     instance = new TypeVip();
             }
         }
+
         return instance;
     }
 
@@ -125,6 +126,22 @@ public class DeviceParameters
     public VoltMeterValues VoltValues { get; set; }
 }
 
+public class BaseDeviceValues
+{
+    public string OutputOn { get; set; }
+    public string OutputOff { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="outputOn">Включить выход</param>
+    /// <param name="outputOff">Выключить выход</param>
+    public BaseDeviceValues(string outputOn, string outputOff)
+    {
+        OutputOn = outputOn;
+        OutputOff = outputOff;
+    }
+}
 
 public class VoltMeterValues : BaseDeviceValues
 {
@@ -210,11 +227,7 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
     public ModeGdm Mode
     {
         get { return mode; }
-        set
-        {
-            SetFuncVoltageGDM();
-            mode = value;
-        }
+        set { mode = value; }
     }
 
     //
@@ -224,55 +237,61 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
     public string CurrMaxLimit
     {
         get { return currMaxLimit; }
-        set
-        {
-            SetFuncVoltageGDM();
-            currMaxLimit = value;
-        }
+        set { currMaxLimit = value; }
     }
 
+
+    private string termocoupleType;
+
+    public string TermocoupleType
+    {
+        get { return termocoupleType; }
+        set { termocoupleType = value; }
+    }
     //
 
-    public ThermoCurrentMeterValues(string currMaxLimit, string outputOn, string outputOff) : base(outputOn, outputOff)
+    public ThermoCurrentMeterValues(string currMaxLimit, string termocoupleType, string outputOn,
+        string outputOff) : base(outputOn, outputOff)
     {
         CurrMaxLimit = currMaxLimit;
-        SetFuncVoltageGDM();
+        TermocoupleType = termocoupleType;
     }
 
-    void SetFuncVoltageGDM()
+    public void SetFuncGDM()
     {
-        if (CurrMaxLimit == null)
-        {
-            return;
-        }
-        else if (double.Parse(CurrMaxLimit) == 0.010)
-        {
-            ReturnCurrGDM = "1";
-        }
-        else if (int.Parse(CurrMaxLimit) == 0.100)
-        {
-            ReturnCurrGDM = "2";
-        }
-        else if (int.Parse(CurrMaxLimit) == 3)
-        {
-            ReturnCurrGDM = "3";
-        }
-
-        if (Mode == ModeGdm.Voltage)
-        {
-            ReturnFuncGDM = "1";
-        }
-
         if (Mode == ModeGdm.Current)
         {
-            ReturnFuncGDM = "3";
+            ReturnFuncGDM = "5";
 
-            ReturnCurrGDM = "1";
+            if (double.Parse(CurrMaxLimit) == 0.010)
+            {
+                ReturnCurrGDM = "1";
+            }
+            else if (int.Parse(CurrMaxLimit) == 0.100)
+            {
+                ReturnCurrGDM = "2";
+            }
+            else if (int.Parse(CurrMaxLimit) == 1)
+            {
+                ReturnCurrGDM = "3";
+            }
+            else if (double.Parse(CurrMaxLimit) == 10)
+            {
+                ReturnFuncGDM = "3";
+                ReturnCurrGDM = "1";
+            }
         }
 
-        if (Mode == ModeGdm.Themperature)
+        else if (Mode == ModeGdm.Voltage)
+        {
+            ReturnFuncGDM = "1";
+            ReturnFuncGDM = string.Empty;
+        }
+
+        else if (Mode == ModeGdm.Themperature)
         {
             ReturnFuncGDM = "9";
+            ReturnFuncGDM = string.Empty;
         }
     }
 }
@@ -283,23 +302,6 @@ public enum ModeGdm
     Voltage,
     Themperature,
     Current,
-}
-
-public class BaseDeviceValues
-{
-    public string OutputOn { get; set; }
-    public string OutputOff { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="outputOn">Включить выход</param>
-    /// <param name="outputOff">Выключить выход</param>
-    public BaseDeviceValues(string outputOn, string outputOff)
-    {
-        OutputOn = outputOn;
-        OutputOff = outputOff;
-    }
 }
 
 public class BigLoadValues : BaseDeviceValues

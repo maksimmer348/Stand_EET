@@ -32,9 +32,11 @@ class CreatorAllDevicesAndLib
 
     BaseLibCmd libCmd = BaseLibCmd.getInstance();
 
-    private ConfigVips cfgVips = new ConfigVips();
+    ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
 
     BaseDevice mainRelayVip = MainRelay.getInstance();
+
+    TimeMachine timeMachine = TimeMachine.getInstance();
 
     public CreatorAllDevicesAndLib()
     {
@@ -54,36 +56,36 @@ class CreatorAllDevicesAndLib
 
         if (deserializeDevices == null || !deserializeDevices.Any())
         {
-            BaseDevice voltMeter = new VoltMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 0 };
+            BaseDevice voltMeter = new VoltMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 0 };
             voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
             temp.Add(voltMeter);
 
-            BaseDevice thermoCurrentMeter = new ThermoCurrentMeter("GDM-78255A") { RowIndex = 1, ColumnIndex = 2 };
+            BaseDevice thermoCurrentMeter = new ThermoCurrentMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 2 };
             thermoCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
             temp.Add(thermoCurrentMeter);
 
 
-            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 1, ColumnIndex = 1 };
+            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 1 };
             supply.SetConfigDevice(TypePort.SerialInput, "COM5", 115200, 1, 0, 8);
             temp.Add(supply);
 
             // //TODO вернуть 
-            // BaseDevice smallLoad = new SmallLoad("SL") { RowIndex = 1, ColumnIndex = 3 };
+            // BaseDevice smallLoad = new SmallLoad("SL") { RowIndex = 0, ColumnIndex = 3 };
             // smallLoad.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             // temp.Add(smallLoad);
 
-            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 1, ColumnIndex = 4 };
+            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 4 };
             bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
             bigLoad.AllDeviceError = new AllDeviceError();
             temp.Add(bigLoad);
 
             // //TODO вернуть 
-            // BaseDevice heat = new Heat("Heat") { RowIndex = 1, ColumnIndex = 5 };
+            // BaseDevice heat = new Heat("Heat") { RowIndex = 0, ColumnIndex = 5 };
             // heat.SetConfigDevice(TypePort.SerialInput, "COM80", 9600, 1, 0, 8);
             // temp.Add(heat);
             // heat.AllDeviceError = new AllDeviceError();
 
-            BaseDevice relayMeter = new RelayMeter("MRS") { RowIndex = 1, ColumnIndex = 5 };
+            BaseDevice relayMeter = new RelayMeter("MRS") { RowIndex = 0, ColumnIndex = 5 };
             relayMeter.SetConfigDevice(TypePort.SerialInput, "COM9", 9600, 1, 0, 8);
             relayMeter.AllDeviceError = new AllDeviceError();
             temp.Add(relayMeter);
@@ -159,7 +161,6 @@ class CreatorAllDevicesAndLib
             relay11.Prefix = "";
             relay11.AllDeviceError = new AllDeviceError();
             temp.Add(relay11);
-
 
             serializer.SerializeDevices(temp);
         }
@@ -252,17 +253,17 @@ class CreatorAllDevicesAndLib
         libCmd.CreateTerminators();
 
         //если нечего десеризоывать создается стандратная 
-        if (deserializeLib == null)
+        if (deserializeLib == null || !deserializeLib.Any())
         {
             //--
 
             //статусы устройств
             libCmd.AddCommand("Status", "GDM-78255A", "*idn?", 200, "78255A",
-                TypeTerminator.CRLF, TypeTerminator.LFCR, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Status", "AFG-72112", "*idn?", 200, "72112",
-                TypeTerminator.CRLF, TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Status", "PSW7-800-2.88", "*idn?", 200, "800-2.88",
-                TypeTerminator.CRLF, TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
             libCmd.AddCommand("Status", "MRS", "4980", 200, "FF", type: TypeCmd.Hex, isXor: true);
             //статусы випы
             libCmd.AddCommand("Status", "0", "4E502E", 200, "AD4B", type: TypeCmd.Hex, isXor: true, length: 8);
@@ -279,21 +280,28 @@ class CreatorAllDevicesAndLib
 
             //set
             libCmd.AddCommand("Set volt meter", "GDM-78255A", "conf:volt:dc ", 200,
-                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Set curr meter", "GDM-78255A", "conf:curr:dc ", 200,
-                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Set temp meter", "GDM-78255A", "conf:temp", 200,
-                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
-           
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
+            libCmd.AddCommand("Set tco type", "GDM-78255A", "sens:temp:tco:type ", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
+
+
             //get
             libCmd.AddCommand("Get func", "GDM-78255A", "conf:stat:func?", 200, terminator: TypeTerminator.LFCR,
-                receiveTerminator: TypeTerminator.LF);
+                receiveTerminator: TypeTerminator.LFCR);
             libCmd.AddCommand("Get curr meter", "GDM-78255A", "conf:stat:rang?", 200,
-                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Get volt meter", "GDM-78255A", "conf:stat:rang?", 200, terminator: TypeTerminator.LFCR,
                 receiveTerminator: TypeTerminator.LF);
             libCmd.AddCommand("Get all value", "GDM-78255A", "val1?", 200,
-                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
+            libCmd.AddCommand("Get tco type", "GDM-78255A", "sens:temp:tco:type?", 200,
+                terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
+
+
             //блок питания
             //set
             libCmd.AddCommand("Set volt", "PSW7-800-2.88", "SOUR:VOLT:LEV:IMM:AMPL ", 200,
@@ -316,28 +324,28 @@ class CreatorAllDevicesAndLib
             //большая нагрузка/генератор
             //set
             libCmd.AddCommand("Set freq", "AFG-72112", "SOUR1:FREQ ", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Set dco", "AFG-72112", "SOUR1:DCO ", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Set ampl", "AFG-72112", "SOUR1:AMPL ", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Set squ", "AFG-72112", "SOUR1:SQU:DCYC ", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Set output off", "AFG-72112", "OUTP OFF", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Set output on", "AFG-72112", "OUTP ON", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             //get
             libCmd.AddCommand("Get freq", "AFG-72112", "SOUR1:FREQ?", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Get squ", "AFG-72112", "SOUR1:SQU:DCYC?", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Get ampl", "AFG-72112", "SOUR1:AMPL?", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Get dco", "AFG-72112", "SOUR1:DCO?", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
             libCmd.AddCommand("Get output", "AFG-72112", "OUTPut?", 200,
-                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
+                terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.CRLF, type: TypeCmd.Text);
 
             #region Relay
 
@@ -372,6 +380,103 @@ class CreatorAllDevicesAndLib
         }
 
         return deserializeLib;
+    }
+
+
+    public ObservableCollection<TypeVip> SetTypeVips()
+    {
+        //десериализация 
+        ObservableCollection<TypeVip> deserializeTypeVips = new(serializer.DeserializeTypeVips());
+        if (deserializeTypeVips == null || !deserializeTypeVips.Any())
+        {
+            //-
+
+            var typeVip70 = new TypeVip
+            {
+                Type = "Vip70",
+                MaxTemperature = 70,
+                //максимаьные значения во время испытаниий они означают ошибку
+                MaxVoltageIn = 220,
+                MaxVoltageOut1 = 40,
+                MaxVoltageOut2 = 45,
+                MaxCurrentIn = 2.5,
+                //максимальные значения во время предпотготовки испытания (PrepareMaxVoltageOut1 и PrepareMaxVoltageOut2
+                //берутся из MaxVoltageOut1 и MaxVoltageOut2 соотвественно)
+                PrepareMaxCurrentIn = 0.5,
+                //процент погрешности измерения
+                PercentAccuracyCurrent = 10,
+                PercentAccuracyVoltages = 5,
+            };
+
+            //настройки для приборов они зависят от типа Випа
+            typeVip70.SetDeviceParameters(new DeviceParameters()
+            {
+                BigLoadValues = new BigLoadValues("300", "4", "2", "40", "1", "0"),
+                HeatValues = new HeatValues("1", "0"),
+                SupplyValues = new SupplyValues("2", "1", "1", "0"),
+                ThermoCurrentValues = new ThermoCurrentMeterValues("100", "k", "1", "0"),
+                VoltValues = new VoltMeterValues("100", "1", "0")
+            });
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().HeatValues);
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().SupplyValues);
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().ThermoCurrentValues);
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltValues);
+
+            //-
+
+            var typeVip71 = new TypeVip
+            {
+                Type = "Vip71",
+                //максимаьные значения во время испытаниий они означают ошибку
+                MaxTemperature = 90,
+                MaxVoltageIn = 120,
+                MaxVoltageOut1 = 20,
+                MaxVoltageOut2 = 25,
+                MaxCurrentIn = 5,
+                //максимальные значения во время предпотготовки испытания (PrepareMaxVoltageOut1 и PrepareMaxVoltageOut2
+                //берутся из MaxVoltageOut1 и MaxVoltageOut2 соотвественно)
+                PrepareMaxCurrentIn = 0.5,
+                //процент погрешности измерения
+                PercentAccuracyCurrent = 10,
+                PercentAccuracyVoltages = 5,
+            };
+            //настройки для приборов они зависят от типа Випа
+            typeVip71.SetDeviceParameters(new DeviceParameters()
+            {
+                BigLoadValues = new BigLoadValues("200", "3.3", "1.65", "20", "1", "0"),
+                HeatValues = new HeatValues("1", "0"),
+                SupplyValues = new SupplyValues("3", "2", "1", "0"),
+                ThermoCurrentValues = new ThermoCurrentMeterValues("10", "k", "1", "0"),
+                VoltValues = new VoltMeterValues("100", "1", "0")
+            });
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().HeatValues);
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().SupplyValues);
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().ThermoCurrentValues);
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltValues);
+
+            deserializeTypeVips?.Add(typeVip70);
+            deserializeTypeVips?.Add(typeVip71);
+
+            SerializeTypeVip(cfgTypeVips.TypeVips.ToList());
+        }
+
+        return deserializeTypeVips;
+    }
+
+    public TimeMachine SetTime()
+    {
+        var t = serializer.DeserializeTime();
+        if (t == null)
+        {
+            t = new TimeMachine();
+            t.CountChecked = "3";
+            t.AllTimeChecked = "3000";
+            SerializeTime(t);
+        }
+
+        return t;
     }
 
     #endregion
@@ -419,26 +524,19 @@ class CreatorAllDevicesAndLib
         serializer.SerializeLib();
     }
 
+    public void SerializeTypeVip(List<TypeVip> typeVips)
+    {
+        serializer.SerializeTypeVips(typeVips);
+    }
+
 
     public void SerializeDevices(List<BaseDevice> devices)
     {
-        serializer.SerializeDevices(devices.ToList());
+        serializer.SerializeDevices(devices);
     }
 
-    public ObservableCollection<TypeVip> SetTypeVips()
+    public void SerializeTime(TimeMachine timeMachine)
     {
-        var deserializeType = serializer.DeserializeTypeVips();
-
-        if (deserializeType == null || !deserializeType.Any())
-        {
-            cfgVips.PrepareAddTypeVips();
-            serializer.SerializeTypeVips(cfgVips.TypeVips.ToList());
-        }
-        else
-        {
-            cfgVips.TypeVips = new ObservableCollection<TypeVip>(deserializeType);
-        }
-
-        return cfgVips.TypeVips;
+        serializer.SerializeTime(timeMachine);
     }
 }

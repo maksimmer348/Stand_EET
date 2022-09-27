@@ -76,13 +76,8 @@ public class RelayVip : BaseDevice
         Name = Name;
         NameCurrentCmd = nameCommand;
         CurrentParameter = parameter;
+        SetErrors();
 
-        AllDeviceError.ErrorReceive = true;
-        AllDeviceError.ErrorParam = !string.IsNullOrEmpty(parameter);
-        AllDeviceError.ErrorTerminator = !string.IsNullOrEmpty(CurrentCmd.Terminator.ReceiveTerminator);
-        AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
-        AllDeviceError.ErrorTimeout = true;
-        
         MainRelay.WriteCmdRelay(this, CurrentCmd, parameter);
     }
 

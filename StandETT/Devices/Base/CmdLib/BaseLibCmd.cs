@@ -8,6 +8,7 @@ namespace StandETT;
 public class BaseLibCmd
 {
     private static BaseLibCmd instance;
+    
     public List<Terminator> Terminators = new();
 
 
@@ -60,13 +61,15 @@ public class BaseLibCmd
     /// <param name="transmit">Команда котороую нужно передать в прибор</param>
     /// <param name="delay">Задержка между передачей команды и приемом ответа</param>
     /// <param name="receive">Ответ от прибора на команду</param>
+    /// <param name="isParam"></param>
     /// <param name="terminator">Терминатор отправляемой строки</param>
     /// <param name="receiveTerminator">Терминатор принимаемой строки</param>
     /// <param name="type">Тип ответа (по умолчанию текстовый)</param>
     /// <param name="isXor"></param>
+    /// <param name="length"></param>
     /// <param name="lengthCmdLib"></param>
     public void AddCommand(string nameCmd, string nameDevice, string transmit,
-        int delay, string receive = null, TypeTerminator terminator = TypeTerminator.None,
+        int delay, string receive = null, bool isParam = false, TypeTerminator terminator = TypeTerminator.None,
         TypeTerminator receiveTerminator = TypeTerminator.None, TypeCmd type = TypeCmd.Text,
         bool isXor = false, int length = 0)
     {
@@ -77,7 +80,7 @@ public class BaseLibCmd
         {
             lenghtStr = length.ToString();
         }
-
+        
         try
         {
             var tempIdentCmd = new DeviceIdentCmd
@@ -90,6 +93,7 @@ public class BaseLibCmd
                 Transmit = transmit,
                 Terminator = tTx,
                 Receive = receive,
+                IsParam = isParam,
                 ReceiveTerminator = tRx,
                 MessageType = type,
                 Delay = delay,

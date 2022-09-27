@@ -45,11 +45,13 @@ public class DeviceCmd
 
     public string Length { get; set; }
 
+    public bool IsParam { get; set; }
+
     protected bool Equals(DeviceCmd other)
     {
         return Transmit == other.Transmit && Equals(Terminator, other.Terminator) && Receive == other.Receive &&
                Equals(ReceiveTerminator, other.ReceiveTerminator) && MessageType == other.MessageType &&
-               Delay == other.Delay && IsXor == other.IsXor && Length == other.Length;
+               Delay == other.Delay && IsXor == other.IsXor && Length == other.Length && IsParam == other.IsParam;
     }
 
     public override bool Equals(object obj)
@@ -62,7 +64,17 @@ public class DeviceCmd
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(Transmit, Terminator, Receive, ReceiveTerminator, (int)MessageType, Delay, IsXor,
-            Length);
+        var hashCode = new HashCode();
+        hashCode.Add(Transmit);
+        hashCode.Add(Terminator);
+        hashCode.Add(Receive);
+        hashCode.Add(ReceiveTerminator);
+        hashCode.Add((int)MessageType);
+        hashCode.Add(Delay);
+        hashCode.Add(IsXor);
+        hashCode.Add(Length);
+        hashCode.Add(IsParam);
+        return hashCode.ToHashCode();
     }
+    
 }

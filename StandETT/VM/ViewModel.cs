@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using StandETT.SubCore;
 
 namespace StandETT;
 
@@ -26,6 +27,8 @@ public class ViewModel : Notify
 
     private BaseLibCmd libCmd = BaseLibCmd.getInstance();
 
+    private ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
+
     #endregion
 
     //--
@@ -36,6 +39,7 @@ public class ViewModel : Notify
     /// Общий список устройств
     /// </summary>
     public ReadOnlyObservableCollection<BaseDevice> AllDevices => stand.AllDevices;
+
 
     /// <summary>
     /// Внешние устройства
@@ -48,7 +52,10 @@ public class ViewModel : Notify
     public ReadOnlyObservableCollection<Vip> Vips => stand.Vips;
 
 
-    public ObservableCollection<TypeVip> AllTypeVips => stand.AllTypeVips;
+    /// <summary>
+    /// Список Випов
+    /// </summary>
+    public ObservableCollection<TypeVip> TypeVips => cfgTypeVips.TypeVips;
 
     #endregion
 
@@ -83,6 +90,15 @@ public class ViewModel : Notify
 
         #endregion
 
+        #region Настройка типов Випов
+
+        SaveTypeVipSettingsCmd = new ActionCommand(OnSaveTypeVipSettingsCmdExecuted, CanSaveTypeVipSettingsCmdExecuted);
+
+        RemoveTypeVipSettingsCmd =
+            new ActionCommand(OnRemoveTypeVipSettingsCmdExecuted, CanRemoveTypeVipSettingsCmdExecuted);
+
+        #endregion
+
         #endregion
 
 
@@ -94,6 +110,7 @@ public class ViewModel : Notify
 
         // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
     }
+
 
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -232,7 +249,25 @@ public class ViewModel : Notify
 
     async Task OnCancelAllTestCmdExecuted(object p)
     {
+        // try
+        // {
+        var aw = new ActionWindow();
+        aw.DataContext = this;
+        aw.ShowDialog();
         await stand.ResetAllTests();
+        // }
+
+        // catch (ResetErrorException e)
+        // {
+        //     const string caption = "Остановка тестов";
+        //
+        //     //MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
+        // }
+        // catch (Exception e)
+        // {
+        //     const string caption = "Остановка тестов";
+        //     //MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
+        // }
     }
 
     bool CanCancelAllTestCmdExecuted(object p)
@@ -251,16 +286,24 @@ public class ViewModel : Notify
         {
             try
             {
-                await stand.PrimaryCheckDevices(Convert.ToInt32(CountChecked));
+                await stand.PrimaryCheckDevices(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
             catch (Exception e)
             {
-                const string caption = "Ошибка предварительной проверки устройств";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки устройств?", caption,
-                    MessageBoxButton.YesNo);
+                string caption = "Ошибка предварительной проверки устройств";
+
+                var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
+                    MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+                if (result == MessageBoxResult.No)
+                {
+                    await stand.ResetAllTests();
+                    SelectTab = 0;
+                }
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    await stand.ResetAllTests();
                     SelectTab = 3;
                 }
             }
@@ -270,12 +313,12 @@ public class ViewModel : Notify
         {
             try
             {
-                await stand.PrimaryCheckVips();
+                await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки устройств?", caption,
+                var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo);
 
                 if (result == MessageBoxResult.Yes)
@@ -290,7 +333,7 @@ public class ViewModel : Notify
             try
             {
                 bool mesZero = await stand.MeasurementZero();
-                
+
                 // if (mesZero)
                 // {
                 //     var heat = await standTest.WaitForTestMode();
@@ -411,7 +454,12 @@ public class ViewModel : Notify
                     x.Key.NameDevice == selectDevice.Name);
             OnPropertyChanged(nameof(SelectedDeviceCmd));
 
+
+            stand.timeMachine.CountChecked = CountChecked;
+            stand.timeMachine.AllTimeChecked = AllTimeChecked;
+
             stand.SerializeDevice();
+            stand.SerializeTime();
         }
         catch (Exception e)
         {
@@ -439,8 +487,9 @@ public class ViewModel : Notify
             var index = IndexSelectCmd;
 
             libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, DelayCmdLib,
-                ReceiveCmdLib,
-                SelectTerminatorTransmit.Type, SelectTerminatorReceive.Type, TypeMessageCmdLib, IsXor, LengthCmdLib);
+                ReceiveCmdLib, IsTransmitParam,
+                terminator: SelectTerminatorTransmit.Type, receiveTerminator: SelectTerminatorReceive.Type,
+                type: TypeMessageCmdLib, isXor: IsXor, length: LengthCmdLib);
 
             //обновление датагрида
             selectedDeviceCmd.Source =
@@ -513,6 +562,115 @@ public class ViewModel : Notify
 
     #region Команды --Настройки Типа Випов --3 tab
 
+    /// <summary>
+    /// Команда ДОБАВИТЬ тип випа
+    /// </summary>
+    public ICommand SaveTypeVipSettingsCmd { get; }
+
+    Task OnSaveTypeVipSettingsCmdExecuted(object p)
+    {
+        var typeConfig = new TypeVip();
+
+        typeConfig.Type = TypeVipNameSettings;
+        typeConfig.PrepareMaxCurrentIn = Convert.ToDouble(PrepareMaxCurrentIn);
+        typeConfig.MaxCurrentIn = Convert.ToDouble(MaxCurrentIn);
+        typeConfig.PercentAccuracyCurrent = Convert.ToDouble(PercentAccuracyCurrent);
+        typeConfig.MaxVoltageOut1 = Convert.ToDouble(MaxVoltageOut1);
+        typeConfig.MaxVoltageOut2 = Convert.ToDouble(MaxVoltageOut2);
+        typeConfig.PercentAccuracyVoltages = Convert.ToDouble(PercentAccuracyVoltages);
+        typeConfig.VoltageOut2Using = voltageOuе2Using;
+        typeConfig.SetDeviceParameters(new DeviceParameters()
+        {
+            BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
+            HeatValues = new HeatValues(OutputOnHeat, OutputOffHeat),
+            SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, OutputOnSupply, OutputOffSupply),
+            ThermoCurrentValues =
+                new ThermoCurrentMeterValues(CurrentMeterCurrentMax, TermocoupleType, OutputOnThermoCurrent,
+                    OutputOffThermoCurrent),
+            VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
+        });
+
+        stand.AddTypeVips(typeConfig);
+
+        selectedTypeVips.Source = SelectTypeVipSettings?.Type;
+        OnPropertyChanged(nameof(SelectedTypeVips));
+
+        stand.SerializeTypeVips();
+        CurrentTypeVipSettings = cfgTypeVips.TypeVips.IndexOf(typeConfig);
+        return Task.CompletedTask;
+    }
+
+    bool CanSaveTypeVipSettingsCmdExecuted(object p)
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// Команда УДАЛИТЬ тип випа
+    /// </summary>
+    public ICommand RemoveTypeVipSettingsCmd { get; }
+
+    Task OnRemoveTypeVipSettingsCmdExecuted(object p)
+    {
+        var index = cfgTypeVips.TypeVips.IndexOf(SelectTypeVipSettings);
+
+        stand.RemoveTypeVips(SelectTypeVipSettings);
+        //AllTypeVips = standTest.ConfigVip.TypeVips;
+        stand.SerializeTypeVips();
+
+        if (index > 0)
+        {
+            CurrentTypeVipSettings = index - 1;
+        }
+        else
+        {
+            TypeVipNameSettings = null;
+            EnableTypeVipName = true;
+            PrepareMaxCurrentIn = null;
+            MaxCurrentIn = null;
+            PercentAccuracyCurrent = null;
+            MaxVoltageOut1 = null;
+            MaxVoltageOut2 = null;
+            PercentAccuracyVoltages = null;
+            voltageOuе2Using = false;
+
+            FreqLoad = null;
+            AmplLoad = null;
+            DcoLoad = null;
+            SquLoad = null;
+
+            OutputOnLoad = null;
+            OutputOffLoad = null;
+
+            OutputOnHeat = null;
+            OutputOffHeat = null;
+
+            VoltageSupply = null;
+            CurrentSupply = null;
+            OutputOnSupply = null;
+            OutputOffSupply = null;
+
+            CurrentMeterCurrentMax = null;
+            TermocoupleType = null;
+            OutputOnThermoCurrent = null;
+            OutputOffThermoCurrent = null;
+
+
+            VoltMeterVoltMax = null;
+            OutputOffVoltmeter = null;
+            OutputOnVoltMeter = null;
+
+            CurrentTypeVipSettings = 0;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    bool CanRemoveTypeVipSettingsCmdExecuted(object p)
+    {
+        return true;
+    }
+
     #endregion
 
     #endregion
@@ -524,6 +682,25 @@ public class ViewModel : Notify
     //--
 
     #region Поля --Общие
+
+    //--
+
+    #region Управление окнами
+
+    private string captionAction;
+
+    /// <summary>
+    ///
+    /// </summary>
+    public string CaptionAction
+    {
+        get => captionAction;
+        set => Set(ref captionAction, value);
+    }
+
+    public string ErrorOutput => stand.ErrorOutput;
+
+    #endregion
 
     //--
 
@@ -591,12 +768,17 @@ public class ViewModel : Notify
     {
         get
         {
-            if (stand.TestCurrentDevice is RelayVip)
+            if (stand.TestCurrentDevice != null)
             {
-                return stand.TestCurrentDevice?.IsDeviceType;
+                if (stand.TestCurrentDevice is RelayVip)
+                {
+                    return "Устройство: " + stand.TestCurrentDevice.IsDeviceType;
+                }
+
+                return "Устройство: " + stand.TestCurrentDevice.IsDeviceType + " " + stand.TestCurrentDevice.Name;
             }
 
-            return stand.TestCurrentDevice?.IsDeviceType + " " + stand.TestCurrentDevice?.Name;
+            return null;
         }
     }
 
@@ -610,16 +792,9 @@ public class ViewModel : Notify
         get => textCurrentTest;
         set => Set(ref textCurrentTest, value);
     }
-
-    private string textCountTimes;
-
-    public string TextCountTimes
-    {
-        get => textCountTimes;
-        set => Set(ref textCountTimes, value);
-    }
-
+    public string SubTestText => stand.SubTestText;
     public string CurrentCountChecked => stand.CurrentCountChecked;
+
     private string countTimes = "3";
 
     public string CountChecked
@@ -658,254 +833,253 @@ public class ViewModel : Notify
         get => testRun;
 
         //TODO Вернуть убранно чтобы разлоичить вкладки
-        set { testRun = value; }
-        //set
-        //{
-        //    if (!Set(ref testRun, value)) return;
-        //    //-
+        // set { testRun = value; }
+        set
+        {
+            if (!Set(ref testRun, value)) return;
+            //-
 
-        //    if (stand.TestRun == TypeOfTestRun.Stop)
-        //    {
-        //        TextCurrentTest = "Стенд остановлен";
+            if (stand.TestRun == TypeOfTestRun.Stop)
+            {
+                TextCurrentTest = "Стенд остановлен";
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsEnable();
-        //        //
-        //        CancelAllTestBtnEnabled = false;
-        //        PrimaryCheckDevicesTab = true;
-        //    }
+                //
+                AllTabsDisable();
+                AllBtnsEnable();
+                //
+                CancelAllTestBtnEnabled = false;
+                PrimaryCheckDevicesTab = true;
+            }
 
-        //    else if (stand.TestRun == TypeOfTestRun.Stoped)
-        //    {
-        //        TextCurrentTest = "Остановка тестов/испытаний";
+            else if (stand.TestRun == TypeOfTestRun.Stoped)
+            {
+                TextCurrentTest = "Все испытания и проверки были прерваны по команде, ожидайте отключения устройств";
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsDisable();
-        //        //
+                //
+                AllTabsDisable();
+                AllBtnsDisable();
+                //
 
-        //        PrimaryCheckDevicesTab = true;
-        //    }
+                PrimaryCheckDevicesTab = true;
+            }
 
-        //    else if (stand.TestRun == TypeOfTestRun.None)
-        //    {
-        //        TextCurrentTest = "";
+            //    else if (stand.TestRun == TypeOfTestRun.None)
+            //    {
+            //        TextCurrentTest = "";
 
-        //        //
-        //        AllTabsEnable();
-        //        AllBtnsEnable();
-        //        //
+            //        //
+            //        AllTabsEnable();
+            //        AllBtnsEnable();
+            //        //
 
-        //        CancelAllTestBtnEnabled = false;
-        //    }
+            //        CancelAllTestBtnEnabled = false;
+            //    }
 
-        //    //-
+            //    //-
 
-        //    else if (stand.TestRun == TypeOfTestRun.CheckPorts)
-        //    {
-        //        TextCurrentTest = " Проверка портов";
+            //    else if (stand.TestRun == TypeOfTestRun.CheckPorts)
+            //    {
+            //        TextCurrentTest = " Проверка портов";
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsDisable();
-        //        //
+            //        //
+            //        AllTabsDisable();
+            //        AllBtnsDisable();
+            //        //
 
-        //        CancelAllTestBtnEnabled = true;
-        //    }
+            //        CancelAllTestBtnEnabled = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.CheckPortsReady)
-        //    {
-        //        TextCurrentTest = "Проверка портов ОК";
+            //    else if (stand.TestRun == TypeOfTestRun.CheckPortsReady)
+            //    {
+            //        TextCurrentTest = "Проверка портов ОК";
 
-        //        //
-        //        AllTabsEnable();
-        //        AllBtnsEnable();
-        //        //
+            //        //
+            //        AllTabsEnable();
+            //        AllBtnsEnable();
+            //        //
 
-        //        CancelAllTestBtnEnabled = false;
-        //    }
+            //        CancelAllTestBtnEnabled = false;
+            //    }
 
-        //    //-
+            //    //-
 
-        //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmd)
-        //    {
-        //        TextCurrentTest = " Отправка на устройства";
+            //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmd)
+            //    {
+            //        TextCurrentTest = " Отправка на устройства";
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsDisable();
-        //        //
+            //        //
+            //        AllTabsDisable();
+            //        AllBtnsDisable();
+            //        //
 
-        //        CancelAllTestBtnEnabled = true;
-        //    }
+            //        CancelAllTestBtnEnabled = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmdReady)
-        //    {
-        //        TextCurrentTest = "Отправка на устройства ОК";
+            //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmdReady)
+            //    {
+            //        TextCurrentTest = "Отправка на устройства ОК";
 
-        //        //
-        //        AllTabsEnable();
-        //        AllBtnsEnable();
-        //        //
+            //        //
+            //        AllTabsEnable();
+            //        AllBtnsEnable();
+            //        //
 
-        //        CancelAllTestBtnEnabled = false;
-        //    }
+            //        CancelAllTestBtnEnabled = false;
+            //    }
 
-        //    //-
+            //    //-
 
-        //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
-        //    {
-        //        TextCurrentTest = " Предпроверка устройств";
-        //        TextCountTimes = "Попытка предпроверки:";
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
+            {
+                TextCurrentTest = $"Предпроверка устройств: ";
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsDisable();
-        //        //
+                // //
+                // AllTabsDisable();
+                // AllBtnsDisable();
+                // //
+                //
+                // CancelAllTestBtnEnabled = true;
+                // PrimaryCheckDevicesTab = true;
+            }
 
-        //        CancelAllTestBtnEnabled = true;
-        //        PrimaryCheckDevicesTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
+            //    {
+            //        TextCurrentTest = " Предпроверка устройств ОК";
+            //        TextCountTimes = "Всего попыток:";
 
-        //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
-        //    {
-        //        TextCurrentTest = " Предпроверка устройств ОК";
-        //        TextCountTimes = "Всего попыток:";
+            //        //
+            //        AllTabsDisable();
+            //        AllBtnsEnable();
+            //        //
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsEnable();
-        //        //
+            //        CancelAllTestBtnEnabled = false;
+            //        PrimaryCheckDevicesTab = true;
+            //        PrimaryCheckVipsTab = true;
+            //    }
 
-        //        CancelAllTestBtnEnabled = false;
-        //        PrimaryCheckDevicesTab = true;
-        //        PrimaryCheckVipsTab = true;
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
+            //    {
+            //        TextCurrentTest = " Предпроверка Випов";
+            //        TextCountTimes = "Попытка предпроверки Випов:";
 
-        //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
-        //    {
-        //        TextCurrentTest = " Предпроверка Випов";
-        //        TextCountTimes = "Попытка предпроверки Випов:";
+            //        //
+            //        AllTabsDisable();
+            //        AllBtnsDisable();
+            //        //
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsDisable();
-        //        //
+            //        CancelAllTestBtnEnabled = true;
+            //        PrimaryCheckVipsTab = true;
+            //    }
 
-        //        CancelAllTestBtnEnabled = true;
-        //        PrimaryCheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
+            //    {
+            //        TextCurrentTest = " Предпроверка Випов Ок";
+            //        TextCountTimes = "Всего попыток:";
 
-        //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
-        //    {
-        //        TextCurrentTest = " Предпроверка Випов Ок";
-        //        TextCountTimes = "Всего попыток:";
+            //        //
+            //        AllTabsDisable();
+            //        AllBtnsEnable();
+            //        //
+            //        CancelAllTestBtnEnabled = false;
+            //        PrimaryCheckDevicesTab = true;
+            //        CheckVipsTab = true;
+            //    }
 
-        //        //
-        //        AllTabsDisable();
-        //        AllBtnsEnable();
-        //        //
-        //        CancelAllTestBtnEnabled = false;
-        //        PrimaryCheckDevicesTab = true;
-        //        CheckVipsTab = true;
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.DeviceOperation)
+            //    {
+            //        TextCurrentTest = $" Включение устройства";
+            //        TextCountTimes = "Попытка включения:";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.DeviceOperation)
-        //    {
-        //        TextCurrentTest = $" Включение устройства";
-        //        TextCountTimes = "Попытка включения:";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.DeviceOperationReady)
+            //    {
+            //        TextCurrentTest = " Включение устройства Ок";
+            //        TextCountTimes = "Всего попыток:";
+            //        AllTabsEnable();
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.DeviceOperationReady)
-        //    {
-        //        TextCurrentTest = " Включение устройства Ок";
-        //        TextCountTimes = "Всего попыток:";
-        //        AllTabsEnable();
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
+            //    {
+            //        TextCurrentTest = " Нулевой замер";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
-        //    {
-        //        TextCurrentTest = " Нулевой замер";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
+            //    {
+            //        TextCurrentTest = " Нулевой замер ОК";
+            //        AllTabsEnable();
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
-        //    {
-        //        TextCurrentTest = " Нулевой замер ОК";
-        //        AllTabsEnable();
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZero)
+            //    {
+            //        TextCurrentTest = " Ожидание источника питания";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZero)
-        //    {
-        //        TextCurrentTest = " Ожидание источника питания";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZeroReady)
+            //    {
+            //        TextCurrentTest = " Ожидание источника питания ОК";
+            //        AllTabsEnable();
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZeroReady)
-        //    {
-        //        TextCurrentTest = " Ожидание источника питания ОК";
-        //        AllTabsEnable();
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlate)
+            //    {
+            //        TextCurrentTest = " Нагрев основания";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlate)
-        //    {
-        //        TextCurrentTest = " Нагрев основания";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlateReady)
+            //    {
+            //        TextCurrentTest = " Нагрев основания ОК";
+            //        AllTabsEnable();
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlateReady)
-        //    {
-        //        TextCurrentTest = " Нагрев основания ОК";
-        //        AllTabsEnable();
-        //    }
+            //    //-
 
-        //    //-
+            //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
+            //    {
+            //        TextCurrentTest = " Циклический замер";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
-        //    {
-        //        TextCurrentTest = " Циклический замер";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.CycleWait)
+            //    {
+            //        TextCurrentTest = " Ожидание замер";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.CycleWait)
-        //    {
-        //        TextCurrentTest = " Ожидание замер";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurementReady)
+            //    {
+            //        TextCurrentTest = " Циклический замеы закончены";
+            //        AllTabsDisable();
+            //        CheckVipsTab = true;
+            //    }
 
-        //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurementReady)
-        //    {
-        //        TextCurrentTest = " Циклический замеы закончены";
-        //        AllTabsDisable();
-        //        CheckVipsTab = true;
-        //    }
+            //-
 
-        //    //-
-
-        //    else if (stand.TestRun == TypeOfTestRun.Error)
-        //    {
-        //        TextCurrentTest = " Ошибка!";
-        //        AllTabsEnable();
-        //    }
-        //}
+            else if (stand.TestRun == TypeOfTestRun.Error)
+            {
+                stand.SubTestText = string.Empty;
+                AllTabsEnable();
+            }
+        }
     }
 
     #endregion
@@ -1029,6 +1203,10 @@ public class ViewModel : Notify
                 OnPropertyChanged(nameof(SelectedDeviceCmd));
                 OnPropertyChanged(nameof(IndexTerminatorReceive));
                 OnPropertyChanged(nameof(IndexTerminatorTransmit));
+
+
+                CountChecked = stand.timeMachine.CountChecked;
+                AllTimeChecked = stand.timeMachine.AllTimeChecked;
             }
             catch (Exception e)
             {
@@ -1220,6 +1398,22 @@ public class ViewModel : Notify
         set => Set(ref receiveCmdLib, value);
     }
 
+    private bool isTransmitParam;
+
+    public bool IsTransmitParam
+    {
+        get => isTransmitParam;
+        set => Set(ref isTransmitParam, value);
+    }
+
+    private bool isReceiveParam;
+
+    public bool IsReceiveParam
+    {
+        get => isReceiveParam;
+        set => Set(ref isReceiveParam, value);
+    }
+
     private Terminator selectTerminatorReceive;
 
     public Terminator SelectTerminatorReceive
@@ -1301,15 +1495,26 @@ public class ViewModel : Notify
             DelayCmdLib = SelectedCmdLib.Value.Delay;
             LengthCmdLib = Convert.ToInt32(SelectedCmdLib.Value.Length);
 
-            if (TypeMessageCmdLib == TypeCmd.Hex)
+            //
+            if (selectedCmdLib.Key.NameCmd.ToLower().Contains("set"))
             {
-                XorIsHex = true;
+                IsTransmitParam = true;
+                IsReceiveParam = false;
+            }
+            else if (selectedCmdLib.Key.NameCmd.ToLower().Contains("get"))
+            {
+                IsTransmitParam = false;
+                IsReceiveParam = true;
+            }
+            else
+            {
+                IsTransmitParam = false;
+                IsReceiveParam = false;
             }
 
-            if (TypeMessageCmdLib == TypeCmd.Text)
-            {
-                XorIsHex = false;
-            }
+            //
+            XorIsHex = TypeMessageCmdLib == TypeCmd.Hex;
+            //
 
             OnPropertyChanged(nameof(SelectedCmdLib));
             OnPropertyChanged(nameof(IndexTerminatorTransmit));
@@ -1382,6 +1587,7 @@ public class ViewModel : Notify
                 OutputOffSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.OutputOff;
 
                 CurrentMeterCurrentMax = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.CurrMaxLimit;
+                TermocoupleType = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.TermocoupleType;
                 OutputOnThermoCurrent = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.OutputOn;
                 OutputOffThermoCurrent = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.OutputOff;
 
@@ -1668,6 +1874,18 @@ public class ViewModel : Notify
     {
         get => currentMeterCurrentMax;
         set => Set(ref currentMeterCurrentMax, value);
+    }
+
+
+    private string termocoupleType;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string TermocoupleType
+    {
+        get => termocoupleType;
+        set => Set(ref termocoupleType, value);
     }
 
     private string outputOnVoltmerer;

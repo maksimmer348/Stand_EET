@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Media;
 using Newtonsoft.Json;
+using RJCP.IO.Ports;
 
 namespace StandETT;
 
@@ -37,6 +38,7 @@ public class BaseDevice : Notify
     }
 
     private string prefix;
+
     public string Prefix
     {
         get => prefix;
@@ -76,13 +78,22 @@ public class BaseDevice : Notify
         set => Set(ref currentParameter, value);
     }
 
+    private string currentParameterGet;
+
+    [JsonIgnore]
+    public string CurrentParameterGet
+    {
+        get => currentParameterGet;
+        set => Set(ref currentParameterGet, value);
+    }
+
     #endregion
 
     //---
 
     #region --Статусы устройства
 
-    [JsonIgnore] public AllDeviceError AllDeviceError = new AllDeviceError();
+    [JsonIgnore] public AllDeviceError AllDeviceError = new();
 
     [JsonIgnore] private StatusDeviceTest statusTest;
 
@@ -425,6 +436,19 @@ public class BaseDevice : Notify
 
     #region отправка в устройство команд
 
+    protected void SetErrors()
+    {
+        //
+        AllDeviceError.ErrorReceive = !string.IsNullOrEmpty(CurrentCmd.Receive);
+        AllDeviceError.ErrorParam = !string.IsNullOrEmpty(CurrentParameter);
+        AllDeviceError.ErrorTerminator = !string.IsNullOrEmpty(CurrentCmd.Terminator.ReceiveTerminator) &&
+                                         !string.IsNullOrEmpty(CurrentCmd.Receive);
+        AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
+        AllDeviceError.ErrorTimeout =
+            !string.IsNullOrEmpty(CurrentCmd.Receive) || !string.IsNullOrEmpty(CurrentParameterGet);
+        //
+    }
+
     /// <summary>
     /// Отправка в устройство (есть в библиотеке команд) команд из устройства
     /// </summary>
@@ -437,13 +461,7 @@ public class BaseDevice : Notify
 
         CurrentCmd = GetLibItem(nameCommand, Name);
 
-        //
-        AllDeviceError.ErrorReceive = true;
-        AllDeviceError.ErrorParam = !string.IsNullOrEmpty(parameter);
-        AllDeviceError.ErrorTerminator = !string.IsNullOrEmpty(CurrentCmd.Terminator.ReceiveTerminator);
-        AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
-        AllDeviceError.ErrorTimeout = true;
-        //
+        SetErrors();
 
         if (CurrentCmd == null)
         {
@@ -489,15 +507,14 @@ public class BaseDevice : Notify
     /// <returns>Команда из библиотеки</returns>
     public DeviceCmd GetLibItem(string cmd, string deviceName)
     {
-        try
+        var result = LibCmd.DeviceCommands
+            .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Key.NameCmd == cmd).Value;
+        if (result == null)
         {
-            return LibCmd.DeviceCommands
-                .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Key.NameCmd == cmd).Value;
+            throw new Exception($"Команда {cmd} для устройства {deviceName} не найдена");
         }
-        catch (Exception e)
-        {
-            throw new Exception($"Exception: команда {cmd} или устройство не найдены {e.Message}");
-        }
+
+        return result;
     }
 
     //TODO вернуть

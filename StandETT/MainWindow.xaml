@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StandETT"
         mc:Ignorable="d"
-        Title="Стенд ЕТТ" MinHeight="710" MinWidth="1200" Height="710" Width="1000">
+        Title="Стенд ЕТТ" MinHeight="720" MinWidth="1200" Height="710" Width="1000">
     <Window.DataContext>
         <local:ViewModel />
     </Window.DataContext>
@@ -17,15 +17,34 @@
 
         <Style x:Key="GridSetCmdLib" TargetType="Grid">
             <Style.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="HorizontalAlignment" Value="Left" />
+                    <Setter Property="MinHeight" Value="20" />
+                    <Setter Property="MinWidth" Value="20" />
+                </Style>
                 <Style TargetType="StackPanel">
                     <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="HorizontalAlignment" Value="Center" />
                     <Style.Resources>
-                        <Style TargetType="Button">
+                        <Style TargetType="TextBox">
                             <Setter Property="VerticalAlignment" Value="Center" />
                             <Setter Property="HorizontalAlignment" Value="Center" />
-                            <Setter Property="Margin" Value="10, 5,0,0"></Setter>
+                            <Setter Property="MinWidth" Value="140"></Setter>
+                            <Setter Property="MinHeight" Value="20"></Setter>
                         </Style>
+                        <Style TargetType="ComboBox">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="MinWidth" Value="140"></Setter>
+                            <Setter Property="MinHeight" Value="22"></Setter>
+                        </Style>
+
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Margin" Value="0,0,0,4"></Setter>
+
+                        </Style>
+
                     </Style.Resources>
                 </Style>
             </Style.Resources>
@@ -40,32 +59,35 @@
                     <Setter Property="VerticalAlignment" Value="Stretch" />
                     <Setter Property="HorizontalAlignment" Value="Stretch" />
                     <Style.Resources>
-
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Margin" Value="10, 5,0,0" />
-                            <Setter Property="MinWidth" Value="100" />
-                            <Setter Property="HorizontalAlignment" Value="Left" />
-                        </Style>
-
-                        <Style TargetType="TextBox">
-                            <Setter Property="Margin" Value="10, 5,10,0" />
-
-                            <Setter Property="HorizontalAlignment" Value="Stretch" />
-                            <Setter Property="MinWidth" Value="100" />
-                        </Style>
-
-                        <Style TargetType="ComboBox">
-                            <Setter Property="Margin" Value="10, 5,10,0" />
-                            <Setter Property="MinWidth" Value="100" />
-                            <Setter Property="SelectedIndex" Value="0" />
-                        </Style>
-                        <Style TargetType="CheckBox">
-                            <Setter Property="Margin" Value="10, 5,0,0" />
-                        </Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Margin" Value="10, 5,10,0" />
-                        </Style>
                     </Style.Resources>
+                </Style>
+
+                <Style TargetType="TextBlock">
+                    <Setter Property="Margin" Value="10, 5,0,0" />
+                    <Setter Property="MinWidth" Value="100" />
+                    <Setter Property="HorizontalAlignment" Value="Left" />
+                </Style>
+
+                <Style TargetType="TextBox">
+                    <Setter Property="Margin" Value="10, 5,10,0" />
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    <Setter Property="MinWidth" Value="100" />
+                    <Setter Property="MinHeight" Value="20" />
+
+                </Style>
+
+                <Style TargetType="ComboBox">
+                    <Setter Property="Margin" Value="10, 5,10,0" />
+                    <Setter Property="MinWidth" Value="100" />
+                    <Setter Property="Height" Value="22" />
+                    <Setter Property="SelectedIndex" Value="0" />
+                </Style>
+                <Style TargetType="CheckBox">
+                    <Setter Property="Margin" Value="10, 5,0,0" />
+                </Style>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="10, 5,10,0" />
+                    <Setter Property="MinHeight" Value="20" />
                 </Style>
             </Style.Resources>
         </Style>
@@ -79,13 +101,14 @@
                         <Style TargetType="TextBlock">
                             <Setter Property="Margin" Value="10, 5,0,0" />
                             <Setter Property="MinWidth" Value="50" />
+                            <Setter Property="FontSize" Value="14" />
                             <Setter Property="HorizontalAlignment" Value="Left" />
                         </Style>
 
                         <Style TargetType="TextBox">
                             <Setter Property="Margin" Value="10, 5,10,0" />
-
                             <Setter Property="HorizontalAlignment" Value="Stretch" />
+                            <Setter Property="FontSize" Value="14" />
                             <Setter Property="MinWidth" Value="50" />
                         </Style>
                     </Style.Resources>
@@ -105,7 +128,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
-            <RowDefinition Height="0.2*"></RowDefinition>
+            <RowDefinition Height="0.18*"></RowDefinition>
         </Grid.RowDefinitions>
 
         <!--///-->
@@ -117,7 +140,7 @@
             <TabItem IsEnabled="{Binding PrimaryCheckDevicesTab}" Header="Подключение устройств">
 
 
-                <Grid Background="LightGray" ShowGridLines="True">
+                <Grid Background="LightGray" >
 
                     <!--Устройства грид-->
 
@@ -125,10 +148,8 @@
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid ShowGridLines="True">
+                                <Grid ShowGridLines="True" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                     <Grid.RowDefinitions>
-                                        <RowDefinition />
-                                        <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
@@ -188,7 +209,7 @@
             <!--Подключение ВИПЫ таб-->
             <TabItem IsEnabled="{Binding PrimaryCheckVipsTab}" Header="Подключние ВИПов">
 
-                <Grid ShowGridLines="True">
+                <Grid ShowGridLines="True" Style="{StaticResource GridSettingsTypeVipDevices}">
 
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.2*"></RowDefinition>
@@ -198,7 +219,7 @@
                     <DockPanel Grid.Row="0" Grid.ColumnSpan="3" MinWidth="300" VerticalAlignment="Center"
                                HorizontalAlignment="Stretch">
                         <ComboBox Margin="7" DockPanel.Dock="Left" MinHeight="10" MinWidth="200"
-                                  HorizontalAlignment="Stretch" ItemsSource="{Binding AllTypeVips}"
+                                  HorizontalAlignment="Stretch" ItemsSource="{Binding TypeVips}"
                                   SelectedItem="{Binding SelectTypeVip, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedIndex="{Binding SelectTypeVipIndex}">
                             <ComboBox.ItemTemplate>
@@ -254,7 +275,7 @@
                                     <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                TextWrapping="Wrap" DataContext="{Binding Path=Relay}"
                                                Text="{Binding ErrorStatus, UpdateSourceTrigger=PropertyChanged}" />
-                                    <TextBox DockPanel.Dock="Left" Margin="2" MinHeight="20" MinWidth="150"
+                                    <TextBox DockPanel.Dock="Left" Margin="2"  MinWidth="200"
                                              HorizontalAlignment="Center" VerticalAlignment="Center"
                                              Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -283,17 +304,65 @@
 
                     <Grid ShowGridLines="True">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="4*"></ColumnDefinition>
                             <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
+
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="1">
 
-                            <Button MinHeight="10" MinWidth="80"
-                                    Content="Создать отчет"
-                                    Command="{Binding CreateReportCmd}" Width="94" />
+                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Devices}" Grid.IsSharedSizeScope="True">
 
-                        </StackPanel>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Grid ShowGridLines="True" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                    </Grid>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemContainerStyle>
+                                <Style>
+                                    <d:Style.DataContext>
+                                        <x:Type Type="local:BaseDevice" />
+                                    </d:Style.DataContext>
+                                    <Setter Property="Grid.Row" Value="{Binding RowIndex}" />
+                                    <Setter Property="Grid.Column" Value="{Binding ColumnIndex}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition Height="2*"/>
+                                        </Grid.RowDefinitions>
+                                        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center" >
+                                            <Ellipse MinHeight="20" MinWidth="20"  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Fill="{Binding OnOffColor}" Margin="10,0"/>
+                                            <Rectangle MinHeight="20" MinWidth="20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Fill="{Binding StatusColor}" Margin="10,0"/>
+                                        </DockPanel>
+
+                                        <TextBlock Grid.Row="1" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                                  TextWrapping="Wrap" Text="{Binding IsDeviceType}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" />
 
                         <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <TextBlock HorizontalAlignment="Center"> Начало испытаний 25.07.01/ 12:07:10</TextBlock>
@@ -301,13 +370,15 @@
                             <TextBlock HorizontalAlignment="Center">
                                 До конца испытаний 10:00:4
                             </TextBlock>
-
+                            <Button MinHeight="10" MinWidth="80"
+                                    Content="Создать отчет"
+                                    Command="{Binding CreateReportCmd}" Width="94" />
                         </StackPanel>
 
                     </Grid>
 
                     <ItemsControl Grid.Row="1"
-                                  ItemsSource="{Binding AllPrepareVips}" Grid.IsSharedSizeScope="True">
+                                  ItemsSource="{Binding Vips}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Grid ShowGridLines="True">
@@ -342,7 +413,7 @@
 
                                 <Button Grid.Row="1" Grid.Column="0">
 
-                                    <DockPanel Margin="5" IsEnabled="{Binding IsTested}">
+                                    <DockPanel Margin="5" IsEnabled="{Binding IsTested, NotifyOnSourceUpdated=True}">
                                         <Ellipse Margin="10" DockPanel.Dock="Left" MinHeight="20" MinWidth="20"
                                                  Fill="{Binding Relay.OnOffColor}"
                                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -398,6 +469,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.15*" />
                             <RowDefinition />
+                            <RowDefinition  Height="0.30*" />
                         </Grid.RowDefinitions>
 
                         <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -418,7 +490,6 @@
                             </StackPanel>
                         </StackPanel>
 
-
                         <StackPanel Grid.Row="1">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -429,6 +500,8 @@
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="0.5*"/>
                                 </Grid.ColumnDefinitions>
+
+
 
                                 <TextBlock Text="Имя Устройства" />
                                 <TextBox Grid.Row="1" Grid.Column="0"
@@ -443,7 +516,7 @@
                             <TextBox Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged}" />
 
                             <TextBlock Text="Бауд компорта" />
-                            <TextBox Text="{Binding Baud}" />
+                            <TextBox Text="{Binding Baud}"/>
 
                             <TextBlock Text="Стоповый бит компорта" />
                             <TextBox Text="{Binding StopBits}" />
@@ -451,24 +524,29 @@
                             <TextBlock Text="Дата бит компорта" />
                             <TextBox Text="{Binding DataBits}" />
 
+                            <TextBlock Text="DTR" />
+                            <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
+
+                            <TextBlock Text="" />
+                            <Button Command="{Binding SaveSettingsCmd}" DockPanel.Dock="Right"
+                                    Content="Сохранить устройство" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2">
                             <TextBlock Text="Время на перепроверку (мс)" />
                             <TextBox Text="{Binding AllTimeChecked  }" />
 
                             <TextBlock Text="Количество перепроверок (раз)" />
                             <TextBox Text="{Binding CountChecked}" />
-                            <TextBlock Text="DTR" />
-                            <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
-
-                            <Button Command="{Binding SaveSettingsCmd}" DockPanel.Dock="Right"
-                                    Content="Сохранить устройства" />
                         </StackPanel>
+
                     </Grid>
 
-                    <Grid Grid.Column="2">
+                    <Grid Grid.Column="2" Margin="0,0,0,5">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="2.6*"></RowDefinition>
-                            <RowDefinition Height="0.6*"></RowDefinition>
-                            <RowDefinition Height="0.13*"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="0.20*"></RowDefinition>
                         </Grid.RowDefinitions>
 
                         <DataGrid Grid.Row="0" DockPanel.Dock="Top" IsReadOnly="True"
@@ -482,15 +560,15 @@
                                   VerticalGridLinesBrush="Blue"
                                   AlternatingRowBackground="LightBlue">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Имя" Binding="{Binding Key.NameCmd}" Width="*"/>
+                                <DataGridTextColumn Header="Имя" Binding="{Binding Key.NameCmd}" Width="Auto"/>
                                 <DataGridTextColumn Header="Передача (TX)" Binding="{Binding Value.Transmit}" Width="*"/>
-                                <DataGridTextColumn Header="Xor" Binding="{Binding Value.IsXor}" Width="*"/>
-                                <DataGridTextColumn Header="Разделитель(TX)" Binding="{Binding Value.Terminator.Name}" Width="*"/>
-                                <DataGridTextColumn Header="Прием (RX)" Binding="{Binding Value.Receive}" Width="*"/>
-                                <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.ReceiveTerminator.Name}" Width="*"/>
-                                <DataGridTextColumn Header="Тип сообщения (TX,RX)" Binding="{Binding Value.MessageType}" Width="*"/>
-                                <DataGridTextColumn Header="Задержка мс" Binding="{Binding Value.Delay}" Width="*" />
-                                <DataGridTextColumn Header="Длина" Binding="{Binding Value.Length}" Width="*" />
+                                <DataGridTextColumn Header="Xor" Binding="{Binding Value.IsXor}" Width="Auto"/>
+                                <DataGridTextColumn Header="Разделитель(TX)" Binding="{Binding Value.Terminator.Name}" Width="Auto"/>
+                                <DataGridTextColumn Header="Прием (RX)" Binding="{Binding Value.Receive}" Width="Auto"/>
+                                <DataGridTextColumn Header="Разделитель (RX)" Binding="{Binding Value.ReceiveTerminator.Name}" Width="Auto"/>
+                                <DataGridTextColumn Header="Тип сообщения (TX,RX)" Binding="{Binding Value.MessageType}" Width="Auto"/>
+                                <DataGridTextColumn Header="Задержка мс" Binding="{Binding Value.Delay}" Width="Auto" />
+                                <DataGridTextColumn Header="Длина" Binding="{Binding Value.Length}"  Width="Auto" />
                             </DataGrid.Columns>
                         </DataGrid>
 
@@ -506,39 +584,41 @@
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
                                 <ColumnDefinition></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition ></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
                             <StackPanel>
                                 <TextBlock Text="Имя" />
-                                <TextBox Text="{Binding NameCmdLib}" MinWidth="100" />
+                                <TextBox Text="{Binding NameCmdLib}"/>
                             </StackPanel>
 
                             <Grid Grid.Row="0" Grid.Column="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition></ColumnDefinition>
-                                    <ColumnDefinition Width="0.4*"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
 
-                                <StackPanel>
+                                <StackPanel >
                                     <TextBlock Text="Передача (TX)" />
-                                    <TextBox Text="{Binding TransmitCmdLib}" MinWidth="90" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Margin="0,0,0,2" Text="Xor (TX)" />
-                                    <CheckBox IsEnabled="{Binding XorIsHex}" IsChecked="{Binding IsXor}"
-                                              DockPanel.Dock="Right" HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
+                                    <TextBox  Text="{Binding TransmitCmdLib}" />
                                 </StackPanel>
 
+                                <StackPanel MinWidth="50" HorizontalAlignment="Right"  VerticalAlignment="Bottom" Margin="0,11,0,0">
+
+                                    <TextBlock Margin="0" Text="Xor" HorizontalAlignment="Center" />
+                                    <CheckBox  Margin="0,0,0,5"  IsEnabled="{Binding XorIsHex}" IsChecked="{Binding IsXor}" HorizontalAlignment="Stretch" Width="15" Height="15">
+                                    </CheckBox>
+                                </StackPanel>
+
+                                <StackPanel MinWidth="50" HorizontalAlignment="Right"  VerticalAlignment="Top">
+                                    <TextBlock  Margin="0,5,0,0"  Text="Парам." HorizontalAlignment="Center" />
+                                    <CheckBox  Margin="0" IsEnabled="False" IsChecked="{Binding IsTransmitParam}"
+                                               HorizontalAlignment="Stretch" Width="15" Height="15">
+                                    </CheckBox>
+                                </StackPanel>
 
                             </Grid>
                             <StackPanel Grid.Row="0" Grid.Column="2">
                                 <TextBlock VerticalAlignment="Center" Text="Разделитель (TX)" />
                                 <ComboBox
                                     ItemsSource="{Binding Terminators}"
-                                    SelectedItem="{Binding SelectTerminatorTransmit}" SelectedIndex="{Binding IndexTerminatorTransmit}"
-                                    MinWidth="100">
+                                    SelectedItem="{Binding SelectTerminatorTransmit}" SelectedIndex="{Binding IndexTerminatorTransmit}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -548,17 +628,29 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="3">
-                                <TextBlock Text="Прием (RX)" />
-                                <TextBox Text="{Binding ReceiveCmdLib}" MinWidth="100" />
-                            </StackPanel>
+
+                            <Grid  Grid.Row="0" Grid.Column="3">
+
+                                <StackPanel >
+                                    <TextBlock Text="Прием (RX)" />
+                                    <TextBox Text="{Binding ReceiveCmdLib}" />
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Right" Margin="0, 0,5,0" >
+                                    <TextBlock  Text="Парам." />
+                                    <CheckBox Margin="0"  IsEnabled="False"  IsChecked="{Binding IsReceiveParam}"
+                                               DockPanel.Dock="Right" HorizontalAlignment="Stretch" Width="15" Height="15">
+                                    </CheckBox>
+                                </StackPanel>
+
+                            </Grid>
+
+
                             <StackPanel Grid.Row="1" Grid.Column="0">
                                 <TextBlock VerticalAlignment="Center" Text="Разделитель (RX)" />
-                                <ComboBox
+                                <ComboBox MinHeight="20"
                                     ItemsSource="{Binding Terminators}"
                                     SelectedItem="{Binding SelectTerminatorReceive}"
-                                    SelectedIndex="{Binding IndexTerminatorReceive}"
-                                    MinWidth="100">
+                                    SelectedIndex="{Binding IndexTerminatorReceive}" >
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -570,28 +662,25 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock VerticalAlignment="Center" Text="Тип сообщения(RX,TX)" />
-                                <TextBox Margin="5,0,5,0" Text="{Binding TypeMessageCmdLib}" MinWidth="100" />
+                                <TextBox  Text="{Binding TypeMessageCmdLib}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="2">
                                 <TextBlock VerticalAlignment="Center" Text="Задержка мс" />
-                                <TextBox Text="{Binding DelayCmdLib}" MinWidth="100" />
+                                <TextBox Text="{Binding DelayCmdLib}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="3">
                                 <TextBlock VerticalAlignment="Center" Text="Длина" />
-                                <TextBox Text="{Binding LengthCmdLib}" MinWidth="100" />
+                                <TextBox Text="{Binding LengthCmdLib}" />
                             </StackPanel>
 
                         </Grid>
 
                         <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-
-                            <Button Content="Создать" Margin="10,0,5,0" Command="{Binding AddCmdFromDeviceCmd}" />
-                            <Button Grid.Column="1" Content="Удалить" Margin="5,0,10,0"
-                                    Command="{Binding RemoveCmdFromDeviceCmd}" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Button MinWidth="218"  MinHeight="22" Content="Создать"  Command="{Binding AddCmdFromDeviceCmd}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <Button MinWidth="218"  MinHeight="22" Content="Удалить"
+                                        Command="{Binding RemoveCmdFromDeviceCmd}" HorizontalAlignment="Center" VerticalAlignment="Center"  />
+                            </StackPanel>
                         </Grid>
                     </Grid>
 
@@ -604,7 +693,7 @@
             <!--//-->
 
             <!--Настройки типов Випов таб-->
-            <TabItem Header="Настройка типов Випов">
+            <TabItem Header="Настройка Випов/Параметров">
 
                 <!--Настройки типов Випов грид-->
                 <Grid Style="{StaticResource GridSettingsTypeVip}" ShowGridLines="True" Background="#FFE5E5E5">
@@ -626,7 +715,7 @@
 
                         <StackPanel Grid.Row="0" DockPanel.Dock="Left">
                             <TextBlock>Выбор Типа Випов</TextBlock>
-                            <ComboBox ItemsSource="{Binding AllTypeVips, UpdateSourceTrigger=PropertyChanged}"
+                            <ComboBox ItemsSource="{Binding TypeVips, UpdateSourceTrigger=PropertyChanged}"
                                       SelectedItem="{Binding SelectTypeVipSettings, UpdateSourceTrigger=PropertyChanged}"
                                       SelectedIndex="{Binding CurrentTypeVipSettings}">
                                 <ComboBox.ItemTemplate>
@@ -672,6 +761,7 @@
                             <TextBlock Text="Интервалы замеров" />
                             <TextBox Text="{Binding TestIntervalTime}" />
 
+
                             <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
                             <Button Command="{Binding RemoveTypeVipSettingsCmd}" Content="Удалить" />
                         </StackPanel>
@@ -690,7 +780,7 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <Grid Grid.Row="0" Style="{StaticResource GridSettingsTypeVipDevices}">
+                        <Grid Grid.Row="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="0.5*" />
                                 <RowDefinition />
@@ -708,33 +798,33 @@
 
                             <StackPanel Grid.Row="1" Grid.Column="0">
 
-                                <TextBlock Text="Freq" />
+                                <TextBlock Text="Частота (Freq)" />
                                 <TextBox Text="{Binding FreqLoad}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
-                                <TextBlock Text="Ampl" />
+                                <TextBlock Text="Амплитуда (Ampl)" />
                                 <TextBox Text="{Binding AmplLoad }" />
                             </StackPanel>
                             <StackPanel Grid.Row="2">
-                                <TextBlock Text="Dco" />
+                                <TextBlock Text="DC компенсация (Dco)" />
                                 <TextBox Text="{Binding DcoLoad}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1">
-                                <TextBlock Text="Squ" />
+                                <TextBlock Text="Меандр (Squ)" />
                                 <TextBox Text="{Binding SquLoad}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3">
-                                <TextBlock Text="On" />
+                                <TextBlock Text="Выход вкл. (Output On)" />
                                 <TextBox Text="{Binding OutputOnLoad}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="1">
-                                <TextBlock Text="Off" />
+                                <TextBlock Text="Выход выкл. (Output Off)" />
                                 <TextBox Text="{Binding OutputOffLoad}" />
                             </StackPanel>
 
                         </Grid>
 
-                        <Grid Style="{StaticResource GridSettingsTypeVipDevices}" Grid.Row="0" Grid.Column="1">
+                        <Grid Grid.Row="0" Grid.Column="1">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="0.5*" />
                                 <RowDefinition />
@@ -749,26 +839,26 @@
                                 <TextBlock HorizontalAlignment="Center" Text="БП" TextAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
-                                <TextBlock Text="Напряжение" />
+                                <TextBlock Text="Напряжение (Volt)" />
                                 <TextBox Text="{Binding VoltageSupply}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
-                                <TextBlock Text="Ток" />
+                                <TextBlock Text="Ток (Curr)" />
                                 <TextBox Text="{Binding CurrentSupply }" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock Text="On" />
+                                <TextBlock Text="Выход вкл. (Output On)" />
                                 <TextBox Text="{Binding OutputOnSupply}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1">
-                                <TextBlock Text="Off" />
+                                <TextBlock Text="Выход выкл. (Output Off)" />
                                 <TextBox Text="{Binding OutputOffSupply}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="0"></StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="1"></StackPanel>
                         </Grid>
 
-                        <Grid Style="{StaticResource GridSettingsTypeVipDevices}" Grid.Row="0" Grid.Column="3">
+                        <Grid Grid.Row="0" Grid.Column="3">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="0.5*" />
                                 <RowDefinition />
@@ -784,13 +874,16 @@
                                            TextAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
-                                <TextBlock Text="Max Ток" />
+                                <TextBlock Text="Ток (Сurr)" />
                                 <TextBox Text="{Binding CurrentMeterCurrentMax}" />
                             </StackPanel>
-
+                            <StackPanel Grid.Row="1" Grid.Column="1">
+                                <TextBlock Text="Тип терпомары" />
+                                <TextBox Text="{Binding TermocoupleType}" />
+                            </StackPanel>
                         </Grid>
 
-                        <Grid Style="{StaticResource GridSettingsTypeVipDevices}" Grid.Row="1" Grid.Column="0">
+                        <Grid  Grid.Row="1" Grid.Column="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="0.5*" />
                                 <RowDefinition />
@@ -805,7 +898,7 @@
                                 <TextBlock HorizontalAlignment="Center" Text="Вольтметр" TextAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
-                                <TextBlock Text="Max напряжение" />
+                                <TextBlock Text="Напряжение (Volt)" />
                                 <TextBox Text="{Binding VoltMeterVoltMax}" />
                             </StackPanel>
                         </Grid>
@@ -825,9 +918,9 @@
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid ShowGridLines="True">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.8*"></ColumnDefinition>
+                    <ColumnDefinition Width="0.6*"></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
-                    <ColumnDefinition Width="2.5*"></ColumnDefinition>
+                    <ColumnDefinition Width="1*"></ColumnDefinition>
 
                 </Grid.ColumnDefinitions>
 
@@ -845,8 +938,12 @@
 
                 <StackPanel Grid.Column="1" HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                    <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding TextCurrentTest}" />
+                    <DockPanel>
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Text="{Binding TextCurrentTest}" />
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Text="{Binding SubTestText}" />
+                    </DockPanel>
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center" Text="{Binding TestCurrentDevice}" />
                     <TextBlock HorizontalAlignment="Center"

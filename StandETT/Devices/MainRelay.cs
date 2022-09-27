@@ -44,14 +44,14 @@ public class MainRelay : BaseDevice
             relay.ErrorStatus = string.Empty;
         }
     }
-
+     // ErrorStatus = string.Empty;
+        // foreach (var relay in Relays)
+        // {
+        //     relay.ErrorStatus = error;
+        // }
     private void Relay_Error(BaseDevice device, string error)
     {
-        ErrorStatus = string.Empty;
-        foreach (var relay in Relays)
-        {
-            relay.ErrorStatus = error;
-        }
+   
     }
 
     private void Receive_Relay(BaseDevice device, string receive, DeviceCmd cmd)

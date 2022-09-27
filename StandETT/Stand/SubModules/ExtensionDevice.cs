@@ -6,7 +6,7 @@ namespace StandETT;
 
 public static class ExtensionDevice
 {
-    public static T GetTypeDevice<T>(this ReadOnlyObservableCollection<BaseDevice> baseDevices) where T : BaseDevice
+    public static T GetTypeDevice<T>(this ObservableCollection<BaseDevice> baseDevices) where T : BaseDevice
     {
         return (T)baseDevices.FirstOrDefault(x => x is T);
     }

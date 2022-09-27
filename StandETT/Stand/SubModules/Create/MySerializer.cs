@@ -120,6 +120,40 @@ public class MySerializer
         }
         catch (Exception e)
         {
+            return new List<TypeVip>();
+        }
+    }
+
+    public void SerializeTime(TimeMachine time)
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(time, Formatting.Indented, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+            File.WriteAllText(@"Times.json", json.ToString());
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Сериализация времени код ошибки {e}");
+        }
+    }
+
+    public TimeMachine DeserializeTime()
+    {
+        try
+        {
+            var json =
+                JsonConvert.DeserializeObject<TimeMachine>(
+                    File.ReadAllText(@"Times.json"), new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto
+                    });
+            return json;
+        }
+        catch (Exception e)
+        {
             return null;
         }
     }
