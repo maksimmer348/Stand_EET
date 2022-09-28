@@ -27,7 +27,7 @@ public class MainRelay : BaseDevice
         return instance;
     }
 
-    [JsonIgnore] public List<BaseDevice> Relays = new();
+    [JsonIgnore] public ObservableCollection<RelayVip> Relays = new();
 
     public MainRelay(string name) : base(name)
     {
@@ -42,16 +42,17 @@ public class MainRelay : BaseDevice
         foreach (var relay in Relays)
         {
             relay.ErrorStatus = string.Empty;
+            relay.PortIsOpen = true;
         }
     }
-     // ErrorStatus = string.Empty;
-        // foreach (var relay in Relays)
-        // {
-        //     relay.ErrorStatus = error;
-        // }
     private void Relay_Error(BaseDevice device, string error)
     {
-   
+        foreach (var vip in Relays)
+        {
+            vip.ErrorStatus =
+                $"Ошибка уcтройства \"{device.Name}\"/сбой порта {device.GetConfigDevice().PortName}";
+            vip.StatusTest = StatusDeviceTest.Error;
+        }
     }
 
     private void Receive_Relay(BaseDevice device, string receive, DeviceCmd cmd)

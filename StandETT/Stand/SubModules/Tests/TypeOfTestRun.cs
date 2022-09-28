@@ -31,5 +31,6 @@ public enum TypeOfTestRun
     CyclicMeasurementReady,
     CycleWait,
     Error,
-
+    OutputDevice,
+    OutputDeviceReady
 }

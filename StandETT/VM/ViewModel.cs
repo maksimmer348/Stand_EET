@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using StandETT.SubCore;
 
@@ -71,7 +72,7 @@ public class ViewModel : Notify
     {
         stand.PropertyChanged += StandTestOnPropertyChanged;
 
-        #region --Команды --cmd
+        #region --Команды --cmds
 
         #region Общие
 
@@ -79,6 +80,7 @@ public class ViewModel : Notify
         DeviceConfigCmd = new ActionCommand(OnDeviceConfigCmdExecuted, CanDeviceConfigCmdExecuted);
         CancelAllTestCmd = new ActionCommand(OnCancelAllTestCmdExecuted, CanCancelAllTestCmdExecuted);
         NextCmd = new ActionCommand(OnNextCmdExecuted, CanNextCmdExecuted);
+        CloseActionWindowCmd = new ActionCommand(OnCloseActionWindowCmdExecuted, CanCloseActionWindowCmdExecuted);
 
         #endregion
 
@@ -101,16 +103,32 @@ public class ViewModel : Notify
 
         #endregion
 
+        stand.OpenActionWindow += OpenActionWindow;
 
         //TODO убрать
         AllBtnsEnable();
         AllTabsEnable();
-        SelectTab = 2;
+        SelectTab = 0;
         //TODO убрать
 
         // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
     }
 
+    private void OpenActionWindow(bool obj)
+    {
+        if (obj)
+        {
+            aw = new ActionWindow()
+            {
+                DataContext = this
+            };
+            aw.Show();
+            aw.Closed += AwOnClosed;
+            WindowDisabled = false;
+        }
+    }
+
+    private ActionWindow aw;
 
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -249,25 +267,12 @@ public class ViewModel : Notify
 
     async Task OnCancelAllTestCmdExecuted(object p)
     {
-        // try
-        // {
-        var aw = new ActionWindow();
-        aw.DataContext = this;
-        aw.ShowDialog();
         await stand.ResetAllTests();
-        // }
+    }
 
-        // catch (ResetErrorException e)
-        // {
-        //     const string caption = "Остановка тестов";
-        //
-        //     //MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
-        // }
-        // catch (Exception e)
-        // {
-        //     const string caption = "Остановка тестов";
-        //     //MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
-        // }
+    private void AwOnClosed(object sender, EventArgs e)
+    {
+        WindowDisabled = true;
     }
 
     bool CanCancelAllTestCmdExecuted(object p)
@@ -318,11 +323,18 @@ public class ViewModel : Notify
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
+                
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo);
 
+                if (result == MessageBoxResult.No)
+                {
+                    await stand.ResetAllTests();
+                    SelectTab = 0;
+                }
                 if (result == MessageBoxResult.Yes)
                 {
+                    await stand.ResetAllTests();
                     SelectTab = 3;
                 }
             }
@@ -396,6 +408,20 @@ public class ViewModel : Notify
         //     _ => true
         // };
 
+        return true;
+    }
+
+
+    public ICommand CloseActionWindowCmd { get; }
+
+    Task OnCloseActionWindowCmdExecuted(object p)
+    {
+        aw.Close();
+        return Task.CompletedTask;
+    }
+
+    bool CanCloseActionWindowCmdExecuted(object p)
+    {
         return true;
     }
 
@@ -687,6 +713,14 @@ public class ViewModel : Notify
 
     #region Управление окнами
 
+    private bool windowDisabled = true;
+
+    public bool WindowDisabled
+    {
+        get => windowDisabled;
+        set => Set(ref windowDisabled, value);
+    }
+
     private string captionAction;
 
     /// <summary>
@@ -697,6 +731,8 @@ public class ViewModel : Notify
         get => captionAction;
         set => Set(ref captionAction, value);
     }
+
+    public string ErrorMessage => stand.ErrorMessage;
 
     public string ErrorOutput => stand.ErrorOutput;
 
@@ -762,6 +798,12 @@ public class ViewModel : Notify
     public double PercentCurrentTest => stand.PercentCurrentTest;
 
     /// <summary>
+    /// Уведомляет сколько процентов текущего теста прошло
+    /// </summary>
+    public double PercentCurrentReset => stand.PercentCurrentReset;
+
+    
+    /// <summary>
     /// Уведомляет текстом какое устройство проходит тест
     /// </summary>
     public string TestCurrentDevice
@@ -792,6 +834,7 @@ public class ViewModel : Notify
         get => textCurrentTest;
         set => Set(ref textCurrentTest, value);
     }
+
     public string SubTestText => stand.SubTestText;
     public string CurrentCountChecked => stand.CurrentCountChecked;
 
@@ -843,24 +886,23 @@ public class ViewModel : Notify
             {
                 TextCurrentTest = "Стенд остановлен";
 
-                //
-                AllTabsDisable();
-                AllBtnsEnable();
-                //
-                CancelAllTestBtnEnabled = false;
-                PrimaryCheckDevicesTab = true;
+                // //
+                // AllTabsDisable();
+                // AllBtnsEnable();
+                // //
+                // CancelAllTestBtnEnabled = false;
+                // PrimaryCheckDevicesTab = true;
             }
 
             else if (stand.TestRun == TypeOfTestRun.Stoped)
             {
-                TextCurrentTest = "Все испытания и проверки были прерваны по команде, ожидайте отключения устройств";
+                TextCurrentTest = "Тесты прерваны, отключение устройств... ";
 
-                //
-                AllTabsDisable();
-                AllBtnsDisable();
-                //
-
-                PrimaryCheckDevicesTab = true;
+                // //
+                // AllTabsDisable();
+                // AllBtnsDisable();
+                // //
+                // PrimaryCheckDevicesTab = true;
             }
 
             //    else if (stand.TestRun == TypeOfTestRun.None)
@@ -959,19 +1001,17 @@ public class ViewModel : Notify
 
             //    //-
 
-            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
-            //    {
-            //        TextCurrentTest = " Предпроверка Випов";
-            //        TextCountTimes = "Попытка предпроверки Випов:";
-
-            //        //
-            //        AllTabsDisable();
-            //        AllBtnsDisable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = true;
-            //        PrimaryCheckVipsTab = true;
-            //    }
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
+            {
+                TextCurrentTest = "Предпроверка Випов: ";
+                // //
+                // AllTabsDisable();
+                // AllBtnsDisable();
+                // //
+                //
+                // CancelAllTestBtnEnabled = true;
+                // PrimaryCheckVipsTab = true;
+            }
 
             //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
             //    {
@@ -1054,7 +1094,7 @@ public class ViewModel : Notify
             //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
             //    {
             //        TextCurrentTest = " Циклический замер";
-            //        AllTabsDisable();
+            //        Al_lTabsDisable();
             //        CheckVipsTab = true;
             //    }
 
@@ -1076,6 +1116,8 @@ public class ViewModel : Notify
 
             else if (stand.TestRun == TypeOfTestRun.Error)
             {
+                TextCurrentTest = "Ошибка стенда";
+                stand.CurrentCountChecked = string.Empty;
                 stand.SubTestText = string.Empty;
                 AllTabsEnable();
             }
@@ -1532,6 +1574,8 @@ public class ViewModel : Notify
 
     public Brush ProgressColor => stand.ProgressColor;
 
+    public Brush ProgressResetColor => stand.ProgressResetColor;
+    
     #endregion
 
     //--

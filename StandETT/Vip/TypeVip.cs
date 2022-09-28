@@ -124,6 +124,7 @@ public class DeviceParameters
     public SupplyValues SupplyValues { get; set; }
     public ThermoCurrentMeterValues ThermoCurrentValues { get; set; }
     public VoltMeterValues VoltValues { get; set; }
+  //  public BaseDeviceValues SmallLoadValues { get; set; }
 }
 
 public class BaseDeviceValues

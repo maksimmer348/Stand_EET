@@ -34,7 +34,7 @@ class CreatorAllDevicesAndLib
 
     ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
 
-    BaseDevice mainRelayVip = MainRelay.getInstance();
+    MainRelay mainRelayVip = MainRelay.getInstance();
 
     TimeMachine timeMachine = TimeMachine.getInstance();
 
@@ -173,71 +173,72 @@ class CreatorAllDevicesAndLib
         return temp;
     }
 
-    public List<Vip> SetVips(List<BaseDevice> relays)
+    public List<Vip> SetVips(List<RelayVip> relays)
     {
         List<Vip> temp = new List<Vip>();
 
-
-        temp.Add(new Vip(0, (RelayVip)relays[0])
+        temp.Add(new Vip(0, relays[0])
         {
             RowIndex = 0,
             ColumnIndex = 0,
         });
-        temp.Add(new Vip(1, (RelayVip)relays[1])
+        temp.Add(new Vip(1, relays[1])
         {
             RowIndex = 0,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(2, (RelayVip)relays[2])
+        temp.Add(new Vip(2, relays[2])
         {
             RowIndex = 0,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(3, (RelayVip)relays[3])
+        temp.Add(new Vip(3, relays[3])
         {
             RowIndex = 0,
             ColumnIndex = 3
         });
-        temp.Add(new Vip(4, (RelayVip)relays[4])
+        temp.Add(new Vip(4, relays[4])
         {
             RowIndex = 1,
             ColumnIndex = 0
         });
-        temp.Add(new Vip(5, (RelayVip)relays[5])
+        temp.Add(new Vip(5, relays[5])
         {
             RowIndex = 1,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(6, (RelayVip)relays[6])
+        temp.Add(new Vip(6, relays[6])
         {
             RowIndex = 1,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(7, (RelayVip)relays[7])
+        temp.Add(new Vip(7, relays[7])
         {
             RowIndex = 1,
             ColumnIndex = 3
         });
-        temp.Add(new Vip(8, (RelayVip)relays[8])
+        temp.Add(new Vip(8, relays[8])
         {
             RowIndex = 2,
             ColumnIndex = 0
         });
-        temp.Add(new Vip(9, (RelayVip)relays[9])
+        temp.Add(new Vip(9, relays[9])
         {
             RowIndex = 2,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(10, (RelayVip)relays[10])
+        temp.Add(new Vip(10, relays[10])
         {
             RowIndex = 2,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(11, (RelayVip)relays[11])
+        temp.Add(new Vip(11, relays[11])
         {
             RowIndex = 2,
             ColumnIndex = 3
         });
+
+        mainRelayVip.Relays = new(relays);
         return temp;
     }
 

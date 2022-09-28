@@ -38,25 +38,31 @@ public class Stand1 : Notify
 
     #region --Устройства стенда
 
+    //--
+
     private readonly ObservableCollection<BaseDevice> allDevices = new();
     public readonly ReadOnlyObservableCollection<BaseDevice> AllDevices;
 
+    //--
+
     private readonly ObservableCollection<BaseDevice> devices = new();
     public readonly ReadOnlyObservableCollection<BaseDevice> Devices;
-
     private BaseDevice currentDevice;
     private readonly List<BaseDevice> currentDevices = new();
 
-    BaseDevice mainRelay = MainRelay.getInstance();
-
-    ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
+    //--
 
     public TimeMachine timeMachine = TimeMachine.getInstance();
 
+    //--
+    MainRelay mainRelay = MainRelay.getInstance();
+    ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
 
     private readonly ObservableCollection<Vip> vips = new();
     public readonly ReadOnlyObservableCollection<Vip> Vips;
-    private ObservableCollection<BaseDevice> allRelayVips = new();
+
+    private ObservableCollection<RelayVip> allRelayVips = new();
+    //--
 
     #endregion
 
@@ -70,6 +76,14 @@ public class Stand1 : Notify
     {
         get => progressColor;
         set => Set(ref progressColor, value);
+    }
+
+    private Brush progressResetColor;
+
+    public Brush ProgressResetColor
+    {
+        get => progressResetColor;
+        set => Set(ref progressResetColor, value);
     }
 
     public TypeOfTestRun runTest;
@@ -117,6 +131,14 @@ public class Stand1 : Notify
         set => Set(ref percentCurrentTest, value);
     }
 
+    private double percentCurrentReset;
+
+    public double PercentCurrentReset
+    {
+        get => percentCurrentReset;
+        set => Set(ref percentCurrentReset, value);
+    }
+
     private string currentCountChecked;
 
     public string CurrentCountChecked
@@ -145,6 +167,11 @@ public class Stand1 : Notify
     /// Событие приема данных с устройства
     /// </summary>
     public Action<BaseDevice, string> Receive;
+
+    /// <summary>
+    /// Событие приема данных с устройства
+    /// </summary>
+    public Action<bool> OpenActionWindow;
 
     #endregion
 
@@ -179,7 +206,14 @@ public class Stand1 : Notify
         devices = new(allDevices.Where(d => d is not MainRelay && d is not RelayVip));
         Devices = new(devices);
         //-
-        allRelayVips = new(createAllDevices.Where(x => x is RelayVip));
+        foreach (var device in createAllDevices)
+        {
+            if (device is RelayVip r)
+            {
+                allRelayVips.Add(r);
+            }
+        }
+
         vips = new(creatorAllDevicesAndLib.SetVips(allRelayVips.ToList()));
         Vips = new(vips);
 
@@ -287,6 +321,14 @@ public class Stand1 : Notify
         set => Set(ref errorOutput, value);
     }
 
+    private string errorMessage;
+
+    public string ErrorMessage
+    {
+        get => errorMessage;
+        set => Set(ref errorMessage, value);
+    }
+
     private double percentStopedTest;
 
     /// <summary>
@@ -299,7 +341,7 @@ public class Stand1 : Notify
     }
 
 
-    //--stop--reset--allreset
+    //--stop--resetall--allreset
     //Остановка всех тестов
     public async Task ResetAllTests()
     {
@@ -307,59 +349,68 @@ public class Stand1 : Notify
         ctsAllCancel.Cancel();
         ctsConnectDevice.Cancel();
         ctsReceiveDevice.Cancel();
-
         TestRun = TypeOfTestRun.Stoped;
+        //OpenActionWindow?.Invoke(true);
 
         await Task.Delay(TimeSpan.FromMilliseconds(200));
 
         ctsAllCancel = new CancellationTokenSource();
         ctsConnectDevice = new CancellationTokenSource();
         ctsReceiveDevice = new CancellationTokenSource();
+
         resetAll = false;
 
         TempChecks t = TempChecks.Start();
+        PercentCurrentReset = 0;
+        ProgressResetColor = Brushes.Green;
+        ErrorMessage = string.Empty;
+        ErrorOutput = string.Empty;
 
-        PercentCurrentTest = 0;
         foreach (var device in devices)
         {
-            var resultOutput = await OutputDevice(device, t: t, on: false);
-
+            var resultOutput = await OutputDevice(device, 1, t: t, on: false);
             if (!resultOutput.outputResult)
             {
-                ErrorOutput +=
-                    $"{resultOutput.outputDevice.IsDeviceType} {device.Name} не был выключен ошибка {device.ErrorStatus}";
+                ErrorMessage = "Осторожно! Следующие выходы устройств не были отключены, тк устройствам нет доступа";
+                ErrorOutput += $"{device.ErrorStatus}.\n";
+                ProgressResetColor = Brushes.Red;
             }
-            else
-            {
-                ErrorOutput +=
-                    $"{resultOutput.outputDevice.IsDeviceType} {device.Name} был выключен ";
+            PercentCurrentReset += Math.Round((1 / (float)devices.Count) * 100);
+        }
 
-                PercentCurrentTest = ((1 / (float)allDevices.Count) * 100);
-            }
+        // if (relayVipsTested.Any())
+        // {
+        //     foreach (var relay in relayVipsTested)
+        //     {
+        //         await OutputDevice(relay, t: t, on: false);
+        //         if (t.IsOk) PercentCurrentReset += Math.Round((1 / (float)devices.Count) * (100 - devices.Count));
+        //     }
+        // }
+        
+        if (t.IsOk)
+        {
+            ProgressResetColor = Brushes.Green;
+            ErrorMessage = "Все выходы устройств были благополучно отключены";
         }
 
         //
         TestRun = TypeOfTestRun.Stop;
-        PercentCurrentTest = 0;
+        PercentCurrentReset = 100;
         CurrentCountChecked = string.Empty;
-        ProgressColor = Brushes.Green;
-        TestCurrentDevice = null; //new BaseDevice("");
+        TestCurrentDevice = null;
+        SubTestText = string.Empty;
         //
-        // if (ErrorOutput != null)
-        // {
-        //     throw new ResetErrorException($"{errorOutput}");
-        // }
     }
 
-    //--приборы--проверка--check--
+    //--приборы--проверка--check--devices--primary
     public async Task<bool> PrimaryCheckDevices(int countChecked = 3, int loopDelay = 3000)
     {
         //
         TestRun = TypeOfTestRun.PrimaryCheckDevices;
         //
-
         TempChecks t = TempChecks.Start();
         await CheckConnectPorts(devices.ToList(), t: t);
+
         if (t.IsOk)
         {
             t = TempChecks.Start();
@@ -370,7 +421,7 @@ public class Stand1 : Notify
                 //
                 TestRun = TypeOfTestRun.PrimaryCheckDevicesReady;
                 PercentCurrentTest = 100;
-                TestCurrentDevice = null; //new BaseDevice("");
+                TestCurrentDevice = null;
                 //
                 return true;
             }
@@ -380,7 +431,7 @@ public class Stand1 : Notify
         TestRun = TypeOfTestRun.Error;
         PercentCurrentTest = 100;
         ProgressColor = Brushes.Red;
-        TestCurrentDevice = null; //new BaseDevice("");
+        TestCurrentDevice = null;
         if (!resetAll)
         {
             throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой. ");
@@ -390,7 +441,8 @@ public class Stand1 : Notify
         return false;
     }
 
-    private List<Vip> vipsTested = new();
+    private ObservableCollection<Vip> vipsTested = new();
+    private ObservableCollection<RelayVip> relayVipsTested = new();
 
     //--випы--vips--relay--check--проверка--
     public async Task<bool> PrimaryCheckVips(int countChecked = 3, int loopDelay = 3000)
@@ -407,18 +459,24 @@ public class Stand1 : Notify
         }
         //
 
-        TempChecks t = TempChecks.Start();
         //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
         vipsTested = GetIsTestedVips();
+        mainRelay.Relays.Clear();
+        foreach (var vip in vipsTested)
+        {
+            relayVipsTested.Add(vip.Relay);
+        }
 
+        mainRelay.Relays = relayVipsTested;
+
+        TempChecks t = TempChecks.Start();
         await CheckConnectPort(mainRelay, t: t);
-
         if (t.IsOk)
         {
             t = TempChecks.Start();
-            foreach (var vip in vipsTested)
+            foreach (var relay in relayVipsTested)
             {
-                await WriteIdentCommand(vip.Relay, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
+                await WriteIdentCommand(relay, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
             }
 
             if (t.IsOk)
@@ -433,11 +491,10 @@ public class Stand1 : Notify
         TestRun = TypeOfTestRun.Error;
         PercentCurrentTest = 100;
         ProgressColor = Brushes.Red;
-        TestCurrentDevice = null; //new BaseDevice("");
-        //
+        TestCurrentDevice = null;
         if (!resetAll)
         {
-            throw new Exception("Одно или несколько випов не ответили или ответили\nс ошибкой. ");
+            throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой. ");
         }
 
         return false;
@@ -447,6 +504,7 @@ public class Stand1 : Notify
 
     private bool externalCount = false;
 
+    //--params--chechkparams--value--
     private async Task<Dictionary<BaseDevice, List<string>>> SetCheckValueInDevice(BaseDevice device, string setCmd,
         string param, int countChecked = 3,
         int loopDelay = 200, TempChecks t = null,
@@ -503,15 +561,32 @@ public class Stand1 : Notify
         var getParamVoltMeter = GetParameterForDevice().VoltValues;
         var getParamThermoCurrentMeter = GetParameterForDevice().ThermoCurrentValues;
 
-        currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
+        // currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
         TempChecks t = TempChecks.Start();
         s.Start();
 
         // await SetCheckValueInDevice(currentDevice, "Set curr meter", getParamThermoCurrentMeter.CurrMaxLimit,
         //     countChecked, loopDelay, t, "Get func", "Get curr meter");
 
-        currentDevice = devices.GetTypeDevice<Supply>();
-        await OutputDevice(currentDevice);
+        // await SetCheckValueInDevice(currentDevice, "Set curr meter", getParamThermoCurrentMeter.CurrMaxLimit,
+        //     countChecked, loopDelay, t, "Get func", "Get curr meter");
+        //var ss = await WriteIdentCommand(relayVipsTested[0], "Off", t: t);
+        // currentDevice = devices.GetTypeDevice<Supply>();
+
+        foreach (var relay in relayVipsTested)
+        {
+            if (!resetAll)
+            {
+                await OutputDevice(relay, t: t);
+            }
+        }
+        // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t, on: false);
+        // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t);
+        //if (t.IsOk) await OutputDevice(relayVipsTested[3], t: t);
+
+
+        //await OutputDevice(relayVipsTested[0]);
+
         //
         // currentDevice = devices.GetTypeDevice<BigLoad>();
         // await OutputDevice(currentDevice);
@@ -570,7 +645,7 @@ public class Stand1 : Notify
         TestRun = TypeOfTestRun.Error;
         PercentCurrentTest = 100;
         ProgressColor = Brushes.Red;
-        TestCurrentDevice = null; //new BaseDevice("");
+        TestCurrentDevice = null;
         //
         if (!resetAll)
         {
@@ -581,7 +656,7 @@ public class Stand1 : Notify
     }
 
 
-    private List<Vip> GetIsTestedVips()
+    private ObservableCollection<Vip> GetIsTestedVips()
     {
         foreach (var vip in vips)
         {
@@ -598,7 +673,7 @@ public class Stand1 : Notify
         }
 
         var testedVips = vips.Where(x => x.IsTested);
-        return testedVips.ToList();
+        return new ObservableCollection<Vip>(testedVips);
     }
 
     #endregion
@@ -633,9 +708,9 @@ public class Stand1 : Notify
         currentConnectDevices = new() { device };
 
         //
-        SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}";
         if (!externalStatus)
         {
+            SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}";
             PercentCurrentTest = 0;
             TestRun = TypeOfTestRun.CheckPorts;
             ProgressColor = Brushes.RoyalBlue;
@@ -672,7 +747,12 @@ public class Stand1 : Notify
                     }
                 }
 
-                PercentCurrentTest = 50;
+                //
+                if (!externalStatus)
+                {
+                    PercentCurrentTest = 50;
+                }
+                //
 
                 device.StatusTest = StatusDeviceTest.None;
                 device.ErrorStatus = string.Empty;
@@ -692,9 +772,9 @@ public class Stand1 : Notify
                 }
 
                 //
-                SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ок!";
                 if (!externalStatus)
                 {
+                    SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ок!";
                     PercentCurrentTest = 100;
                     TestRun = TypeOfTestRun.CheckPortsReady;
                     CurrentCountChecked = string.Empty;
@@ -710,9 +790,9 @@ public class Stand1 : Notify
             await Task.Delay(TimeSpan.FromMilliseconds(80), ctsAllCancel.Token);
 
             //
-            SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ошибка!";
             if (!externalStatus)
             {
+                SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ошибка!";
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
@@ -733,9 +813,9 @@ public class Stand1 : Notify
         catch (Exception e)
         {
             //
-            SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ошибка!";
             if (!externalStatus)
             {
+                SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}, ошибка!";
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
@@ -743,6 +823,13 @@ public class Stand1 : Notify
             }
             //
 
+            if (resetAll)
+            {
+                t?.Add(false);
+                return false;
+            }
+
+            t?.Add(false);
             throw new Exception(e.Message);
         }
     }
@@ -769,15 +856,14 @@ public class Stand1 : Notify
         currentConnectDevices = devices;
         var verifiedDevices = new Dictionary<BaseDevice, bool>();
 
-        SubTestText = $"проверка портов";
+        //
         if (!externalStatus)
         {
-            //
+            SubTestText = $"проверка портов";
             TestRun = TypeOfTestRun.CheckPorts;
             ProgressColor = Brushes.RoyalBlue;
-            //
         }
-
+        //
 
         try
         {
@@ -802,7 +888,6 @@ public class Stand1 : Notify
                     {
                         device.StatusTest = StatusDeviceTest.None;
                         device.ErrorStatus = string.Empty;
-
                         device.Close();
                     }
 
@@ -810,16 +895,17 @@ public class Stand1 : Notify
 
                     foreach (var device in devices)
                     {
+                        TestCurrentDevice = device;
+
                         device.Start();
                         await Task.Delay(TimeSpan.FromMilliseconds(20), ctsAllCancel.Token);
                         device.DtrEnable();
 
                         //
-                        SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}";
                         if (!externalStatus)
                         {
+                            SubTestText = $"проверка порта - {device.GetConfigDevice().PortName}";
                             var precent = ((1 / (float)devices.Count) * 100);
-
                             if (precent > 100)
                             {
                                 precent = 100;
@@ -836,7 +922,6 @@ public class Stand1 : Notify
                 catch (TaskCanceledException e)
                 {
                     ctsConnectDevice = new CancellationTokenSource();
-
                     //если тесты остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
                     {
@@ -853,20 +938,20 @@ public class Stand1 : Notify
                 foreach (var checkDevice in checkDevices)
                 {
                     checkDevice.Key.StatusTest = StatusDeviceTest.None;
-
                     t?.Add(true);
                     verifiedDevices.Remove(checkDevice.Key);
                 }
 
                 if (verifiedDevices.Any())
                 {
+                    TestCurrentDevice = verifiedDevices.Keys.First();
                     continue;
                 }
 
                 //
-                SubTestText = $"проверка портов, ок!";
                 if (!externalStatus)
                 {
+                    SubTestText = $"проверка портов, ок!";
                     TestRun = TypeOfTestRun.CheckPortsReady;
                     CurrentCountChecked = string.Empty;
                     TestCurrentDevice = null; //new("");
@@ -885,17 +970,17 @@ public class Stand1 : Notify
 
             await Task.Delay(TimeSpan.FromMilliseconds(80), ctsAllCancel.Token);
 
-            SubTestText = $"проверка портов, ошибка!";
+            //
             if (!externalStatus)
             {
-                //
+                SubTestText = $"проверка портов, ошибка!";
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
                 TestCurrentDevice = null; //new("");
-                //
             }
 
+            //
             return false;
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
@@ -906,17 +991,24 @@ public class Stand1 : Notify
         }
         catch (Exception e)
         {
-            SubTestText = $"проверка портов, ошибка!";
+            //
             if (!externalStatus)
             {
-                //
+                SubTestText = $"проверка портов, ошибка!";
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
                 TestCurrentDevice = null; //new("");
-                //
+            }
+            //
+
+            if (resetAll)
+            {
+                t?.Add(false);
+                return false;
             }
 
+            t?.Add(false);
             throw new Exception(e.Message);
         }
     }
@@ -969,9 +1061,9 @@ public class Stand1 : Notify
         }
 
         //
-        SubTestText = $"запись команды в устройство";
         if (!externalStatus)
         {
+            SubTestText = $"запись команды в устройство";
             PercentCurrentTest = 0;
             TestRun = TypeOfTestRun.WriteDevicesCmd;
             ProgressColor = Brushes.Green;
@@ -997,15 +1089,34 @@ public class Stand1 : Notify
                     device.StatusTest = StatusDeviceTest.None;
                     device.ErrorStatus = string.Empty;
 
+
                     if (!device.PortIsOpen)
                     {
-                        SubTestText = $"запись команды в устройство, ошибка - порт закрыт, переподключение...";
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"порт закрыт, переподключение...";
+                        }
+                        //
+
                         if (!await CheckConnectPort(device, 3, externalStatus: true))
                         {
+                            //
+                            if (!externalStatus)
+                            {
+                                SubTestText = $"порт не открыт, ошибка!";
+                                PercentCurrentTest = 100;
+                                TestCurrentDevice = device;
+                                TestRun = TypeOfTestRun.Error;
+                                ProgressColor = Brushes.Red;
+                            }
+                            //
+
                             t?.Add(false);
                             return deviceReceived;
                         }
                     }
+
 
                     //установка гет парамтра
                     device.CurrentParameterGet = paramGet;
@@ -1034,7 +1145,11 @@ public class Stand1 : Notify
                         ctsReceiveDevice.Token);
                     if (t == null)
                     {
-                        SubTestText = $"запись команды в устройство, ок!";
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"запись команды в устройство, ок!";
+                        }
+
                         return new KeyValuePair<BaseDevice, string>();
                     }
                 }
@@ -1062,9 +1177,9 @@ public class Stand1 : Notify
                     verifiedDevice.Key.StatusTest = StatusDeviceTest.Ok;
 
                     //
-                    SubTestText = $"запись команды в устройство, ок!";
                     if (!externalStatus)
                     {
+                        SubTestText = $"запись команды в устройство, ок!";
                         PercentCurrentTest = 100;
                         TestRun = TypeOfTestRun.WriteDevicesCmdReady;
                         CurrentCountChecked = string.Empty;
@@ -1109,9 +1224,10 @@ public class Stand1 : Notify
             }
 
             //
-            SubTestText = $"запись команды в устройство, ошибка!";
+
             if (!externalStatus)
             {
+                SubTestText = $"запись команды в устройство, ошибка!";
                 PercentCurrentTest = 100;
                 TestCurrentDevice = device;
                 TestRun = TypeOfTestRun.Error;
@@ -1132,15 +1248,21 @@ public class Stand1 : Notify
         catch (Exception e)
         {
             //
-            SubTestText = $"запись команды в устройство, ошибка!";
             if (!externalStatus)
             {
+                SubTestText = $"запись команды в устройство, ошибка!";
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
-                TestCurrentDevice = new("");
+                TestCurrentDevice = null;
             }
             //
+
+            if (resetAll)
+            {
+                t?.Add(false);
+                return deviceReceived;
+            }
 
             throw new Exception(e.Message);
         }
@@ -1174,6 +1296,7 @@ public class Stand1 : Notify
         }
 
         CurrentWriteDevices = devices;
+
         var verifiedDevices = new Dictionary<BaseDevice, bool>();
         var tempDevices = devices;
         var checkDevices = new List<KeyValuePair<BaseDevice, bool>>();
@@ -1186,9 +1309,9 @@ public class Stand1 : Notify
         RemoveReceives(devices);
 
         //
-        SubTestText = $"запись команд в устройства";
         if (!externalStatus)
         {
+            SubTestText = $"запись команд в устройства";
             PercentCurrentTest = 0;
             TestRun = TypeOfTestRun.WriteDevicesCmd;
             ProgressColor = Brushes.Green;
@@ -1202,17 +1325,23 @@ public class Stand1 : Notify
                 try
                 {
                     //
-                    SubTestText = $"запись команд в устройства";
+                    if (!externalStatus)
+                    {
+                        SubTestText = $"запись команд в устройства";
+                    }
+
                     if (countChecked > 1)
                     {
                         CurrentCountChecked = $"Попытка: {i.ToString()}-я";
                     }
+                    //
 
                     if (i > 1)
                     {
                         //
                         if (!externalStatus)
                         {
+                            TestCurrentDevice = tempDevices[0];
                             PercentCurrentTest += Math.Round((1 / (float)devices.Count) * 100 / i);
                         }
                         //
@@ -1235,12 +1364,32 @@ public class Stand1 : Notify
                             receiveInDevice.Add(device, new List<string>());
                         }
 
-                        if (!device.PortIsOpen)
+                        if (!resetAll)
                         {
-                            if (!await CheckConnectPort(device, 3))
+                            if (!device.PortIsOpen)
                             {
-                                t?.Add(false);
-                                return deviceReceived;
+                                //
+                                if (!externalStatus)
+                                {
+                                    SubTestText = $"ошибка - порт закрыт, переподключение...";
+                                }
+
+                                if (!await CheckConnectPort(device, 3, externalStatus: true))
+                                {
+                                    //
+                                    if (!externalStatus)
+                                    {
+                                        SubTestText = $"порт не открыт, ошибка!";
+                                        PercentCurrentTest = 100;
+                                        TestCurrentDevice = device;
+                                        TestRun = TypeOfTestRun.Error;
+                                        ProgressColor = Brushes.Red;
+                                    }
+
+                                    //
+                                    t?.Add(false);
+                                    return deviceReceived;
+                                }
                             }
                         }
 
@@ -1290,7 +1439,7 @@ public class Stand1 : Notify
                     }
                 }
 
-                // Проверка устройств
+                //Проверка устройств
                 verifiedDevices = GetVerifiedDevices(tempDevices);
 
                 checkDevices = verifiedDevices.Where(x => x.Value).ToList();
@@ -1328,20 +1477,6 @@ public class Stand1 : Notify
                                     $"Ошибка уcтройства \"{verifiedDevice.Key.IsDeviceType}\"/нет ответа";
                             }
                         }
-                        // //TODO сделать чтобы вылетоало на послденем устройстве
-                        // if (i == countChecked)
-                        // {
-                        //     if (verifiedDevices.Last().Key.IsDeviceType == verifiedDevice.Key.IsDeviceType)
-                        //     {
-                        //         var errorStatuses = string.Empty;
-                        //         foreach (var device in verifiedDevices)
-                        //         {
-                        //             errorStatuses += device.Key.ErrorStatus + "\n";
-                        //         }
-                        //
-                        //         throw new ResetTestException($"{errorStatuses}");
-                        //     }
-                        // }
                     }
 
                     if (tp.IsOk)
@@ -1354,11 +1489,15 @@ public class Stand1 : Notify
                     devices.ForEach(x => x.StatusTest = StatusDeviceTest.Ok);
 
                     //
-                    PercentCurrentTest = 100;
-                    TestRun = TypeOfTestRun.WriteDevicesCmdReady;
-                    TestCurrentDevice = new("");
-                    CurrentCountChecked = string.Empty;
-                    ProgressColor = Brushes.Green;
+                    if (!externalStatus)
+                    {
+                        SubTestText = $"запись команд в устройства, oк!";
+                        PercentCurrentTest = 100;
+                        TestRun = TypeOfTestRun.WriteDevicesCmdReady;
+                        TestCurrentDevice = null;
+                        CurrentCountChecked = string.Empty;
+                        ProgressColor = Brushes.Green;
+                    }
                     //
 
                     t?.Add(true);
@@ -1375,21 +1514,32 @@ public class Stand1 : Notify
         }
         catch (Exception e)
         {
-            //
-            PercentCurrentTest = 100;
-            TestRun = TypeOfTestRun.Error;
-            ProgressColor = Brushes.Red;
-            TestCurrentDevice = new($"");
-            //
+            if (!externalStatus)
+            {
+                SubTestText = $"запись команд в устройства, ошибка!";
+                PercentCurrentTest = 100;
+                TestRun = TypeOfTestRun.Error;
+                ProgressColor = Brushes.Red;
+                TestCurrentDevice = null;
+            }
+
+            if (resetAll)
+            {
+                t?.Add(false);
+                return deviceReceived;
+            }
+
             throw new Exception(e.Message);
         }
 
-        //
-        TestRun = TypeOfTestRun.Error;
-        PercentCurrentTest = 100;
-        ProgressColor = Brushes.Red;
-        CurrentCountChecked = string.Empty;
-        //
+        if (!externalStatus)
+        {
+            SubTestText = $"запись команд в устройства, ошибка!";
+            TestRun = TypeOfTestRun.Error;
+            PercentCurrentTest = 100;
+            ProgressColor = Brushes.Red;
+            CurrentCountChecked = string.Empty;
+        }
 
         t?.Add(false);
         deviceReceived = GetReceives();
@@ -1568,8 +1718,12 @@ public class Stand1 : Notify
 
         var baseConnects = currentConnectDevices.Except(connectDevice.Keys).ToList();
 
+
+        //TODO сделать тут
+        // TestCurrentDevice = verifiedDevices.Keys.First();
+
+
         //
-        TestCurrentDevice = device;
         ProgressColor = Brushes.RoyalBlue;
         //
 
@@ -1581,8 +1735,6 @@ public class Stand1 : Notify
 
     private void Device_Error(BaseDevice device, string err)
     {
-        Debug.WriteLine($"Ошибка уcтройства {device}/{err}");
-
         if (err.Contains("Device Error"))
         {
             device.ErrorStatus = $"Ошибка уcтройства \"{device.IsDeviceType}\"/сбой устройства";
@@ -1604,16 +1756,15 @@ public class Stand1 : Notify
                 $"Ошибка уcтройства \"{device.IsDeviceType}\"/сбой порта {device.GetConfigDevice().PortName}";
             device.AllDeviceError.ErrorPort = true;
 
-
-            if (device is MainRelay)
-            {
-                foreach (var vip in vipsTested)
-                {
-                    vip.Relay.ErrorStatus =
-                        $"Ошибка уcтройства \"{device.Name}\"/сбой порта {device.GetConfigDevice().PortName}";
-                    vip.Relay.StatusTest = StatusDeviceTest.Error;
-                }
-            }
+            // if (device is MainRelay)
+            // {
+            //     foreach (var vip in vipsTested)
+            //     {
+            //         vip.Relay.ErrorStatus =
+            //             $"Ошибка уcтройства \"{device.Name}\"/сбой порта {device.GetConfigDevice().PortName}";
+            //         vip.Relay.StatusTest = StatusDeviceTest.Error;
+            //     }
+            // }
         }
     }
 
@@ -1710,7 +1861,7 @@ public class Stand1 : Notify
             else
             {
                 device.ErrorStatus =
-                    $"Ошибка уcтройства {device.IsDeviceType}, команда {device.NameCurrentCmd}/неверный параметр, пришел \"{receive}\"/ожидался \"{device.CurrentParameter}\"";
+                    $"Ошибка уcтройства {device.IsDeviceType}, команда {device.NameCurrentCmd}/неверный параметр, пришел \"{receive}\"/ожидался \"{device.CurrentParameter}\"\n";
                 device.AllDeviceError.ErrorParam = true;
             }
         }
@@ -1788,10 +1939,7 @@ public class Stand1 : Notify
             return receiveInDevice;
         }
 
-        //TODO спросить у темы порядок дейтсвия исключений пока сотавить так
         return new Dictionary<BaseDevice, List<string>>();
-
-        throw new Exception($"Нет ответов от данных устройств");
     }
 
     private Dictionary<BaseDevice, string> GetReceivesLast(List<BaseDevice> devices)
@@ -1810,9 +1958,7 @@ public class Stand1 : Notify
         }
         catch (Exception e)
         {
-            //TODO спросить у темы порядок дейтсвия исключений пока сотавить так
             return new Dictionary<BaseDevice, string>();
-            throw new Exception(e.Message);
         }
     }
 
@@ -1902,18 +2048,30 @@ public class Stand1 : Notify
     }
 
 
-    //--ouptup--on--off--вкл--выкл
+    //--output--on--off--вкл--выкл
     /// <summary>
     /// Включение/выключение устройства
     /// </summary>
     /// <param name="device">Устройство</param>
     /// <param name="values">Ответ который утройство должно отправить в ответ на запрос output</param>
     /// <param name="on">true - вкл, false - выкл</param>
+    /// <param name="externalStatus"></param>
     /// <returns>Результат включения/выключение</returns>
     private async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device,
-        int countChecked = 3, TempChecks t = null,
-        bool on = true)
+        int countChecked = 3, TempChecks t = null, bool on = true, bool externalStatus = false)
     {
+        string getOutputCmdName = "Get output";
+        string SetOutputOnCmdName = "Set output on";
+        string SetOutputOffCmdName = "Set output off";
+
+        //
+        if (!externalStatus)
+        {
+            PercentCurrentTest = 0;
+            ProgressColor = Brushes.Green;
+        }
+        //
+
         var getParam = new BaseDeviceValues("1", "0");
 
         if (device is BigLoad)
@@ -1924,10 +2082,15 @@ public class Stand1 : Notify
         {
             getParam = GetParameterForDevice().SupplyValues;
         }
-        // else if (device is Heat)
-        // {
-        //     getParam = GetParameterForDevice().HeatValues;
-        // }
+        else if (device is Heat)
+        {
+            getParam = GetParameterForDevice().HeatValues;
+        }
+        else if (device is RelayVip)
+        {
+            SetOutputOnCmdName = "On";
+            SetOutputOffCmdName = "Off";
+        }
         else
         {
             device.StatusOnOff = on ? OnOffStatus.On : OnOffStatus.Off;
@@ -1937,58 +2100,154 @@ public class Stand1 : Notify
 
         for (int i = 0; i < countChecked; i++)
         {
+            //
+            CurrentCountChecked = $"Попытка: {i.ToString()}-я";
+            //
+
             if (on)
             {
-                TempChecks tp = TempChecks.Start();
-                var cmdResult = await WriteIdentCommand(device, "Get output", countChecked: 1, t: tp);
-                //если выход вкл 
-                if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
+                //
+                if (!externalStatus)
                 {
-                    //делаем выход выкл
-                    await WriteIdentCommand(device, "Set output on");
-                    cmdResult = await WriteIdentCommand(device, "Get output", countChecked: 1, t: tp);
+                    SubTestText = $"включение выхода устройства";
+                    TestCurrentDevice = device;
                 }
+                //
 
-                if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
+                TempChecks tp = TempChecks.Start();
+                if (device is RelayVip)
                 {
-                    device.StatusOnOff = OnOffStatus.On;
-                    t?.Add(true);
-                    return (device, true);
+                    await WriteIdentCommand(device, SetOutputOnCmdName, countChecked: countChecked, t: tp,
+                        externalStatus: true);
+                    if (tp.IsOk)
+                    {
+                        device.StatusOnOff = OnOffStatus.On;
+                        t?.Add(true);
+                        return (device, true);
+                    }
+                }
+                else
+                {
+                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: countChecked, t: tp,
+                        externalStatus: true);
+                    //если выход вкл 
+                    if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
+                    {
+                        //делаем выход вкл
+                        await WriteIdentCommand(device, SetOutputOnCmdName, externalStatus: true);
+                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: countChecked, t: tp,
+                            externalStatus: true);
+                    }
+
+                    if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
+                    {
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"выход устройства включен";
+                            PercentCurrentTest = 100;
+                            TestCurrentDevice = device;
+                        }
+                        //
+
+                        device.StatusOnOff = OnOffStatus.On;
+                        t?.Add(true);
+                        return (device, true);
+                    }
                 }
 
                 if (!tp.IsOk)
                 {
+                    //
+                    if (!externalStatus)
+                    {
+                        SubTestText = $"выход устройства не включен, ошибка";
+                        PercentCurrentTest = 100;
+                        TestCurrentDevice = device;
+                        TestRun = TypeOfTestRun.Error;
+                        ProgressColor = Brushes.Red;
+                    }
+
+                    //
+                    device.StatusOnOff = OnOffStatus.None;
                     t?.Add(false);
                     return (device, false);
                 }
             }
             else
             {
-                TempChecks tp = TempChecks.Start();
-                var cmdResult = await WriteIdentCommand(device, "Get output", countChecked: 1, t: tp);
-                //если выход вкл 
-                if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
+                //
+                if (!externalStatus)
                 {
-                    //делаем выход выкл
-                    await WriteIdentCommand(device, "Set output off");
-                    cmdResult = await WriteIdentCommand(device, "Get output", countChecked: 1, t: tp);
+                    SubTestText = $"выключение устройства";
+                    TestCurrentDevice = device;
+                }
+                //
+
+
+                TempChecks tp = TempChecks.Start();
+
+                if (device is RelayVip)
+                {
+                    var cmdRelayResult = await WriteIdentCommand(device, SetOutputOffCmdName,
+                        countChecked: countChecked, t: tp, externalStatus: true);
+                    if (tp.IsOk)
+                    {
+                        device.StatusOnOff = OnOffStatus.Off;
+                        t?.Add(true);
+                        return (device, true);
+                    }
                 }
 
-                if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
+                else
                 {
-                    device.StatusOnOff = OnOffStatus.Off;
-                    t?.Add(true);
-                    return (device, true);
+                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: countChecked, t: tp,
+                        externalStatus: true);
+                    //если выход вкл 
+                    if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
+                    {
+                        //делаем выход выкл
+                        await WriteIdentCommand(device, SetOutputOffCmdName, externalStatus: true);
+                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: countChecked, t: tp,
+                            externalStatus: true);
+                    }
+
+                    if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
+                    {
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"устройство выключено";
+                            PercentCurrentTest = 100;
+                            TestCurrentDevice = device;
+                        }
+
+                        //
+                        device.StatusOnOff = OnOffStatus.Off;
+                        t?.Add(true);
+                        return (device, true);
+                    }
                 }
 
                 if (!tp.IsOk)
                 {
+                    //
+                    if (!externalStatus)
+                    {
+                        SubTestText = $"устройство не включено, ошибка";
+                        PercentCurrentTest = 100;
+                        TestCurrentDevice = device;
+                        TestRun = TypeOfTestRun.Error;
+                        ProgressColor = Brushes.Red;
+                    }
+                    //
+
+                    device.StatusOnOff = OnOffStatus.None;
                     t?.Add(false);
                     return (device, false);
                 }
             }
         }
-
 
         t?.Add(true);
         return (device, true);

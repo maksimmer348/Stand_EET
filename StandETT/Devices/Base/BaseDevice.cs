@@ -341,6 +341,7 @@ public class BaseDevice : Notify
         SetPort();
         PortIsOpen = port.Open();
         port.Dtr = Config.Dtr;
+        
     }
 
     public void SetPort()

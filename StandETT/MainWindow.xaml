@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StandETT"
         mc:Ignorable="d"
-        Title="Стенд ЕТТ" MinHeight="720" MinWidth="1200" Height="710" Width="1000">
+        Title="Стенд ЕТТ" MinHeight="720" MinWidth="1200" Height="710" Width="1000" IsEnabled="{Binding WindowDisabled}">
     <Window.DataContext>
         <local:ViewModel />
     </Window.DataContext>
@@ -554,7 +554,6 @@
                                   SelectedItem="{Binding SelectedCmdLib}"
                                   SelectedIndex="{Binding IndexSelectCmd, Mode=TwoWay}"
                                   AutoGenerateColumns="False"
-                                  
                                   CanUserDeleteRows="False" CanUserAddRows="False"
                                   GridLinesVisibility="Vertical"
                                   VerticalGridLinesBrush="Blue"
@@ -928,7 +927,8 @@
 
                 <ProgressBar Grid.Column="0" Value="{Binding PercentCurrentTest, Mode=OneWay}" Maximum="100"
                              MinWidth="150"
-                             MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{Binding ProgressColor}" />
+                             MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center"
+                             Foreground="{Binding ProgressColor}" />
                 <TextBlock Grid.Column="0"
                            Text="{Binding StringFormat={}{0}%,Path=PercentCurrentTest, UpdateSourceTrigger=Explicit}"
                            HorizontalAlignment="Center"
@@ -952,7 +952,7 @@
 
                 <!--//-->
 
-                <DockPanel LastChildFill="False" Grid.Column="3">
+                <DockPanel LastChildFill="False" Grid.Column="2">
 
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Command="{Binding NextCmd}" Content="Далее" IsEnabled="{Binding NextBtnEnabled}"/>
