@@ -7,5 +7,6 @@ public enum OnOffStatus
 {
     None = 0,
     On,
-    Off
+    Off,
+    Switching
 }

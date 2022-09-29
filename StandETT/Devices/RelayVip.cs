@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace StandETT;
 
@@ -11,6 +12,7 @@ public class RelayVip : BaseDevice
     public int Id { get; set; }
     //public string Id { get; set; }
 
+    public CancellationTokenSource CtsRelayReceive = new();
 
     MainRelay MainRelay = MainRelay.getInstance();
 
@@ -67,6 +69,8 @@ public class RelayVip : BaseDevice
     public override void WriteCmd(string nameCommand, string parameter = null)
     {
         CurrentCmd = GetLibItem(nameCommand, Name);
+
+
         if (CurrentCmd == null)
         {
             throw new Exception(
@@ -75,6 +79,11 @@ public class RelayVip : BaseDevice
 
         Name = Name;
         NameCurrentCmd = nameCommand;
+        if (NameCurrentCmd == "On")
+        {
+            StatusOnOff = OnOffStatus.Switching;
+        }
+
         CurrentParameter = parameter;
         SetErrors();
 
@@ -89,7 +98,7 @@ public class RelayVip : BaseDevice
 
     private void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        DeviceReceiving.Invoke(this, receive.ToLower(), cmd);
+        //DeviceReceiving.Invoke(this, receive.ToLower(), cmd);
     }
 
 
@@ -119,8 +128,10 @@ public class RelayVip : BaseDevice
         {
             return StatusOnOff switch
             {
+                
                 OnOffStatus.Off => Brushes.Red,
                 OnOffStatus.On => Brushes.Green,
+                OnOffStatus.Switching => Brushes.BlueViolet,
                 _ => Brushes.DarkGray
             };
         }
@@ -128,9 +139,19 @@ public class RelayVip : BaseDevice
 
     public bool IsTested { get; set; }
 
+
     public RelayVip(int id, string name) : base(name)
     {
-        //MainRelay.DeviceReceiving += Device_Receiving;
         IsDeviceType = $"Реле ВИПА-{id}";
+        DeviceReceiving += Relay_Receiving;
+    }
+
+    private void Relay_Receiving(BaseDevice arg1, string arg2, DeviceCmd arg3)
+    {
+        if (NameCurrentCmd == "On")
+        {
+            StatusOnOff = OnOffStatus.None;
+            CtsRelayReceive.Cancel();
+        }
     }
 }

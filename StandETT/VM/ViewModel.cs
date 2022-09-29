@@ -358,7 +358,7 @@ public class ViewModel : Notify
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
                 const string caption = "Ошибка настройки парамтеров";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки парамтеров параметров?", caption,
+                var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
                     MessageBoxButton.YesNo);
 
                 if (result == MessageBoxResult.Yes)
@@ -1046,12 +1046,12 @@ public class ViewModel : Notify
 
             //    //-
 
-            //    else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
-            //    {
-            //        TextCurrentTest = " Нулевой замер";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
+            else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
+            {
+                TextCurrentTest = " Нулевой замер";
+                // AllTabsDisable();
+                // CheckVipsTab = true;
+            }
 
             //    else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
             //    {

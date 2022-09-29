@@ -144,6 +144,7 @@ public class BaseDevice : Notify
             {
                 OnOffStatus.Off => Brushes.Red,
                 OnOffStatus.On => Brushes.Green,
+                OnOffStatus.Switching => Brushes.BlueViolet,
                 _ => Brushes.DarkGray
             };
         }
