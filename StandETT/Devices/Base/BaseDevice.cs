@@ -362,7 +362,7 @@ public class BaseDevice : Notify
         port.Dtr = true;
     }
 
-    public void SetInvoke()
+    private void SetInvoke()
     {
         port.PortConnecting += Port_Connecting;
         port.Receiving += Device_Receiving;
@@ -428,7 +428,6 @@ public class BaseDevice : Notify
 
     private void Device_Error(string e)
     {
-        //ErrorStatus = $"Ошибка уcтройства {Name}, {e}";
         DeviceError?.Invoke(this, e);
     }
 

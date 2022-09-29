@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:StandETT"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        Title="Стенд остановлен, отключение выходов устройств..." SizeToContent="Height" Width="600" Height="200" MinWidth="400" MinHeight="200">
+        Title="{Binding CaptionAction}" SizeToContent="Height" Width="600" Height="200" MinWidth="400" MinHeight="200">
     <Window.DataContext>
         <local:ViewModel />
     </Window.DataContext>

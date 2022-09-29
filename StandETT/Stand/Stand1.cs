@@ -55,7 +55,7 @@ public class Stand1 : Notify
     public TimeMachine timeMachine = TimeMachine.getInstance();
 
     //--
-    MainRelay mainRelay = MainRelay.getInstance();
+    MainRelay mainRelay = MainRelay.GetInstance();
     ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
 
     private readonly ObservableCollection<Vip> vips = new();
@@ -342,6 +342,15 @@ public class Stand1 : Notify
     }
 
 
+    private string captionAction;
+
+    public string CaptionAction
+    {
+        get => captionAction;
+        set => Set(ref captionAction, value);
+    }
+
+
     //--stop--resetall--allreset
     //Остановка всех тестов
     public async Task ResetAllTests()
@@ -367,49 +376,57 @@ public class Stand1 : Notify
         ErrorMessage = string.Empty;
         ErrorOutput = string.Empty;
 
+        var percent = 100;
+
+        if (relayVipsTested.Any())
+        {
+            percent = 50;
+            mainRelay.Relays = relayVipsTested;
+
+            foreach (var relay in relayVipsTested)
+            {
+                ErrorMessage = $"Отключение выхода реле Випа {relay.Name}...";
+                relay.StatusTest = StatusDeviceTest.None;
+                var resultOutput = await OutputDevice(relay, t: t, on: false);
+                if (!resultOutput.outputResult)
+                {
+                    ErrorOutput += $"{relay.ErrorStatus}\n";
+                    ProgressResetColor = Brushes.Red;
+                }
+
+                PercentCurrentReset += Math.Round((1 / (float)relayVipsTested.Count) * percent);
+            }
+        }
+
         foreach (var device in devices)
         {
+            ErrorMessage = $"Отключение выхода устройства {device.IsDeviceType}/{device.Name}...";
             device.StatusTest = StatusDeviceTest.None;
             var resultOutput = await OutputDevice(device, 1, t: t, on: false);
             if (!resultOutput.outputResult)
             {
-                ErrorMessage =
-                    "Осторожно! Следующие выходы устройств не были отключены, тк к устройствам нет доступа " +
-                    "или они неправильно индентифицированы";
-                ErrorOutput += $"{device.ErrorStatus}.\n";
+                ErrorOutput += $"{device.ErrorStatus}\n";
                 ProgressResetColor = Brushes.Red;
             }
 
-            PercentCurrentReset += Math.Round((1 / (float)devices.Count) * 100);
+            PercentCurrentReset += Math.Round((1 / (float)devices.Count) * percent);
         }
-
-        // if (relayVipsTested.Any())
-        // {
-        //     mainRelay.Relays = relayVipsTested;
-        //     foreach (var relay in relayVipsTested)
-        //     {
-        //         var resultOutput = await OutputDevice(relay, t: t, on: false);
-        //
-        //         if (!resultOutput.outputResult)
-        //         {
-        //             ErrorMessage =
-        //                 "Осторожно! Следующие выходы устройств не были отключены, тк к устройствам нет доступа " +
-        //                 "или они неправильно индентифицированы";
-        //             ErrorOutput += $"{relay.ErrorStatus}.\n";
-        //             ProgressResetColor = Brushes.Red;
-        //         }
-        //
-        //         if (t.IsOk) PercentCurrentReset += Math.Round((1 / (float)devices.Count) * (100 - devices.Count));
-        //     }
-        // }
 
         if (t.IsOk)
         {
             ProgressResetColor = Brushes.Green;
             ErrorMessage = "Все выходы устройств были благополучно отключены";
         }
+        else
+        {
+            ErrorMessage =
+                "Осторожно! Следующие выходы устройств не были отключены, тк к устройствам нет доступа " +
+                "или они неправильно индентифицированы";
+            ErrorOutput += "Выходы остальных устройств отключены\n";
+        }
 
         //
+        CaptionAction = "Стенд остановлен";
         TestRun = TypeOfTestRun.Stop;
         PercentCurrentReset = 100;
         CurrentCountChecked = string.Empty;
@@ -476,21 +493,22 @@ public class Stand1 : Notify
 
         //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
         vipsTested = GetIsTestedVips();
-        mainRelay.Relays.Clear();
+        relayVipsTested.Clear();
         foreach (var vip in vipsTested)
         {
             relayVipsTested.Add(vip.Relay);
         }
+
         mainRelay.Relays = relayVipsTested;
-        
+
         TempChecks t = TempChecks.Start();
-        
+
         await CheckConnectPort(mainRelay, t: t);
-        
+
         if (t.IsOk)
         {
             t = TempChecks.Start();
-            
+
             foreach (var relay in relayVipsTested)
             {
                 await WriteIdentCommand(relay, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
@@ -585,16 +603,15 @@ public class Stand1 : Notify
         //var ss = await WriteIdentCommand(relayVipsTested[0], "Off", t: t);
         // currentDevice = devices.GetTypeDevice<Supply>();
         var iss = true;
-        while (iss)
+
+        foreach (var relay in relayVipsTested)
         {
-            foreach (var relay in relayVipsTested)
-            {
-                t = TempChecks.Start();
-                await OutputDevice(relay, t: t);
-                if (t.IsOk) await OutputDevice(relay, t: t, on: false);
-                if (!t.IsOk) iss = false;
-            }
+            t = TempChecks.Start();
+            await OutputDevice(relay, t: t);
+            // if (t.IsOk) await OutputDevice(relay, t: t, on: false);
+            // if (!t.IsOk) iss = false;
         }
+
 
         // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t, on: false);
         // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t);
@@ -730,7 +747,7 @@ public class Stand1 : Notify
             ProgressColor = Brushes.RoyalBlue;
         }
         //
-        
+
         try
         {
             for (int i = 1; i <= countChecked; i++)
@@ -775,7 +792,7 @@ public class Stand1 : Notify
                     device.ErrorStatus = string.Empty;
                 }
                 //
-                
+
                 device.Close();
                 await Task.Delay(TimeSpan.FromMilliseconds(80), ctsAllCancel.Token);
                 device.Start();
@@ -1071,7 +1088,7 @@ public class Stand1 : Notify
 
         CurrentWriteDevices = new() { device };
         RemoveReceive(device);
-        
+
         KeyValuePair<BaseDevice, bool> verifiedDevice;
 
         //если прибор от кторого приходят данные не содержится в библиотеке а при первом приеме данных так и будет
@@ -2239,7 +2256,6 @@ public class Stand1 : Notify
 
                 if (device is RelayVip r)
                 {
-                    
                     if (!string.IsNullOrEmpty(mainRelay.ErrorStatus))
                     {
                         t?.Add(false);

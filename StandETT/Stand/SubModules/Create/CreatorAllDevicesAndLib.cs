@@ -34,7 +34,7 @@ class CreatorAllDevicesAndLib
 
     ConfigTypeVip cfgTypeVips = ConfigTypeVip.getInstance();
 
-    MainRelay mainRelayVip = MainRelay.getInstance();
+    MainRelay mainRelayVip = MainRelay.GetInstance();
 
     TimeMachine timeMachine = TimeMachine.getInstance();
 

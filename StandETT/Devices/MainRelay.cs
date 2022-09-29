@@ -13,15 +13,42 @@ public class MainRelay : BaseDevice
     private static object syncRoot = new();
     private RelayVip currentRelayVip;
 
-    public static MainRelay getInstance()
+
+    /// <summary>
+    /// Применение настроек, подключение событий и старт устройства
+    /// </summary>
+    public override void Start()
     {
-        if (instance == null)
+        SetPort();
+        PortIsOpen = port.Open();
+        port.Dtr = Config.Dtr;
+
+        foreach (var relay in Relays)
         {
-            lock (syncRoot)
-            {
-                if (instance == null)
-                    instance = new MainRelay("MRV");
-            }
+            relay.PortIsOpen = PortIsOpen;
+        }
+    }
+
+    /// <summary>
+    /// Открыть компорт устройства
+    /// </summary>
+    /// <returns></returns>
+    public override bool Open()
+    {
+        foreach (var relay in Relays)
+        {
+            relay.PortIsOpen = true;
+        }
+
+        return port.Open();
+    }
+
+    public static MainRelay GetInstance()
+    {
+        if (instance != null) return instance;
+        lock (syncRoot)
+        {
+            instance ??= new MainRelay("MRV");
         }
 
         return instance;
@@ -32,7 +59,7 @@ public class MainRelay : BaseDevice
     public MainRelay(string name) : base(name)
     {
         PortConnecting += Port_Connecting;
-        DeviceReceiving += Receive_Relay;
+        DeviceReceiving += Relay_Receive;
         DeviceError += Relay_Error;
     }
 
@@ -41,31 +68,32 @@ public class MainRelay : BaseDevice
         ErrorStatus = string.Empty;
         foreach (var relay in Relays)
         {
-            relay.ErrorStatus = string.Empty;
-            relay.PortIsOpen = true;
+            relay.PortConnecting?.Invoke(relay, true);
         }
     }
 
     private void Relay_Error(BaseDevice device, string error)
     {
-        ErrorStatus = string.Empty;
-        foreach (var relay in Relays)
+        if (error.Contains("Port not found"))
         {
-            relay.DeviceError.Invoke(this, error);
-            // vip.ErrorStatus =
-            //     $"Ошибка уcтройства \"{device.Name}\"/сбой порта {device.GetConfigDevice().PortName}";
-            // vip.StatusTest = StatusDeviceTest.Error;
+            foreach (var relay in Relays)
+            {
+                relay.DeviceError.Invoke(relay, error);
+            }
+        }
+        else
+        {
+            currentRelayVip.DeviceError.Invoke(currentRelayVip, error);
         }
     }
 
-    private void Receive_Relay(BaseDevice device, string receive, DeviceCmd cmd)
+    private void Relay_Receive(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        ErrorStatus = string.Empty;
-        
+        //ErrorStatus = string.Empty;
+        // currentRelayVip.AllDeviceError.ErrorTimeout = false;
         try
         {
             var prefix = receive.Substring(2, 2);
-            currentRelayVip.AllDeviceError.ErrorTimeout = false;
             var currentRelayVipPrefix = Relays.FirstOrDefault(x => x.Prefix.ToLower() == prefix);
             if (currentRelayVipPrefix != null)
             {
@@ -90,9 +118,9 @@ public class MainRelay : BaseDevice
     public void WriteCmdRelay(RelayVip relayVip, DeviceCmd cmd, string parameter = null)
     {
         relayVip.ErrorStatus = string.Empty;
-
         currentRelayVip = relayVip;
         CurrentCmd = cmd;
+
         if (CurrentCmd.MessageType == TypeCmd.Hex)
         {
             TypeReceive = TypeCmd.Hex;

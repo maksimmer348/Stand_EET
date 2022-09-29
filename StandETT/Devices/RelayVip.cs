@@ -14,7 +14,7 @@ public class RelayVip : BaseDevice
 
     public CancellationTokenSource CtsRelayReceive = new();
 
-    MainRelay MainRelay = MainRelay.getInstance();
+    MainRelay MainRelay = MainRelay.GetInstance();
 
     public override void SetConfigDevice(TypePort typePort, string portName, int baud, int stopBits, int parity,
         int dataBits,
@@ -90,16 +90,16 @@ public class RelayVip : BaseDevice
         MainRelay.WriteCmdRelay(this, CurrentCmd, parameter);
     }
 
-    private void Device_Error(BaseDevice device, string error)
-    {
-        ErrorStatus = $"Ошибка уcтройства {Name}, {error}";
-        DeviceError?.Invoke(this, error);
-    }
-
-    private void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
-    {
-        //DeviceReceiving.Invoke(this, receive.ToLower(), cmd);
-    }
+    // private void Device_Error(BaseDevice device, string error)
+    // {
+    //     ErrorStatus = $"Ошибка уcтройства {Name}, {error}";
+    //     DeviceError?.Invoke(this, error);
+    // }
+    //
+    // private void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
+    // {
+    //     DeviceReceiving.Invoke(this, receive.ToLower(), cmd);
+    // }
 
 
     /// <summary>

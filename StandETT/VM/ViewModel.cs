@@ -267,7 +267,9 @@ public class ViewModel : Notify
 
     async Task OnCancelAllTestCmdExecuted(object p)
     {
+        CancelAllTestBtnEnabled = false;
         await stand.ResetAllTests();
+        CancelAllTestBtnEnabled = true;
     }
 
     private void AwOnClosed(object sender, EventArgs e)
@@ -720,17 +722,11 @@ public class ViewModel : Notify
         get => windowDisabled;
         set => Set(ref windowDisabled, value);
     }
-
-    private string captionAction;
-
+    
     /// <summary>
     ///
     /// </summary>
-    public string CaptionAction
-    {
-        get => captionAction;
-        set => Set(ref captionAction, value);
-    }
+    public string CaptionAction => stand.CaptionAction;
 
     public string ErrorMessage => stand.ErrorMessage;
 
