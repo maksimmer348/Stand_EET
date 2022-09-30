@@ -813,6 +813,8 @@ public class ViewModel : Notify
                     return "Устройство: " + stand.TestCurrentDevice.IsDeviceType;
                 }
 
+                // if (stand.TestCurrentDevice == null)
+                //     return string.Empty;
                 return "Устройство: " + stand.TestCurrentDevice.IsDeviceType + " " + stand.TestCurrentDevice.Name;
             }
 

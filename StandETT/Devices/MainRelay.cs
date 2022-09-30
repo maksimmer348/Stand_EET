@@ -74,7 +74,7 @@ public class MainRelay : BaseDevice
 
     private void Relay_Error(BaseDevice device, string error)
     {
-        if (error.Contains("Port not found"))
+        if (error.Contains("Port not found") || error.Contains("Access Denied"))
         {
             foreach (var relay in Relays)
             {

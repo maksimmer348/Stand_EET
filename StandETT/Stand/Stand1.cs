@@ -587,30 +587,49 @@ public class Stand1 : Notify
     {
         TestRun = TypeOfTestRun.MeasurementZero;
         currentDevice = devices.GetTypeDevice<BigLoad>();
-        var getParamLoad = GetParameterForDevice().BigLoadValues;
-        var getParamVoltMeter = GetParameterForDevice().VoltValues;
-        var getParamThermoCurrentMeter = GetParameterForDevice().ThermoCurrentValues;
 
         // currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
         TempChecks t = TempChecks.Start();
         s.Start();
 
-        // await SetCheckValueInDevice(currentDevice, "Set curr meter", getParamThermoCurrentMeter.CurrMaxLimit,
-        //     countChecked, loopDelay, t, "Get func", "Get curr meter");
+        currentDevice = devices.GetTypeDevice<Supply>();
+        //await OutputDevice(currentDevice, t: t);
 
-        // await SetCheckValueInDevice(currentDevice, "Set curr meter", getParamThermoCurrentMeter.CurrMaxLimit,
-        //     countChecked, loopDelay, t, "Get func", "Get curr meter");
-        //var ss = await WriteIdentCommand(relayVipsTested[0], "Off", t: t);
-        // currentDevice = devices.GetTypeDevice<Supply>();
+        currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
+
+        // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
+        // var ss = await SetCheckValueInDevice(currentDevice, "Set curr meter", getThermCurrValues.CurrMaxLimit,
+        //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
+        // if (t.IsOk)
+        // {
+        //     currentDevice = devices.GetTypeDevice<Supply>();
+        //     var getSupplyValues = GetParameterForDevice().SupplyValues;
+        //     ss = await SetCheckValueInDevice(currentDevice, "Set curr", getSupplyValues.Current,
+        //         countChecked, loopDelay, t, true, "Get curr");
+        //     ss = await SetCheckValueInDevice(currentDevice, "Set volt", getSupplyValues.Voltage,
+        //         countChecked, loopDelay, t, true, "Get volt");
+        // }
+
+        // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
+        // var ss = await SetCheckValueInDevice(currentDevice, "Get Output", getThermCurrValues.,
+        //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
+        
+        currentDevice = devices.GetTypeDevice<Supply>();
+        if (t.IsOk)
+        {
+            await OutputDevice(currentDevice);
+        }
+
+
         var iss = true;
 
-        foreach (var relay in relayVipsTested)
-        {
-            t = TempChecks.Start();
-            await OutputDevice(relay, t: t);
-            // if (t.IsOk) await OutputDevice(relay, t: t, on: false);
-            // if (!t.IsOk) iss = false;
-        }
+        // foreach (var relay in relayVipsTested)
+        // {
+        //     t = TempChecks.Start();
+        //     await OutputDevice(relay, t: t);
+        //     // if (t.IsOk) await OutputDevice(relay, t: t, on: false);
+        //     // if (!t.IsOk) iss = false;
+        // }
 
 
         // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t, on: false);
@@ -632,11 +651,10 @@ public class Stand1 : Notify
         // currentDevice = devices.GetTypeDevice<BigLoad>();
         // await OutputDevice(currentDevice, on: false);
 
-
         // if (t.IsOk)
         // {
-        //     await SetCheckValueInDevice(currentDevice, "Set temp meter", null, countChecked,
-        //         loopDelay, t, "Get func");
+        // //     await SetCheckValueInDevice(currentDevice, "Set temp meter", null, countChecked,
+        //         loopDelay, t, false, "Get func");
         //     await SetCheckValueInDevice(currentDevice, "Set tco type", getParamThermoCurrentMeter.TermocoupleType,
         //         countChecked, loopDelay, t, "Get tco type");
         // }
@@ -832,7 +850,7 @@ public class Stand1 : Notify
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
-                TestCurrentDevice = new("");
+                TestCurrentDevice = null;
             }
             //
 
@@ -1158,6 +1176,13 @@ public class Stand1 : Notify
                             t?.Add(false);
                             return deviceReceived;
                         }
+
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"переподключение удачно, порт открыт";
+                        }
+                        //
                     }
 
 
@@ -1166,6 +1191,11 @@ public class Stand1 : Notify
 
                     //запись команды в каждое устройсттво
                     device.WriteCmd(nameCmd, paramSet);
+
+                    if (device is Supply)
+                    {
+                        Debug.WriteLine(nameCmd);
+                    }
 
                     //
                     if (!externalStatus)
@@ -1261,7 +1291,11 @@ public class Stand1 : Notify
                          verifiedDevice.Key.AllDeviceError.ErrorParam ||
                          verifiedDevice.Key.AllDeviceError.ErrorLength)
                 {
-                    loopDelay = 500;
+                    if (loopDelay > 1000)
+                    {
+                        loopDelay = 1000;
+                    }
+
                     tp.Add(true);
                 }
             }
@@ -1433,6 +1467,13 @@ public class Stand1 : Notify
                                     t?.Add(false);
                                     return deviceReceived;
                                 }
+
+                                //
+                                if (!externalStatus)
+                                {
+                                    SubTestText = $"переподключение удачно, порт открыт";
+                                }
+                                //
                             }
                         }
 
@@ -1527,7 +1568,10 @@ public class Stand1 : Notify
                                  verifiedDevice.Key.AllDeviceError.ErrorLength ||
                                  verifiedDevice.Key.AllDeviceError.ErrorTimeout)
                         {
-                            loopDelay = 500;
+                            if (loopDelay > 1000)
+                            {
+                                loopDelay = 1000;
+                            }
                         }
                     }
 
@@ -1793,6 +1837,13 @@ public class Stand1 : Notify
         {
             device.ErrorStatus =
                 $"Ошибка уcтройства \"{device.IsDeviceType}\"/сбой порта {device.GetConfigDevice().PortName}";
+            device.AllDeviceError.ErrorPort = true;
+        }
+
+        if (err.Contains("Access Denied"))
+        {
+            device.ErrorStatus =
+                $"Ошибка уcтройства \"{device.IsDeviceType}\"/порт заблокирован {device.GetConfigDevice().PortName}";
             device.AllDeviceError.ErrorPort = true;
         }
     }
@@ -2154,10 +2205,18 @@ public class Stand1 : Notify
 
                 if (device is RelayVip r)
                 {
+                    if (device.AllDeviceError.ErrorPort)
+                    {
+                        await CheckConnectPort(device, 1);
+                    }
+
                     if (!string.IsNullOrEmpty(mainRelay.ErrorStatus))
                     {
-                        t?.Add(false);
-                        return (device, false);
+                        if (!mainRelay.ErrorStatus.Contains("неверна"))
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
                     }
 
                     await WriteIdentCommand(r, SetOutputOnCmdName, countChecked: 1, t: tp,
@@ -2181,10 +2240,18 @@ public class Stand1 : Notify
                 //если не реле випа
                 else
                 {
+                    if (device.AllDeviceError.ErrorPort)
+                    {
+                        await CheckConnectPort(device, 1);
+                    }
+
                     if (!string.IsNullOrEmpty(device.ErrorStatus))
                     {
-                        t?.Add(false);
-                        return (device, false);
+                        if (!device.ErrorStatus.Contains("неверна"))
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
                     }
 
                     var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
@@ -2215,6 +2282,35 @@ public class Stand1 : Notify
                         t?.Add(true);
                         return (device, true);
                     }
+
+                    if (cmdResult.Value != getParam.OutputOn)
+                    {
+                        device.AllDeviceError.ErrorParam = true;
+                        device.ErrorStatus =
+                            $"Ошибка уcтройства {device.IsDeviceType}, команда Output On/неверна";
+
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"устройство не включено, ошибка";
+                            PercentCurrentTest = 100;
+                            TestCurrentDevice = device;
+                            TestRun = TypeOfTestRun.Error;
+                            ProgressColor = Brushes.Red;
+
+                            device.StatusTest = StatusDeviceTest.Error;
+                            device.StatusOnOff = OnOffStatus.None;
+                        }
+
+                        //
+                        if (i == countChecked)
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
+
+                        continue;
+                    }
                 }
 
                 if (!tp.IsOk)
@@ -2240,7 +2336,7 @@ public class Stand1 : Notify
                     }
                 }
             }
-            //если надо выкл
+            //если не реле випа надо выкл
             else
             {
                 //
@@ -2253,13 +2349,21 @@ public class Stand1 : Notify
 
 
                 TempChecks tp = TempChecks.Start();
-
+                //если выключается ерле випа
                 if (device is RelayVip r)
                 {
+                    if (device.AllDeviceError.ErrorPort)
+                    {
+                        await CheckConnectPort(device, 1);
+                    }
+
                     if (!string.IsNullOrEmpty(mainRelay.ErrorStatus))
                     {
-                        t?.Add(false);
-                        return (device, false);
+                        if (!mainRelay.ErrorStatus.Contains("неверна"))
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
                     }
 
                     try
@@ -2288,13 +2392,21 @@ public class Stand1 : Notify
                         return (device, true);
                     }
                 }
-
+                //если выключается не реле випа
                 else
                 {
+                    if (device.AllDeviceError.ErrorPort)
+                    {
+                        await CheckConnectPort(device, 1);
+                    }
+
                     if (!string.IsNullOrEmpty(device.ErrorStatus))
                     {
-                        t?.Add(false);
-                        return (device, false);
+                        if (!device.ErrorStatus.Contains("неверна"))
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
                     }
 
                     var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
@@ -2327,6 +2439,34 @@ public class Stand1 : Notify
 
                         t?.Add(true);
                         return (device, true);
+                    }
+
+                    if (cmdResult.Value != getParam.OutputOn)
+                    {
+                        device.AllDeviceError.ErrorParam = true;
+                        device.ErrorStatus =
+                            $"Ошибка уcтройства {device.IsDeviceType}, команда Output Off/неверна";
+                        //
+                        if (!externalStatus)
+                        {
+                            SubTestText = $"устройство не включено, ошибка";
+                            PercentCurrentTest = 100;
+                            TestCurrentDevice = device;
+                            TestRun = TypeOfTestRun.Error;
+                            ProgressColor = Brushes.Red;
+
+                            device.StatusTest = StatusDeviceTest.Error;
+                            device.StatusOnOff = OnOffStatus.None;
+                        }
+
+                        //
+                        if (i == countChecked)
+                        {
+                            t?.Add(false);
+                            return (device, false);
+                        }
+
+                        continue;
                     }
                 }
 
@@ -2516,44 +2656,25 @@ public class Stand1 : Notify
     DeviceParameters GetParameterForDevice()
     {
         return vips[0].Type.GetDeviceParameters();
-        // if (device is BigLoad)
-        // {
-        //     return (T)param.BigLoadValues;
-        // }
-        //
-        // if (device is Heat)
-        // {
-        //     return (T)param.HeatValues;
-        // }
-        //
-        // if (device is MainRelay)
-        // {
-        // }
-        //
-        // if (device is RelayMeter)
-        // {
-        // }
-        //
-        // if (device is RelayVip)
-        // {
-        // }
-        //
-        // if (device is SmallLoad)
-        // {
-        // }
-        //
-        // if (device is Supply)
-        // {
-        // }
-        //
-        // if (device is ThermoCurrentMeter)
-        // {
-        // }
-        //
-        // if (device is VoltMeter)
-        // {
-        // }
     }
+
+    // /// <summary>
+    // /// Получение параметров приборов из типа Випа
+    // /// </summary>
+    // /// <returns>DeviceParameters</returns>
+    // T GetParameterForDevice<T>(BaseDevice device) where T : DeviceParameters
+    // {
+    //     if (device is Supply)
+    //     {
+    //        return GetParameterForDevice().SupplyValues as T;
+    //     }
+    //     else if (device is Heat)
+    //     {
+    //         return GetParameterForDevice().HeatValues as T;
+    //     }
+    //
+    //     return null;
+    // }
 
     /// <summary>
     /// Установка параметров приборов в тип Випа
@@ -2591,10 +2712,21 @@ public class Stand1 : Notify
         if (str != null)
         {
             decimal myDecimalValue = 0;
+            int myIntlValue = 0;
 
-            if (str.Contains("E+") || str.Contains("e+") || str.Contains("E-") || str.Contains("e-"))
+            if (str.Contains("E+") || str.Contains("e+") || str.Contains("E-") || str.Contains("e-") || str[0] == '+' ||
+                str[0] == '-')
             {
-                myDecimalValue = Decimal.Parse(str, System.Globalization.NumberStyles.Float);
+                if (decimal.TryParse(str, out myDecimalValue))
+                {
+                    decimal x1 = Math.Floor(myDecimalValue);
+                    decimal x2 = myDecimalValue - Math.Floor(x1);
+                    if (x2 == 0)
+                    {
+                        return x1.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+
                 return myDecimalValue.ToString(CultureInfo.InvariantCulture);
             }
         }

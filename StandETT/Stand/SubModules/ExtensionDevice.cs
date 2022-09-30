@@ -15,3 +15,11 @@ public static class ExtensionDevice
         return (T)baseDevices.FirstOrDefault(x => x is T);
     }
 }
+
+public static class ExtensionParameters
+{
+    public static T GetTypeDevice<T>(this BaseDeviceValues parameters) where T : BaseDeviceValues
+    {
+        return (T)parameters;
+    }
+}
