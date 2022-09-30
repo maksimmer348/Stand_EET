@@ -555,7 +555,8 @@ public class Stand1 : Notify
             {
                 if (t.IsOk)
                 {
-                    var receive = await WriteIdentCommand(device, getCmd, paramGet: param, countChecked: 1, t: t);
+                    var receive = await WriteIdentCommand(device, getCmd, paramGet: param, countChecked: 2,
+                        loopDelay: loopDelay, t: t);
 
                     if (!deviceReceived.ContainsKey(receive.Key))
                     {
@@ -566,6 +567,7 @@ public class Stand1 : Notify
                     deviceReceived[receive.Key].Add(receive.Value);
                 }
             }
+
 
             if (!t.IsOk)
             {
@@ -581,85 +583,158 @@ public class Stand1 : Notify
         return deviceReceived;
     }
 
+    public (string cannel1, string cannel2) GetRelayChannelCmds(int idVip)
+    {
+        (string, string ) cmdNames = idVip switch
+        {
+            0 => ("On 01", "On 10"),
+            1 => ("On 02", "On 20"),
+            2 => ("On 03", "On 30"),
+            3 => ("On 04", "On 40"),
+            4 => ("On 05", "On 50"),
+            5 => ("On 06", "On 60"),
+            6 => ("On 07", "On 70"),
+            7 => ("On 08", "On 80"),
+            8 => ("On 09", "On 90"),
+            9 => ("On 0A", "On A0"),
+            10 => ("On 0B", "On B0"),
+            11 => ("On 0C", "On C0"),
+            _ => (string.Empty, string.Empty)
+        };
+        return cmdNames;
+    }
+
+    async Task<bool> TestVip(Vip vip, TempChecks t)
+    {
+        var relayMeter = devices.GetTypeDevice<RelayMeter>();
+        var nameCmds = GetRelayChannelCmds(vip.Id);
+        
+        await WriteIdentCommand(relayMeter, nameCmds.cannel1, t: t);
+        await WriteIdentCommand(relayMeter, nameCmds.cannel2, t: t);
+        
+        t.Add(t.IsOk);
+        return t.IsOk;
+    }
 
     //--zero--ноль--
     public async Task<bool> MeasurementZero(int countChecked = 3, int loopDelay = 1000)
     {
+        //
         TestRun = TypeOfTestRun.MeasurementZero;
-        currentDevice = devices.GetTypeDevice<BigLoad>();
+        //
 
-        // currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
         TempChecks t = TempChecks.Start();
-        s.Start();
 
-        currentDevice = devices.GetTypeDevice<Supply>();
-        //await OutputDevice(currentDevice, t: t);
-
-        currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
-
-        // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
-        // var ss = await SetCheckValueInDevice(currentDevice, "Set curr meter", getThermCurrValues.CurrMaxLimit,
-        //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
-        // if (t.IsOk)
-        // {
-        //     currentDevice = devices.GetTypeDevice<Supply>();
-        //     var getSupplyValues = GetParameterForDevice().SupplyValues;
-        //     ss = await SetCheckValueInDevice(currentDevice, "Set curr", getSupplyValues.Current,
-        //         countChecked, loopDelay, t, true, "Get curr");
-        //     ss = await SetCheckValueInDevice(currentDevice, "Set volt", getSupplyValues.Voltage,
-        //         countChecked, loopDelay, t, true, "Get volt");
-        // }
-
-        // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
-        // var ss = await SetCheckValueInDevice(currentDevice, "Get Output", getThermCurrValues.,
-        //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
-        
-        currentDevice = devices.GetTypeDevice<Supply>();
-        if (t.IsOk)
-        {
-            await OutputDevice(currentDevice);
-        }
-
-
-        var iss = true;
-
-        // foreach (var relay in relayVipsTested)
-        // {
-        //     t = TempChecks.Start();
-        //     await OutputDevice(relay, t: t);
-        //     // if (t.IsOk) await OutputDevice(relay, t: t, on: false);
-        //     // if (!t.IsOk) iss = false;
-        // }
-
-
-        // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t, on: false);
-        // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t);
-        //if (t.IsOk) await OutputDevice(relayVipsTested[3], t: t);
-
-
-        //await OutputDevice(relayVipsTested[0]);
-
-        //
+        //TODO раскоенить раборчий код 
         // currentDevice = devices.GetTypeDevice<BigLoad>();
-        // await OutputDevice(currentDevice);
+        // var getThermCurrValues = GetParameterForDevice().BigLoadValues;
         //
-        // await Task.Delay(TimeSpan.FromMilliseconds(3000));
+        // await OutputDevice(currentDevice, t: t, on: false);
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set freq", getThermCurrValues.Freq,
+        //         countChecked, loopDelay, t, true, "Get freq");
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set ampl", getThermCurrValues.Ampl,
+        //         countChecked, loopDelay, t, true, "Get ampl");
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set dco", getThermCurrValues.Dco,
+        //         countChecked, loopDelay, t, true, "Get dco");
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set squ", getThermCurrValues.Squ,
+        //         countChecked, loopDelay, t, true, "Get squ");
+        // if (t.IsOk)
+        //     await OutputDevice(currentDevice, t: t);
+        // if (t.IsOk)
+        //     await OutputDevice(relayVipsTested[0], t: t);
         //
         // currentDevice = devices.GetTypeDevice<Supply>();
-        // await OutputDevice(currentDevice, on: false);
+        // var getSupplyValues = GetParameterForDevice().SupplyValues;
         //
-        // currentDevice = devices.GetTypeDevice<BigLoad>();
-        // await OutputDevice(currentDevice, on: false);
-
         // if (t.IsOk)
-        // {
-        // //     await SetCheckValueInDevice(currentDevice, "Set temp meter", null, countChecked,
-        //         loopDelay, t, false, "Get func");
-        //     await SetCheckValueInDevice(currentDevice, "Set tco type", getParamThermoCurrentMeter.TermocoupleType,
-        //         countChecked, loopDelay, t, "Get tco type");
-        // }
+        //     await OutputDevice(currentDevice, t: t, on: false);
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set volt", getSupplyValues.Voltage,
+        //         countChecked, loopDelay, t, true, "Get volt");
+        // if (t.IsOk)
+        //     await SetCheckValueInDevice(currentDevice, "Set curr", getSupplyValues.Current,
+        //         countChecked, loopDelay, t, true, "Get curr");
+        //TODO раскоенить раборчий код 
+
+        
+        await TestVip(vipsTested[0], t);
 
         if (t.IsOk)
+            //запрос на установку параметров генератора/большой нагрузки
+            // await WriteCommand(BigLoadStand, "Set freq", GetParameterForDevice().BigLoadValues.Freq);
+            // await WriteCommand(BigLoadStand, "Set ampl", GetParameterForDevice().BigLoadValues.Ampl);
+            // await WriteCommand(BigLoadStand, "Set dco", GetParameterForDevice().BigLoadValues.Dco);
+            // await WriteCommand(BigLoadStand, "Set squ", GetParameterForDevice().BigLoadValues.Squ);
+            // await WriteReadCommand(BigLoadStand, "Get freq", GetParameterForDevice().BigLoadValues.Freq, t,
+            //     token: ctsReceiveDevice.Token);
+            // await WriteReadCommand(BigLoadStand, "Get ampl", GetParameterForDevice().BigLoadValues.Ampl, t,
+            //     token: ctsReceiveDevice.Token);
+            // await WriteReadCommand(BigLoadStand, "Get dco", GetParameterForDevice().BigLoadValues.Dco, t,
+            //     token: ctsReceiveDevice.Token);
+            // await WriteReadCommand(BigLoadStand, "Get squ", GetParameterForDevice().BigLoadValues.Squ, t,
+            //     token: ctsReceiveDevice.Token);
+
+            // //правильно ли были установлены пармтеры генератора/большой нагрузки
+            // TempChecks t = TempChecks.Start();
+            // //если прибор ответил правильно в t будет записан true
+
+            // currentDevice = devices.GetTypeDevice<ThermoCurrentMeter>();
+
+            // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
+            // var ss = await SetCheckValueInDevice(currentDevice, "Set curr meter", getThermCurrValues.CurrMaxLimit,
+            //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
+            // if (t.IsOk)
+            // {
+            //     currentDevice = devices.GetTypeDevice<Supply>();
+            //     var getSupplyValues = GetParameterForDevice().SupplyValues;
+            //     ss = await SetCheckValueInDevice(currentDevice, "Set curr", getSupplyValues.Current,
+            //         countChecked, loopDelay, t, true, "Get curr");
+            //     ss = await SetCheckValueInDevice(currentDevice, "Set volt", getSupplyValues.Voltage,
+            //         countChecked, loopDelay, t, true, "Get volt");
+            // }
+
+            // var getThermCurrValues = GetParameterForDevice().ThermoCurrentValues;
+            // var ss = await SetCheckValueInDevice(currentDevice, "Get Output", getThermCurrValues.,
+            //     countChecked, loopDelay, t, true, "Get func", "Get curr meter");
+
+            // foreach (var relay in relayVipsTested)
+            // {
+            //     t = TempChecks.Start();
+            //     await OutputDevice(relay, t: t);
+            //     // if (t.IsOk) await OutputDevice(relay, t: t, on: false);
+            //     // if (!t.IsOk) iss = false;
+            // }
+
+            // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t, on: false);
+            // if (t.IsOk) await OutputDevice(relayVipsTested[0], t: t);
+            //if (t.IsOk) await OutputDevice(relayVipsTested[3], t: t);
+
+            //await OutputDevice(relayVipsTested[0]);
+
+            //
+            // currentDevice = devices.GetTypeDevice<BigLoad>();
+            // await OutputDevice(currentDevice);
+            //
+            // await Task.Delay(TimeSpan.FromMilliseconds(3000));
+            //
+            // currentDevice = devices.GetTypeDevice<Supply>();
+            // await OutputDevice(currentDevice, on: false);
+            //
+            // currentDevice = devices.GetTypeDevice<BigLoad>();
+            // await OutputDevice(currentDevice, on: false);
+
+            // if (t.IsOk)
+            // {
+            // //     await SetCheckValueInDevice(currentDevice, "Set temp meter", null, countChecked,
+            //         loopDelay, t, false, "Get func");
+            //     await SetCheckValueInDevice(currentDevice, "Set tco type", getParamThermoCurrentMeter.TermocoupleType,
+            //         countChecked, loopDelay, t, "Get tco type");
+            // }
+
             // if (t.IsOk) await WriteIdentCommand(currentDevice, "Set freq", getParamLoad.Freq, t: t);
             // if (t.IsOk) await WriteIdentCommand(currentDevice, "Set ampl", getParamLoad.Ampl, t: t);
             // if (t.IsOk) await WriteIdentCommand(currentDevice, "Set dco", getParamLoad.Dco, t: t);
@@ -2131,12 +2206,15 @@ public class Stand1 : Notify
     /// Включение/выключение устройства
     /// </summary>
     /// <param name="device">Устройство</param>
-    /// <param name="values">Ответ который утройство должно отправить в ответ на запрос output</param>
+    /// <param name="countChecked"></param>
+    /// <param name="externalDelay"></param>
+    /// <param name="t"></param>
     /// <param name="on">true - вкл, false - выкл</param>
     /// <param name="externalStatus"></param>
+    /// <param name="values">Ответ который утройство должно отправить в ответ на запрос output</param>
     /// <returns>Результат включения/выключение</returns>
     private async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device,
-        int countChecked = 3, TempChecks t = null, bool on = true, bool externalStatus = false)
+        int countChecked = 3, int externalDelay = 200, TempChecks t = null, bool on = true, bool externalStatus = false)
     {
         string getOutputCmdName = "Get output";
         string SetOutputOnCmdName = "Set output on";
@@ -2219,7 +2297,7 @@ public class Stand1 : Notify
                         }
                     }
 
-                    await WriteIdentCommand(r, SetOutputOnCmdName, countChecked: 1, t: tp,
+                    await WriteIdentCommand(r, SetOutputOnCmdName, countChecked: 2, loopDelay: externalDelay, t: tp,
                         externalStatus: true);
 
                     if (tp.IsOk)
@@ -2254,14 +2332,15 @@ public class Stand1 : Notify
                         }
                     }
 
-                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
+                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 2, t: tp,
                         externalStatus: true);
                     //если выход вкл 
                     if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
                     {
                         //делаем выход вкл
                         await WriteIdentCommand(device, SetOutputOnCmdName, externalStatus: true);
-                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
+                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, loopDelay: externalDelay,
+                            countChecked: 2, t: tp,
                             externalStatus: true);
                     }
 
@@ -2378,7 +2457,8 @@ public class Stand1 : Notify
                         r.CtsRelayReceive = new();
                     }
 
-                    await WriteIdentCommand(r, SetOutputOffCmdName, countChecked: 1, t: tp, externalStatus: true);
+                    await WriteIdentCommand(r, SetOutputOffCmdName, countChecked: 2, loopDelay: externalDelay, t: tp,
+                        externalStatus: true);
 
                     if (tp.IsOk)
                     {
@@ -2400,7 +2480,8 @@ public class Stand1 : Notify
                         await CheckConnectPort(device, 1);
                     }
 
-                    if (!string.IsNullOrEmpty(device.ErrorStatus))
+                    if
+                        (!string.IsNullOrEmpty(device.ErrorStatus))
                     {
                         if (!device.ErrorStatus.Contains("неверна"))
                         {
@@ -2409,14 +2490,15 @@ public class Stand1 : Notify
                         }
                     }
 
-                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
+                    var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 2, t: tp,
                         externalStatus: true);
                     //если выход вкл 
                     if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
                     {
                         //делаем выход выкл
                         await WriteIdentCommand(device, SetOutputOffCmdName, externalStatus: true);
-                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp,
+                        cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 2,
+                            loopDelay: externalDelay, t: tp,
                             externalStatus: true);
                     }
 
@@ -2719,6 +2801,16 @@ public class Stand1 : Notify
             {
                 if (decimal.TryParse(str, out myDecimalValue))
                 {
+                    decimal x1 = Math.Floor(myDecimalValue);
+                    decimal x2 = myDecimalValue - Math.Floor(x1);
+                    if (x2 == 0)
+                    {
+                        return x1.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+                else
+                {
+                    myDecimalValue = Decimal.Parse(str, System.Globalization.NumberStyles.Float);
                     decimal x1 = Math.Floor(myDecimalValue);
                     decimal x2 = myDecimalValue - Math.Floor(x1);
                     if (x2 == 0)
