@@ -907,7 +907,7 @@ public class Stand1 : Notify
                     PercentCurrentTest = 100;
                     TestRun = TypeOfTestRun.CheckPortsReady;
                     CurrentCountChecked = string.Empty;
-                    TestCurrentDevice = new("");
+                    TestCurrentDevice = null;
                 }
                 //
 
@@ -948,7 +948,7 @@ public class Stand1 : Notify
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
-                TestCurrentDevice = new("");
+                TestCurrentDevice = null;
             }
             //
 
@@ -1084,7 +1084,7 @@ public class Stand1 : Notify
                     SubTestText = $"проверка портов, ок!";
                     TestRun = TypeOfTestRun.CheckPortsReady;
                     CurrentCountChecked = string.Empty;
-                    TestCurrentDevice = null; //new("");
+                    TestCurrentDevice = null; //null;
                 }
                 //
 
@@ -1107,7 +1107,7 @@ public class Stand1 : Notify
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
-                TestCurrentDevice = null; //new("");
+                TestCurrentDevice = null; //null;
             }
 
             //
@@ -1128,7 +1128,7 @@ public class Stand1 : Notify
                 PercentCurrentTest = 100;
                 TestRun = TypeOfTestRun.Error;
                 ProgressColor = Brushes.Red;
-                TestCurrentDevice = null; //new("");
+                TestCurrentDevice = null; //null;
             }
             //
 
@@ -1334,7 +1334,7 @@ public class Stand1 : Notify
                         PercentCurrentTest = 100;
                         TestRun = TypeOfTestRun.WriteDevicesCmdReady;
                         CurrentCountChecked = string.Empty;
-                        TestCurrentDevice = null; //new("");
+                        TestCurrentDevice = null; //null;
                     }
                     //
 
