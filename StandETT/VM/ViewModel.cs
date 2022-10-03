@@ -332,7 +332,7 @@ public class ViewModel : Notify
                 if (result == MessageBoxResult.No)
                 {
                     await stand.ResetAllTests();
-                    SelectTab = 0;
+                    SelectTab = 1;
                 }
                 if (result == MessageBoxResult.Yes)
                 {
@@ -368,7 +368,7 @@ public class ViewModel : Notify
                     SelectTab = 4;
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e.Message.Contains("несколько випов"))
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
@@ -377,7 +377,26 @@ public class ViewModel : Notify
                 {
                     SelectTab = 3;
                 }
+                if (result == MessageBoxResult.No)
+                {
+                    SelectTab = 1;
+                }
             }
+            catch (Exception e) 
+            {
+                const string caption = "Ошибка 0 замера";
+                var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    SelectTab = 3;
+                }
+                if (result == MessageBoxResult.No)
+                {
+                    SelectTab = 0;
+                }
+            }
+            
         }
     }
 
@@ -1046,7 +1065,7 @@ public class ViewModel : Notify
 
             else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
             {
-                TextCurrentTest = " Нулевой замер";
+                TextCurrentTest = "Нулевой замер: ";
                 // AllTabsDisable();
                 // CheckVipsTab = true;
             }
