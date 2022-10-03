@@ -619,6 +619,7 @@ public class Stand1 : Notify
             PercentCurrentTest = 0;
             ProgressColor = Brushes.SeaGreen;
         }
+
         //
         await WriteIdentCommand(relayMeter, nameCmds.cannel1, externalStatus: true, t: t);
         //
@@ -626,6 +627,7 @@ public class Stand1 : Notify
         {
             PercentCurrentTest = 50;
         }
+
         //
         await WriteIdentCommand(relayMeter, nameCmds.cannel2, externalStatus: true, t: t);
         //
@@ -633,8 +635,8 @@ public class Stand1 : Notify
         {
             PercentCurrentTest = 100;
         }
-        //
 
+        //
         t.Add(t.IsOk);
         return t.IsOk;
     }
@@ -718,7 +720,7 @@ public class Stand1 : Notify
         // if (t.IsOk)
         //     await OutputDevice(currentDevice, t: t);
         //TODO раскоенить раборчий код 
-        
+
         foreach (var vipTested in vipsTested)
         {
             if (t.IsOk) await OutputDevice(vipTested.Relay, t: t);
@@ -1351,10 +1353,11 @@ public class Stand1 : Notify
 
                 if (verifiedDevice.Value)
                 {
-                    if (!externalStatus)
-                    {
-                        verifiedDevice.Key.StatusTest = StatusDeviceTest.Ok;
-                    }
+                    verifiedDevice.Key.StatusTest = StatusDeviceTest.Ok;
+                    // if (!externalStatus)
+                    // {
+                    //   
+                    // }
 
                     //
                     if (!externalStatus)
@@ -1372,10 +1375,8 @@ public class Stand1 : Notify
                     return deviceReceived;
                 }
 
-                if (!externalStatus)
-                {
-                    verifiedDevice.Key.StatusTest = StatusDeviceTest.Error;
-                }
+
+                verifiedDevice.Key.StatusTest = StatusDeviceTest.Error;
 
 
                 TempChecks tp = TempChecks.Start();
@@ -1636,10 +1637,11 @@ public class Stand1 : Notify
                 {
                     PercentCurrentTest += ((1 / (float)devices.Count) * 100);
 
-                    if (!externalStatus)
-                    {
-                        checkDevice.Key.StatusTest = StatusDeviceTest.Ok;
-                    }
+                    checkDevice.Key.StatusTest = StatusDeviceTest.Ok;
+                    // if (!externalStatus)
+                    // {
+                    //   
+                    // }
 
                     t?.Add(true);
                     verifiedDevices.Remove(checkDevice.Key);
@@ -1650,10 +1652,7 @@ public class Stand1 : Notify
                     TempChecks tp = TempChecks.Start();
                     foreach (var verifiedDevice in verifiedDevices)
                     {
-                        if (!externalStatus)
-                        {
-                            verifiedDevice.Key.StatusTest = StatusDeviceTest.Error;
-                        }
+                        verifiedDevice.Key.StatusTest = StatusDeviceTest.Error;
 
 
                         if (verifiedDevice.Key.AllDeviceError.ErrorDevice ||
@@ -1683,10 +1682,11 @@ public class Stand1 : Notify
                 }
                 else
                 {
+                    devices.ForEach(x => x.StatusTest = StatusDeviceTest.Ok);
                     //
                     if (!externalStatus)
                     {
-                        devices.ForEach(x => x.StatusTest = StatusDeviceTest.Ok);
+                       
                         SubTestText = $"запись команд в устройства, oк!";
                         PercentCurrentTest = 100;
                         TestRun = TypeOfTestRun.WriteDevicesCmdReady;
@@ -2299,12 +2299,12 @@ public class Stand1 : Notify
         }
         else
         {
+            device.StatusTest = string.IsNullOrEmpty(device.ErrorStatus)
+                ? StatusDeviceTest.Ok
+                : StatusDeviceTest.Error;
             //
             if (!externalStatus)
             {
-                device.StatusTest = string.IsNullOrEmpty(device.ErrorStatus)
-                    ? StatusDeviceTest.Ok
-                    : StatusDeviceTest.Error;
                 device.StatusOnOff = on ? OnOffStatus.On : OnOffStatus.Off;
             }
             //
@@ -2352,10 +2352,10 @@ public class Stand1 : Notify
 
                     if (tp.IsOk)
                     {
+                        r.StatusTest = StatusDeviceTest.Ok;
                         //
                         if (!externalStatus)
                         {
-                            r.StatusTest = StatusDeviceTest.Ok;
                             r.StatusOnOff = OnOffStatus.On;
                         }
                         //
@@ -2396,14 +2396,13 @@ public class Stand1 : Notify
 
                     if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
                     {
+                        device.StatusTest = StatusDeviceTest.Ok;
                         //
                         if (!externalStatus)
                         {
                             SubTestText = $"выход устройства включен";
                             PercentCurrentTest = 100;
                             TestCurrentDevice = device;
-
-                            device.StatusTest = StatusDeviceTest.Ok;
                             device.StatusOnOff = OnOffStatus.On;
                         }
                         //
@@ -2418,6 +2417,7 @@ public class Stand1 : Notify
                         device.ErrorStatus =
                             $"Ошибка уcтройства {device.IsDeviceType}, команда Output On/неверна";
 
+                        device.StatusTest = StatusDeviceTest.Error;
                         //
                         if (!externalStatus)
                         {
@@ -2426,11 +2426,9 @@ public class Stand1 : Notify
                             TestCurrentDevice = device;
                             TestRun = TypeOfTestRun.Error;
                             ProgressColor = Brushes.Red;
-
-                            device.StatusTest = StatusDeviceTest.Error;
+                            
                             device.StatusOnOff = OnOffStatus.None;
                         }
-
                         //
                         if (i == countChecked)
                         {
@@ -2442,6 +2440,7 @@ public class Stand1 : Notify
                     }
                 }
 
+                device.StatusTest = StatusDeviceTest.Error;
                 if (!tp.IsOk)
                 {
                     //
@@ -2452,8 +2451,6 @@ public class Stand1 : Notify
                         TestCurrentDevice = device;
                         TestRun = TypeOfTestRun.Error;
                         ProgressColor = Brushes.Red;
-
-                        device.StatusTest = StatusDeviceTest.Error;
                         device.StatusOnOff = OnOffStatus.None;
                     }
                     //
@@ -2512,9 +2509,9 @@ public class Stand1 : Notify
 
                     if (tp.IsOk)
                     {
+                        r.StatusTest = StatusDeviceTest.Ok;
                         if (!externalStatus)
                         {
-                            r.StatusTest = StatusDeviceTest.Ok;
                             r.StatusOnOff = OnOffStatus.Off;
                         }
 
@@ -2562,10 +2559,10 @@ public class Stand1 : Notify
                             TestCurrentDevice = device;
                         }
 
+                        device.StatusTest = StatusDeviceTest.Ok;
                         //
                         if (!externalStatus)
                         {
-                            device.StatusTest = StatusDeviceTest.Ok;
                             device.StatusOnOff = OnOffStatus.Off;
                         }
 
@@ -2578,6 +2575,7 @@ public class Stand1 : Notify
                         device.AllDeviceError.ErrorParam = true;
                         device.ErrorStatus =
                             $"Ошибка уcтройства {device.IsDeviceType}, команда Output Off/неверна";
+                        device.StatusTest = StatusDeviceTest.Error;
                         //
                         if (!externalStatus)
                         {
@@ -2587,7 +2585,7 @@ public class Stand1 : Notify
                             TestRun = TypeOfTestRun.Error;
                             ProgressColor = Brushes.Red;
 
-                            device.StatusTest = StatusDeviceTest.Error;
+                           
                             device.StatusOnOff = OnOffStatus.None;
                         }
 
@@ -2604,6 +2602,7 @@ public class Stand1 : Notify
 
                 if (!tp.IsOk)
                 {
+                    device.StatusTest = StatusDeviceTest.Error;
                     //
                     if (!externalStatus)
                     {
@@ -2613,7 +2612,6 @@ public class Stand1 : Notify
                         TestRun = TypeOfTestRun.Error;
                         ProgressColor = Brushes.Red;
 
-                        device.StatusTest = StatusDeviceTest.Error;
                         device.StatusOnOff = OnOffStatus.None;
                     }
 
@@ -2627,10 +2625,10 @@ public class Stand1 : Notify
             }
         }
 
+        device.StatusTest = StatusDeviceTest.Ok;
         //
         if (!externalStatus)
         {
-            device.StatusTest = StatusDeviceTest.Ok;
             device.StatusOnOff = OnOffStatus.On;
         }
 
