@@ -38,13 +38,13 @@ public class TypeVip : Notify
     #region Значения для Випов
 
     //максимальные значения во время цикла испытаниий 1...n, они означают ошибку
-    public double MaxTemperature { get; set; }
+    public decimal MaxTemperature { get; set; }
+    public decimal PercentAccuracyTemperature { get; set; }
+    public decimal MaxVoltageIn { get; set; }
 
-    public double MaxVoltageIn { get; set; }
+    private decimal maxVoltageOut1;
 
-    private double maxVoltageOut1;
-
-    public double MaxVoltageOut1
+    public decimal MaxVoltageOut1
     {
         get => maxVoltageOut1;
         set
@@ -54,9 +54,9 @@ public class TypeVip : Notify
         }
     }
 
-    private double maxVoltageOut2;
+    private decimal maxVoltageOut2;
 
-    public double MaxVoltageOut2
+    public decimal MaxVoltageOut2
     {
         get => maxVoltageOut2;
         set
@@ -66,13 +66,13 @@ public class TypeVip : Notify
         }
     }
 
-    public double MaxCurrentIn { get; set; }
+    public decimal MaxCurrentIn { get; set; }
 
 
     //максимальные значения во время замера 0
-    public double PrepareMaxCurrentIn { get; set; }
-    public double PrepareMaxVoltageOut1 { get; set; }
-    public double PrepareMaxVoltageOut2 { get; set; }
+    public decimal PrepareMaxCurrentIn { get; set; }
+    public decimal PrepareMaxVoltageOut1 { get; set; }
+    public decimal PrepareMaxVoltageOut2 { get; set; }
 
     private bool enableTypeVipName = true;
 
@@ -82,9 +82,9 @@ public class TypeVip : Notify
         set => Set(ref enableTypeVipName, value);
     }
 
-    public double PercentAccuracyVoltages { get; set; }
+    public decimal PercentAccuracyVoltages { get; set; }
 
-    public double PercentAccuracyCurrent { get; set; }
+    public decimal PercentAccuracyCurrent { get; set; }
     public bool VoltageOut2Using { get; set; }
 
     #endregion
@@ -96,6 +96,7 @@ public class TypeVip : Notify
     public ObservableCollection<BaseDeviceValues> BaseDeviceValues = new ObservableCollection<BaseDeviceValues>();
 
     public DeviceParameters Parameters;
+
 
     public void SetDeviceParameters(DeviceParameters dp)
     {
@@ -123,8 +124,9 @@ public class DeviceParameters
     public HeatValues HeatValues { get; set; }
     public SupplyValues SupplyValues { get; set; }
     public ThermoCurrentMeterValues ThermoCurrentValues { get; set; }
+
     public VoltMeterValues VoltValues { get; set; }
-  //  public BaseDeviceValues SmallLoadValues { get; set; }
+    //  public BaseDeviceValues SmallLoadValues { get; set; }
 }
 
 public class BaseDeviceValues
@@ -189,7 +191,7 @@ public class VoltMeterValues : BaseDeviceValues
         {
             return;
         }
-        else if (double.Parse(VoltMaxLimit) == 0.1)
+        else if (decimal.Parse(VoltMaxLimit) == 0.1M)
         {
             ReturnVoltGDM = "1";
         }
@@ -264,19 +266,19 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
         {
             ReturnFuncGDM = "5";
 
-            if (double.Parse(CurrMaxLimit) == 0.010)
+            if (decimal.Parse(CurrMaxLimit) == 0.010M)
             {
                 ReturnCurrGDM = "1";
             }
-            else if (int.Parse(CurrMaxLimit) == 0.100)
+            else if (decimal.Parse(CurrMaxLimit) == 0.100M)
             {
                 ReturnCurrGDM = "2";
             }
-            else if (int.Parse(CurrMaxLimit) == 1)
+            else if (decimal.Parse(CurrMaxLimit) == 1)
             {
                 ReturnCurrGDM = "3";
             }
-            else if (double.Parse(CurrMaxLimit) == 10)
+            else if (decimal.Parse(CurrMaxLimit) == 10)
             {
                 ReturnFuncGDM = "3";
                 ReturnCurrGDM = "1";

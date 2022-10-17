@@ -142,4 +142,9 @@ public class MainRelay : BaseDevice
                 CurrentCmd.Terminator.ReceiveTerminator);
         }
     }
+
+    public void SetReceiveLenght(int parse)
+    {
+        port.SetReceiveLenght(parse);
+    }
 }

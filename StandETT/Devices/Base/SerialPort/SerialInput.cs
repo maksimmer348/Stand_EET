@@ -11,11 +11,15 @@ namespace StandETT;
 public class SerialInput : ISerialLib
 {
     protected SerialPortInput Port;
+    
     public bool Dtr { get; set; }
     public string GetPortNum { get; set; }
 
     public int Delay { get; set; }
-
+    
+    // public long Ss { get => Port.Ss; }
+    
+    
 
     public Action<bool> PortConnecting { get; set; }
     public Action<byte[]> Receiving { get; set; }
@@ -164,6 +168,12 @@ public class SerialInput : ISerialLib
         Port.DtrEnableSP = true;
         Port.DtrEnableSS = true;
     }
+
+    public void SetReceiveLenght(int receiveLenght)
+    {
+        Port.ReceiveLenght = receiveLenght;
+    }
+
     public void DiscardInBuffer()
     {
         Port.Flush();
@@ -178,6 +188,7 @@ public class SerialInput : ISerialLib
 
     public void OnPortMessageReceived(object sender, MessageReceivedEventArgs args)
     {
+        //Debug.WriteLine(s.ElapsedMilliseconds); 
         Receiving.Invoke(args.Data);
     }
 
@@ -205,15 +216,17 @@ public class SerialInput : ISerialLib
         }
     }
 
+    private Stopwatch s = new Stopwatch();
     public void TransmitCmdHexString(string cmd, int delay = 0, string terminator = null, bool isXor = false)
     {
+       
         if (string.IsNullOrEmpty(cmd))
         {
             throw new Exception($"SerialInput exception: Команда - не должна быть пустой");
             return;
         }
 
-        //преобразуем входную строку команды в байтовый массив команды
+        //s. входную строку команды в байтовый массив команды
         var cmdMsg = ISerialLib.StringToByteArray(cmd);
 
         //создаем список чтобы можно было легче приклеить xor сумму к массиву команды
@@ -233,9 +246,9 @@ public class SerialInput : ISerialLib
             var term = ISerialLib.StringToByteArray(terminator);
             t.AddRange(term);
         }
-
         try
         {
+           
             Port.SendMessage(t.ToArray());
         }
         catch (Exception e)
@@ -244,6 +257,4 @@ public class SerialInput : ISerialLib
                 $"Команда \"{cmdMsg}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
         }
     }
-
-   
 }

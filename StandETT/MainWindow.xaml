@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StandETT"
         mc:Ignorable="d"
-        Title="Стенд ЕТТ" MinHeight="720" MinWidth="1200" Height="710" Width="1000" IsEnabled="{Binding WindowDisabled}">
+        Title="Стенд ЕТТ" MinHeight="760" MinWidth="1200" Height="768" Width="1000" IsEnabled="{Binding WindowDisabled}">
     <Window.DataContext>
         <local:ViewModel />
     </Window.DataContext>
@@ -370,6 +370,7 @@
                             <TextBlock HorizontalAlignment="Center">
                                 До конца испытаний 10:00:4
                             </TextBlock>
+
                             <Button MinHeight="10" MinWidth="80"
                                     Content="Создать отчет"
                                     Command="{Binding CreateReportCmd}" Width="94" />
@@ -728,42 +729,66 @@
                         </StackPanel>
 
 
-                        <StackPanel Grid.Row="1">
-                            <!--<d:Style.DataContext>
-                                <x:Type Type="local:TypeVip" />
-                            </d:Style.DataContext>-->
-                            <TextBlock Text="Имя" />
-                            <TextBox Text="{Binding TypeVipNameSettings }" />
+                        <Grid Grid.Row="1">
 
-                            <TextBlock Text="Максимальный ток 0 замера" />
-                            <TextBox Text="{Binding PrepareMaxCurrentIn}" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
 
-                            <TextBlock Text="Максимальный ток" />
-                            <TextBox Text="{Binding MaxCurrentIn}" />
+                            <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="0" Margin="0,0,0,10">
+                                <TextBlock Text="Имя" />
+                                <TextBox Text="{Binding TypeVipNameSettings }" />
+                            </StackPanel>
 
-                            <TextBlock Text="Процент погрешности тока" />
-                            <TextBox Text="{Binding PercentAccuracyCurrent}" />
+                            <StackPanel  Grid.Row="1" Grid.Column="0">
 
-                            <TextBlock Text="Максимальное напряжение 1" />
-                            <TextBox Text="{Binding MaxVoltageOut1}" />
+                                <TextBlock Text="Max Ток 0 замера" />
+                                <TextBox Text="{Binding PrepareMaxCurrentIn}" />
 
-                            <TextBlock Text="Максимальное напряжение 2" />
-                            <TextBox Text="{Binding MaxVoltageOut2}" />
+                                <TextBlock Text="Max ток" />
+                                <TextBox Text="{Binding MaxCurrentIn}" />
 
-                            <TextBlock Text="Процент погрешности напяжений" />
-                            <TextBox Text="{Binding PercentAccuracyVoltages}" />
+                                <TextBlock Text="Max напряжение 1" />
+                                <TextBox Text="{Binding MaxVoltageOut1}" />
+
+                                <TextBlock Text="Max напряжение 2" />
+                                <TextBox Text="{Binding MaxVoltageOut2}" />
+
+                                <TextBlock Text="Max температура" />
+                                <TextBox Text="{Binding Temperature}" />
+
+                                <TextBlock DockPanel.Dock="Left" Text="Общее время замера" />
+                                <TextBox Text="{Binding TestAllTime}" />
+
+                                <TextBlock Text="Интервалы замеров" />
+                                <TextBox Text="{Binding TestIntervalTime}" />
 
 
-                            <TextBlock DockPanel.Dock="Left" Text="Общее время замера" />
-                            <TextBox Text="{Binding TestAllTime}" />
+                                <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
+                                <Button Command="{Binding RemoveTypeVipSettingsCmd}" Content="Удалить" />
+                            </StackPanel>
 
-                            <TextBlock Text="Интервалы замеров" />
-                            <TextBox Text="{Binding TestIntervalTime}" />
+                            <StackPanel Grid.Row="1"  Grid.Column="1" >
+                                <TextBlock Text="% погрешности" />
+                                <TextBox Text="{Binding PercentAccuracyCurrent}" />
+                                <TextBlock Text="% погрешности" />
+                                <TextBox Text="{Binding PercentAccuracyCurrent}" />
 
+                                <TextBlock Text="% погрешности" />
+                                <TextBox Text="{Binding PercentAccuracyVoltages}" />
 
-                            <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
-                            <Button Command="{Binding RemoveTypeVipSettingsCmd}" Content="Удалить" />
-                        </StackPanel>
+                                <TextBlock Text="% погрешности" />
+                                <TextBox Text="{Binding PercentAccuracyVoltages}" />
+
+                                <TextBlock Text="% погрешности" />
+                                <TextBox Text="{Binding PercentAccuracyTemperature}" />
+                            </StackPanel>
+                        </Grid>
 
                     </Grid>
 
@@ -961,6 +986,7 @@
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Content="Начать/повторить тест"
                             Command="{Binding StartTestDevicesCmd}" IsEnabled="{Binding StartTestDevicesBtnEnabled}"/>
+                    
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Content="Открыть конфиг"
                             Command="{Binding DeviceConfigCmd}" IsEnabled="{Binding DeviceConfigBtnEnabled}" />

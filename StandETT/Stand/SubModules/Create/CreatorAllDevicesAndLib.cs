@@ -267,11 +267,11 @@ class CreatorAllDevicesAndLib
                 terminator: TypeTerminator.CRLF, receiveTerminator: TypeTerminator.LF, type: TypeCmd.Text);
             libCmd.AddCommand("Status", "MRS", "4980", 200, "FF", type: TypeCmd.Hex, isXor: true);
             //статусы випы
-            libCmd.AddCommand("Status", "0", "4E502E", 200, "AD4B", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Status", "1", "4E512E", 200, "AE4B", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Status", "2", "4E522E", 200, "AF4B", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Status", "3", "4E532E", 200, "B04B", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Status", "C", "4E5C2E", 200, "B94B", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Status", "0", "4E502E", 200, "AD4B", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Status", "1", "4E512E", 200, "AE4B", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Status", "2", "4E522E", 200, "AF4B", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Status", "3", "4E532E", 200, "B04B", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Status", "C", "4E5C2E", 200, "B94B", type: TypeCmd.Hex, isXor: true, length: "4");
 
             //--
 
@@ -296,7 +296,7 @@ class CreatorAllDevicesAndLib
             libCmd.AddCommand("Get curr meter", "GDM-78255A", "conf:stat:rang?", 200,
                 terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Get volt meter", "GDM-78255A", "conf:stat:rang?", 200, terminator: TypeTerminator.LFCR,
-                receiveTerminator: TypeTerminator.LF);
+                receiveTerminator: TypeTerminator.LFCR);
             libCmd.AddCommand("Get all value", "GDM-78255A", "val1?", 200,
                 terminator: TypeTerminator.LFCR, receiveTerminator: TypeTerminator.LFCR, type: TypeCmd.Text);
             libCmd.AddCommand("Get tco type", "GDM-78255A", "sens:temp:tco:type?", 200,
@@ -352,24 +352,46 @@ class CreatorAllDevicesAndLib
 
             //реле измерителей
             //вкл
-            libCmd.AddCommand("On 01", "MRS", "4901", 200, "01", type: TypeCmd.Hex, isXor: true, length: 6);
-            libCmd.AddCommand("On 02", "MRS", "4902", 200, "02", type: TypeCmd.Hex, isXor: true, length: 6);
-            libCmd.AddCommand("On 03", "MRS", "4903", 200, "03", type: TypeCmd.Hex, isXor: true, length: 6);
-            libCmd.AddCommand("On 04", "MRS", "4904", 200, "04", type: TypeCmd.Hex, isXor: true, length: 6);
-            libCmd.AddCommand("On 05", "MRS", "4905", 200, "05", type: TypeCmd.Hex, isXor: true, length: 6);
-            //реле випов
+            //1канал
+            libCmd.AddCommand("On 01", "MRS", "4901", 400, "01", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 02", "MRS", "4902", 400, "02", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 03", "MRS", "4903", 400, "03", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 04", "MRS", "4904", 400, "04", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 05", "MRS", "4905", 400, "05", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 06", "MRS", "4906", 400, "06", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 07", "MRS", "4907", 400, "07", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 08", "MRS", "4908", 400, "08", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 09", "MRS", "4909", 400, "09", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 0A", "MRS", "49AC", 400, "0A", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 0B", "MRS", "490B", 400, "0B", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 0C", "MRS", "490C", 400, "0C", type: TypeCmd.Hex, isXor: true, length: "3");
+
+            //2 канал
+            libCmd.AddCommand("On 11", "MRS", "4911", 400, "11", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 12", "MRS", "4912", 400, "12", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 13", "MRS", "4913", 400, "13", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 14", "MRS", "4914", 400, "14", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 15", "MRS", "4915", 400, "15", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 16", "MRS", "4916", 400, "16", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 17", "MRS", "4917", 400, "17", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 18", "MRS", "4918", 400, "18", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 19", "MRS", "4919", 400, "19", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 1A", "MRS", "491A", 400, "1A", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 1B", "MRS", "491B", 400, "1B", type: TypeCmd.Hex, isXor: true, length: "3");
+            libCmd.AddCommand("On 1C", "MRS", "491C", 400, "1C", type: TypeCmd.Hex, isXor: true, length: "3");
+            //реле ви1ов
             //вкл
-            libCmd.AddCommand("On", "0", "4E5061", 5500, "AD1", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("On", "1", "4E5161", 5500, "AE1", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("On", "2", "4E5261", 5500, "AF1", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("On", "3", "4E5361", 5500, "B01", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("On", "C", "4E5C61", 5500, "B91", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("On", "0", "4E5061", 5500, "AD1", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("On", "1", "4E5161", 5500, "AE1", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("On", "2", "4E5261", 5500, "AF1", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("On", "3", "4E5361", 5500, "B01", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("On", "C", "4E5C61", 5500, "B91", type: TypeCmd.Hex, isXor: true, length: "4");
             //выкл
-            libCmd.AddCommand("Off", "0", "4E50B8", 200, "AD99", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Off", "1", "4E51B8", 200, "AE99", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Off", "2", "4E52B8", 200, "AF99", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Off", "3", "4E53B8", 200, "B099", type: TypeCmd.Hex, isXor: true, length: 8);
-            libCmd.AddCommand("Off", "C", "4E5CB8", 200, "B999", type: TypeCmd.Hex, isXor: true, length: 8);
+            libCmd.AddCommand("Off", "0", "4E50B8", 200, "AD99", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Off", "1", "4E51B8", 200, "AE99", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Off", "2", "4E52B8", 200, "AF99", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Off", "3", "4E53B8", 200, "B099", type: TypeCmd.Hex, isXor: true, length: "4");
+            libCmd.AddCommand("Off", "C", "4E5CB8", 200, "B999", type: TypeCmd.Hex, isXor: true, length: "4");
             //
 
             #endregion
@@ -400,10 +422,10 @@ class CreatorAllDevicesAndLib
                 MaxVoltageIn = 220,
                 MaxVoltageOut1 = 40,
                 MaxVoltageOut2 = 45,
-                MaxCurrentIn = 2.5,
+                MaxCurrentIn = 2.5M,
                 //максимальные значения во время предпотготовки испытания (PrepareMaxVoltageOut1 и PrepareMaxVoltageOut2
                 //берутся из MaxVoltageOut1 и MaxVoltageOut2 соотвественно)
-                PrepareMaxCurrentIn = 0.5,
+                PrepareMaxCurrentIn = 0.5M,
                 //процент погрешности измерения
                 PercentAccuracyCurrent = 10,
                 PercentAccuracyVoltages = 5,
@@ -437,7 +459,7 @@ class CreatorAllDevicesAndLib
                 MaxCurrentIn = 5,
                 //максимальные значения во время предпотготовки испытания (PrepareMaxVoltageOut1 и PrepareMaxVoltageOut2
                 //берутся из MaxVoltageOut1 и MaxVoltageOut2 соотвественно)
-                PrepareMaxCurrentIn = 0.5,
+                PrepareMaxCurrentIn = 0.5M,
                 //процент погрешности измерения
                 PercentAccuracyCurrent = 10,
                 PercentAccuracyVoltages = 5,

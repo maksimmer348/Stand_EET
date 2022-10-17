@@ -8,7 +8,7 @@ namespace StandETT;
 public class BaseLibCmd
 {
     private static BaseLibCmd instance;
-    
+
     public List<Terminator> Terminators = new();
 
 
@@ -71,15 +71,13 @@ public class BaseLibCmd
     public void AddCommand(string nameCmd, string nameDevice, string transmit,
         int delay, string receive = null, bool isParam = false, TypeTerminator terminator = TypeTerminator.None,
         TypeTerminator receiveTerminator = TypeTerminator.None, TypeCmd type = TypeCmd.Text,
-        bool isXor = false, int length = 0)
+        bool isXor = false, string length = null)
     {
         var tTx = Terminators.First(x => x.Type == terminator && x.TypeEncod == type);
         var tRx = Terminators.First(x => x.Type == receiveTerminator && x.TypeEncod == type);
         string lenghtStr = null;
-        if (length > 0)
-        {
-            lenghtStr = length.ToString();
-        }
+
+        lenghtStr = length?.ToString();
         
         try
         {

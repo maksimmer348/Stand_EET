@@ -12,8 +12,7 @@ public class  VoltMeter : BaseDevice
     {
         IsDeviceType = "Вольтметр";
     }
-
-
+    
 }
 
 public enum MeterMode

@@ -154,4 +154,6 @@ public interface ISerialLib
     }
 
     void DtrEnable();
+    
+    void SetReceiveLenght(int receiveLenght);
 }

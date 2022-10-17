@@ -68,15 +68,30 @@ public class RelayVip : BaseDevice
 
     public override void WriteCmd(string nameCommand, string parameter = null)
     {
-        CurrentCmd = GetLibItem(nameCommand, Name);
-
-
+        if (!string.IsNullOrEmpty(nameCommand))
+        {
+            CurrentCmd = GetLibItem(nameCommand, Name);
+        }
+        else if (!string.IsNullOrEmpty(nameExternalCmd))
+        {
+            CurrentCmd = GetLibItem(nameExternalCmd, Name);
+        }
+        
         if (CurrentCmd == null)
         {
             throw new Exception(
                 $"Такое устройство - {IsDeviceType}/{Name} или команда - {nameCommand}, в библиотеке не найдены");
         }
 
+        if (!string.IsNullOrEmpty(CurrentCmd.Length))
+        {
+            MainRelay.SetReceiveLenght(int.Parse(CurrentCmd.Length)); 
+        }
+        else
+        {
+            MainRelay.SetReceiveLenght(0); 
+        }
+        
         Name = Name;
         NameCurrentCmd = nameCommand;
         if (NameCurrentCmd == "On")
@@ -115,6 +130,7 @@ public class RelayVip : BaseDevice
     public RelayVipError ErrorVip { get; set; }
 
     private OnOffStatus statusOnOff;
+    
 
     public OnOffStatus StatusOnOff
     {

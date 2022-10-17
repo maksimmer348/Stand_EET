@@ -9,6 +9,7 @@ namespace StandETT;
 public class SerialGod : ISerialLib
 {
     private GodSerialPort port;
+    public int ReceiveLenght { get; set; }
     public bool Dtr { get; set; }
     public string GetPortNum { get; set; }
 
@@ -203,5 +204,10 @@ public class SerialGod : ISerialLib
     public void DtrEnable()
     {
         port.DtrEnable = true;
+    }
+
+    public void SetReceiveLenght(int receiveLenght)
+    {
+        throw new NotImplementedException();
     }
 }

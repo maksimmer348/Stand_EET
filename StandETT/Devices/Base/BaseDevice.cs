@@ -57,6 +57,8 @@ public class BaseDevice : Notify
         set => Set(ref nameCurrentCmd, value);
     }
 
+    protected string nameExternalCmd;
+    
     /// <summary>
     /// Текущая команда устройства может из библиотеки
     /// </summary>
@@ -87,6 +89,8 @@ public class BaseDevice : Notify
         set => Set(ref currentParameterGet, value);
     }
 
+    public bool IsReceive { get; set; }
+    
     #endregion
 
     //---
@@ -240,7 +244,7 @@ public class BaseDevice : Notify
     #region --Вспомогательные поля
 
     //
-    [JsonIgnore] Stopwatch stopwatch = new();
+    //[JsonIgnore] Stopwatch s = new();
     //
 
     //
@@ -342,7 +346,6 @@ public class BaseDevice : Notify
         SetPort();
         PortIsOpen = port.Open();
         port.Dtr = Config.Dtr;
-        
     }
 
     public void SetPort()
@@ -360,6 +363,7 @@ public class BaseDevice : Notify
         SetInvoke();
         port.SetPort(Config.PortName, Config.Baud, Config.StopBits, Config.Parity, Config.DataBits);
         port.Dtr = true;
+       
     }
 
     private void SetInvoke()
@@ -446,17 +450,21 @@ public class BaseDevice : Notify
                                          !string.IsNullOrEmpty(CurrentCmd.Receive);
         AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
         AllDeviceError.ErrorTimeout =
-            !string.IsNullOrEmpty(CurrentCmd.Receive) || !string.IsNullOrEmpty(CurrentParameterGet);
+            !string.IsNullOrEmpty(CurrentCmd.Receive) || !string.IsNullOrEmpty(CurrentParameterGet)||IsReceive;
         //
     }
+
 
     /// <summary>
     /// Отправка в устройство (есть в библиотеке команд) команд из устройства
     /// </summary>
     /// <param name="nameCommand">Имя команды (например Status)</param>
+    /// <param name="nameExternalSetCommand"></param>
     /// <param name="parameter">Ответ от устройств из команды (Receive)</param>
     public virtual void WriteCmd(string nameCommand, string parameter = null)
     {
+        //stopwatch.Restart();
+        
         NameCurrentCmd = nameCommand;
         CurrentParameter = parameter;
 
@@ -470,13 +478,24 @@ public class BaseDevice : Notify
                 $"Такое устройство - {IsDeviceType}/{Name} или команда - {nameCommand}, в библиотеке не найдены");
         }
 
+        if (!string.IsNullOrEmpty(CurrentCmd.Length))
+        {
+            port.SetReceiveLenght(int.Parse(CurrentCmd.Length));
+        }
+        else
+        {
+            port.SetReceiveLenght(0);
+        }
+
         if (CurrentCmd.MessageType == TypeCmd.Hex)
         {
             TypeReceive = TypeCmd.Hex;
             if (CurrentCmd.IsXor)
             {
+                
                 port.TransmitCmdHexString(CurrentCmd.Transmit + parameter, CurrentCmd.Delay,
                     CurrentCmd.Terminator.ReceiveTerminator, true);
+             
             }
             else
             {
@@ -517,6 +536,11 @@ public class BaseDevice : Notify
 
         return result;
     }
+    
+    public void ExternalSetCmd(string nameCmd)
+    {
+        nameExternalCmd = nameCmd;
+    }
 
     //TODO вернуть
     // protected ( KeyValuePair<DeviceIdentCmd, DeviceCmd> cmd, BaseDevice baseDevice) GetLibItemInReceive(
@@ -539,4 +563,6 @@ public class BaseDevice : Notify
     // }
 
     #endregion
+    
+   
 }

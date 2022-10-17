@@ -325,7 +325,7 @@ public class ViewModel : Notify
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
-                
+
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo);
 
@@ -334,6 +334,7 @@ public class ViewModel : Notify
                     await stand.ResetAllTests();
                     SelectTab = 1;
                 }
+
                 if (result == MessageBoxResult.Yes)
                 {
                     await stand.ResetAllTests();
@@ -346,7 +347,9 @@ public class ViewModel : Notify
         {
             try
             {
-                bool mesZero = await stand.MeasurementZero();
+                await  stand.PrepareMeasurementCycle();
+                
+               // bool mesZero = await stand.MeasurementZero();
 
                 // if (mesZero)
                 // {
@@ -377,12 +380,13 @@ public class ViewModel : Notify
                 {
                     SelectTab = 3;
                 }
+
                 if (result == MessageBoxResult.No)
                 {
                     SelectTab = 1;
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
@@ -391,12 +395,12 @@ public class ViewModel : Notify
                 {
                     SelectTab = 3;
                 }
+
                 if (result == MessageBoxResult.No)
                 {
                     SelectTab = 0;
                 }
             }
-            
         }
     }
 
@@ -533,6 +537,7 @@ public class ViewModel : Notify
             //получение текущего индекса
             var index = IndexSelectCmd;
 
+
             libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, DelayCmdLib,
                 ReceiveCmdLib, IsTransmitParam,
                 terminator: SelectTerminatorTransmit.Type, receiveTerminator: SelectTerminatorReceive.Type,
@@ -619,12 +624,16 @@ public class ViewModel : Notify
         var typeConfig = new TypeVip();
 
         typeConfig.Type = TypeVipNameSettings;
-        typeConfig.PrepareMaxCurrentIn = Convert.ToDouble(PrepareMaxCurrentIn);
-        typeConfig.MaxCurrentIn = Convert.ToDouble(MaxCurrentIn);
-        typeConfig.PercentAccuracyCurrent = Convert.ToDouble(PercentAccuracyCurrent);
-        typeConfig.MaxVoltageOut1 = Convert.ToDouble(MaxVoltageOut1);
-        typeConfig.MaxVoltageOut2 = Convert.ToDouble(MaxVoltageOut2);
-        typeConfig.PercentAccuracyVoltages = Convert.ToDouble(PercentAccuracyVoltages);
+        typeConfig.PrepareMaxCurrentIn = Convert.ToDecimal(PrepareMaxCurrentIn);
+        typeConfig.MaxCurrentIn = Convert.ToDecimal(MaxCurrentIn);
+        typeConfig.PercentAccuracyCurrent = Convert.ToDecimal(PercentAccuracyCurrent);
+        typeConfig.MaxVoltageOut1 = Convert.ToDecimal(MaxVoltageOut1);
+        typeConfig.MaxVoltageOut2 = Convert.ToDecimal(MaxVoltageOut2);
+        typeConfig.PercentAccuracyVoltages = Convert.ToDecimal(PercentAccuracyVoltages);
+        typeConfig.PercentAccuracyTemperature = Convert.ToDecimal(PercentAccuracyTemperature);
+        
+        typeConfig.MaxTemperature = Convert.ToDecimal(Temperature);
+
         typeConfig.VoltageOut2Using = voltageOuе2Using;
         typeConfig.SetDeviceParameters(new DeviceParameters()
         {
@@ -679,6 +688,8 @@ public class ViewModel : Notify
             MaxVoltageOut1 = null;
             MaxVoltageOut2 = null;
             PercentAccuracyVoltages = null;
+            PercentAccuracyTemperature = null;
+            Temperature = null;
             voltageOuе2Using = false;
 
             FreqLoad = null;
@@ -741,7 +752,7 @@ public class ViewModel : Notify
         get => windowDisabled;
         set => Set(ref windowDisabled, value);
     }
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -817,7 +828,7 @@ public class ViewModel : Notify
     /// </summary>
     public double PercentCurrentReset => stand.PercentCurrentReset;
 
-    
+
     /// <summary>
     /// Уведомляет текстом какое устройство проходит тест
     /// </summary>
@@ -1525,9 +1536,9 @@ public class ViewModel : Notify
         set => Set(ref delayCmdLib, value);
     }
 
-    private int lengthCmdLib;
+    private string lengthCmdLib;
 
-    public int LengthCmdLib
+    public string LengthCmdLib
     {
         get => lengthCmdLib;
         set => Set(ref lengthCmdLib, value);
@@ -1552,7 +1563,7 @@ public class ViewModel : Notify
             SelectTerminatorReceive = SelectedCmdLib.Value.ReceiveTerminator;
             TypeMessageCmdLib = SelectedCmdLib.Value.MessageType;
             DelayCmdLib = SelectedCmdLib.Value.Delay;
-            LengthCmdLib = Convert.ToInt32(SelectedCmdLib.Value.Length);
+            LengthCmdLib = SelectedCmdLib.Value.Length;
 
             //
             if (selectedCmdLib.Key.NameCmd.ToLower().Contains("set"))
@@ -1592,7 +1603,7 @@ public class ViewModel : Notify
     public Brush ProgressColor => stand.ProgressColor;
 
     public Brush ProgressResetColor => stand.ProgressResetColor;
-    
+
     #endregion
 
     //--
@@ -1631,6 +1642,9 @@ public class ViewModel : Notify
                 MaxVoltageOut2 = selectTypeVipSettings.MaxVoltageOut2.ToString(CultureInfo.InvariantCulture);
                 PercentAccuracyVoltages =
                     selectTypeVipSettings.PercentAccuracyVoltages.ToString(CultureInfo.InvariantCulture);
+                PercentAccuracyTemperature = selectTypeVipSettings.PercentAccuracyTemperature.ToString(CultureInfo.InvariantCulture);
+                Temperature =
+                    selectTypeVipSettings.MaxTemperature.ToString(CultureInfo.InvariantCulture);
 
                 FreqLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Freq;
                 AmplLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Ampl;
@@ -1751,6 +1765,23 @@ public class ViewModel : Notify
     {
         get => percentAccuracyVoltages;
         set => Set(ref percentAccuracyVoltages, value);
+    }
+
+    private string percentAccuracyTemperature;
+
+    public string PercentAccuracyTemperature
+    {
+        get => percentAccuracyTemperature;
+        set => Set(ref percentAccuracyTemperature, value);
+    }
+
+
+    private string temperature;
+
+    public string Temperature
+    {
+        get => temperature;
+        set => Set(ref temperature, value);
     }
 
     private int currentTypeVipSettings;
