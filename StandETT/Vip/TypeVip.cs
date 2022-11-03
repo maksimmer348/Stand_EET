@@ -35,13 +35,33 @@ public class TypeVip : Notify
         set => Set(ref type, value);
     }
 
+    private string specifications = "ЯКЛЮ.436638.001 ТУ";
+
+    /// <summary>
+    /// Тип Випа
+    /// </summary>
+    public string Specifications
+    {
+        get => specifications;
+        set => Set(ref specifications, value);
+    }
+
     #region Значения для Випов
 
     //максимальные значения во время цикла испытаниий 1...n, они означают ошибку
     public decimal MaxTemperature { get; set; }
     public decimal PercentAccuracyTemperature { get; set; }
+
+    //
+
+    //напряжение вх
     public decimal MaxVoltageIn { get; set; }
 
+    //проценты погрещностей
+    public decimal PercentAccuracyVoltages { get; set; }
+
+
+    //1 канал 
     private decimal maxVoltageOut1;
 
     public decimal MaxVoltageOut1
@@ -53,6 +73,9 @@ public class TypeVip : Notify
             PrepareMaxVoltageOut1 = value;
         }
     }
+
+    //2 канал
+    public bool VoltageOut2Using { get; set; }
 
     private decimal maxVoltageOut2;
 
@@ -66,14 +89,16 @@ public class TypeVip : Notify
         }
     }
 
+    //ток вх
     public decimal MaxCurrentIn { get; set; }
-
+    public decimal PercentAccuracyCurrent { get; set; }
 
     //максимальные значения во время замера 0
     public decimal PrepareMaxCurrentIn { get; set; }
     public decimal PrepareMaxVoltageOut1 { get; set; }
     public decimal PrepareMaxVoltageOut2 { get; set; }
 
+    //
     private bool enableTypeVipName = true;
 
     public bool EnableTypeVipName
@@ -82,10 +107,9 @@ public class TypeVip : Notify
         set => Set(ref enableTypeVipName, value);
     }
 
-    public decimal PercentAccuracyVoltages { get; set; }
-
-    public decimal PercentAccuracyCurrent { get; set; }
-    public bool VoltageOut2Using { get; set; }
+    public double ZeroTestInterval { get; set; }
+    public TimeSpan TestIntervalTime { get; set; }
+    public TimeSpan TestAllTime { get; set; }
 
     #endregion
 
@@ -123,8 +147,7 @@ public class DeviceParameters
     public BigLoadValues BigLoadValues { get; set; }
     public HeatValues HeatValues { get; set; }
     public SupplyValues SupplyValues { get; set; }
-    public ThermoCurrentMeterValues ThermoCurrentValues { get; set; }
-
+    public VoltCurrentMeterValues VoltCurrentValues { get; set; }
     public VoltMeterValues VoltValues { get; set; }
     //  public BaseDeviceValues SmallLoadValues { get; set; }
 }
@@ -185,6 +208,7 @@ public class VoltMeterValues : BaseDeviceValues
     }
 
     //
+    
     void SetFuncVoltageGDM()
     {
         if (VoltMaxLimit == null)
@@ -219,10 +243,12 @@ public class VoltMeterValues : BaseDeviceValues
     }
 }
 
-public class ThermoCurrentMeterValues : BaseDeviceValues
+public class VoltCurrentMeterValues : BaseDeviceValues
 {
     [JsonIgnore] public string ReturnFuncGDM { get; set; }
     [JsonIgnore] public string ReturnCurrGDM { get; set; }
+    
+    [JsonIgnore] public string ReturnVoltGDM { get; set; }
 
     private ModeGdm mode;
 
@@ -240,9 +266,25 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
     public string CurrMaxLimit
     {
         get { return currMaxLimit; }
-        set { currMaxLimit = value; }
+        set
+        {
+            SetFuncGDM();
+            currMaxLimit = value;
+        }
     }
 
+    private string voltMaxLimit;
+
+    public string VoltMaxLimit
+    {
+        get { return voltMaxLimit; }
+        set
+        {
+            SetFuncGDM();
+            voltMaxLimit = value;
+        }
+    }
+    
 
     private string termocoupleType;
 
@@ -253,13 +295,16 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
     }
     //
 
-    public ThermoCurrentMeterValues(string currMaxLimit, string termocoupleType, string outputOn,
+    public VoltCurrentMeterValues(string currMaxLimit, string voltMaxLimit, string termocoupleType, string outputOn,
         string outputOff) : base(outputOn, outputOff)
     {
         CurrMaxLimit = currMaxLimit;
+        VoltMaxLimit = voltMaxLimit;
         TermocoupleType = termocoupleType;
+        SetFuncGDM();
     }
-
+    
+    
     public void SetFuncGDM()
     {
         if (Mode == ModeGdm.Current)
@@ -288,7 +333,26 @@ public class ThermoCurrentMeterValues : BaseDeviceValues
         else if (Mode == ModeGdm.Voltage)
         {
             ReturnFuncGDM = "1";
-            ReturnFuncGDM = string.Empty;
+            if (decimal.Parse(VoltMaxLimit) == 0.1M)
+            {
+                ReturnVoltGDM = "1";
+            }
+            else if (int.Parse(VoltMaxLimit) == 1)
+            {
+                ReturnVoltGDM = "2";
+            }
+            else if (int.Parse(VoltMaxLimit) == 10)
+            {
+                ReturnVoltGDM = "3";
+            }
+            else if (int.Parse(VoltMaxLimit) == 100)
+            {
+                ReturnVoltGDM = "4";
+            }
+            else if (int.Parse(VoltMaxLimit) == 1000)
+            {
+                ReturnVoltGDM = "5";
+            }
         }
 
         else if (Mode == ModeGdm.Themperature)
@@ -351,14 +415,21 @@ public class SupplyValues : BaseDeviceValues
     public string Voltage { get; set; }
     public string Current { get; set; }
 
+    public string VoltageAvailability { get; set; }
+
+    public string CurrentAvailability { get; set; }
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="voltage">Напряжение</param>
     /// <param name="current">Ток</param>
-    public SupplyValues(string voltage, string current, string outputOn, string outputOff) : base(outputOn, outputOff)
+    public SupplyValues(string voltage, string current, string voltageAvailability, string currentAvailability,
+        string outputOn, string outputOff) : base(outputOn, outputOff)
     {
         Voltage = voltage;
         Current = current;
+        VoltageAvailability = voltageAvailability;
+        CurrentAvailability = currentAvailability;
     }
 }

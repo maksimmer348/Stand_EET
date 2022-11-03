@@ -94,6 +94,7 @@ public class RelayVip : BaseDevice
         
         Name = Name;
         NameCurrentCmd = nameCommand;
+        
         if (NameCurrentCmd == "On")
         {
             StatusOnOff = OnOffStatus.Switching;
@@ -164,9 +165,11 @@ public class RelayVip : BaseDevice
 
     private void Relay_Receiving(BaseDevice arg1, string arg2, DeviceCmd arg3)
     {
+        Debug.WriteLine($" relay vip {arg1.Name}/answ {arg2}");
         if (NameCurrentCmd == "On")
         {
             StatusOnOff = OnOffStatus.None;
+            Debug.WriteLine($"if (NameCurrentCmd == On 172/{arg1.Name}");
             CtsRelayReceive.Cancel();
         }
     }

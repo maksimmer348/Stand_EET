@@ -10,7 +10,6 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using StandETT.SubCore;
 
 namespace StandETT;
 
@@ -98,6 +97,8 @@ public class ViewModel : Notify
 
         RemoveTypeVipSettingsCmd =
             new ActionCommand(OnRemoveTypeVipSettingsCmdExecuted, CanRemoveTypeVipSettingsCmdExecuted);
+
+        stand.timerError += TimerError;
 
         #endregion
 
@@ -282,6 +283,25 @@ public class ViewModel : Notify
         return true;
     }
 
+    private void TimerError(string message)
+    {
+        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            const string caption = "Ошибка 0 замера";
+            var result = MessageBox.Show(message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                SelectTab = 3;
+            }
+
+            if (result == MessageBoxResult.No)
+            {
+                SelectTab = 1;
+            }
+        }));
+    }
+
     /// <summary>
     /// Команда ЗАПУСТИТЬ исптания
     /// </summary>
@@ -347,18 +367,20 @@ public class ViewModel : Notify
         {
             try
             {
-                await  stand.PrepareMeasurementCycle();
-                
-               // bool mesZero = await stand.MeasurementZero();
+                //TODO удалить
+                //stand.StartMeasurementCycle();
 
-                // if (mesZero)
-                // {
-                //     var heat = await standTest.WaitForTestMode();
-                //     if (heat)
-                //     {
-                //         await standTest.CyclicMeasurement();
-                //     }
-                // }
+                //--zero
+                bool mesZero = await stand.MeasurementZero();
+
+                if (mesZero)
+                {
+                    // var heat = await stand.PrepareMeasurementCycle();
+                    // if (heat)
+                    // {
+                    //   //  stand.StartMeasurementCycle();
+                    // }
+                }
             }
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
@@ -368,37 +390,115 @@ public class ViewModel : Notify
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
                     SelectTab = 4;
                 }
             }
+            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные реле випов!"))
+            {
+                const string caption = "Ошибка 0 замера";
+                var result = MessageBox.Show(e.Message + "Перейти в предварительную проверку реле Випов?", caption,
+                    MessageBoxButton.YesNo);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 1;
+                }
+
+                if (result == MessageBoxResult.No)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 0;
+                }
+            }
+
             catch (Exception e) when (e.Message.Contains("несколько випов"))
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
 
+                if (result == MessageBoxResult.No)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 1;
+                }
+
                 if (result == MessageBoxResult.Yes)
                 {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
                     SelectTab = 3;
                 }
+            }
+            catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
+            {
+                const string caption = "Ошибка 0 замера";
+                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
+                    MessageBoxButton.YesNo);
 
                 if (result == MessageBoxResult.No)
                 {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
                     SelectTab = 1;
                 }
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 4;
+                }
             }
+
             catch (Exception e)
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.No)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 0;
+                }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    SelectTab = 3;
-                }
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
 
-                if (result == MessageBoxResult.No)
-                {
-                    SelectTab = 0;
+                    SelectTab = 3;
                 }
             }
         }
@@ -610,7 +710,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+    //-
 
     #region Команды --Настройки Типа Випов --3 tab
 
@@ -631,17 +731,23 @@ public class ViewModel : Notify
         typeConfig.MaxVoltageOut2 = Convert.ToDecimal(MaxVoltageOut2);
         typeConfig.PercentAccuracyVoltages = Convert.ToDecimal(PercentAccuracyVoltages);
         typeConfig.PercentAccuracyTemperature = Convert.ToDecimal(PercentAccuracyTemperature);
-        
+
         typeConfig.MaxTemperature = Convert.ToDecimal(Temperature);
+
+        typeConfig.ZeroTestInterval = ZeroTestInterval;
+
+        typeConfig.TestAllTime = TestAllTime;
+        typeConfig.TestIntervalTime = TestIntervalTime;
 
         typeConfig.VoltageOut2Using = voltageOuе2Using;
         typeConfig.SetDeviceParameters(new DeviceParameters()
         {
             BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
             HeatValues = new HeatValues(OutputOnHeat, OutputOffHeat),
-            SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, OutputOnSupply, OutputOffSupply),
-            ThermoCurrentValues =
-                new ThermoCurrentMeterValues(CurrentMeterCurrentMax, TermocoupleType, OutputOnThermoCurrent,
+            SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
+                CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
+            VoltCurrentValues =
+                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType, OutputOnThermoCurrent,
                     OutputOffThermoCurrent),
             VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
         });
@@ -689,7 +795,14 @@ public class ViewModel : Notify
             MaxVoltageOut2 = null;
             PercentAccuracyVoltages = null;
             PercentAccuracyTemperature = null;
+
             Temperature = null;
+
+            ZeroTestInterval = 0;
+
+            TestAllTime = TimeSpan.Zero;
+            TestIntervalTime = TimeSpan.Zero;
+
             voltageOuе2Using = false;
 
             FreqLoad = null;
@@ -705,6 +818,10 @@ public class ViewModel : Notify
 
             VoltageSupply = null;
             CurrentSupply = null;
+
+            CurrentAvailabilitySupply = null;
+            VoltageAvailabilitySupply = null;
+
             OutputOnSupply = null;
             OutputOffSupply = null;
 
@@ -822,6 +939,12 @@ public class ViewModel : Notify
     /// Уведомляет сколько процентов текущего теста прошло
     /// </summary>
     public double PercentCurrentTest => stand.PercentCurrentTest;
+
+    /// <summary>
+    /// Уведомляет сколько процентов текущего сабтеста прошло
+    /// </summary>
+    public double PercentCurrentSubTest => stand.PercentCurrentSubTest;
+
 
     /// <summary>
     /// Уведомляет сколько процентов текущего теста прошло
@@ -1602,6 +1725,10 @@ public class ViewModel : Notify
 
     public Brush ProgressColor => stand.ProgressColor;
 
+
+    public Brush ProgressSubColor => stand.ProgressSubColor;
+
+
     public Brush ProgressResetColor => stand.ProgressResetColor;
 
     #endregion
@@ -1642,9 +1769,15 @@ public class ViewModel : Notify
                 MaxVoltageOut2 = selectTypeVipSettings.MaxVoltageOut2.ToString(CultureInfo.InvariantCulture);
                 PercentAccuracyVoltages =
                     selectTypeVipSettings.PercentAccuracyVoltages.ToString(CultureInfo.InvariantCulture);
-                PercentAccuracyTemperature = selectTypeVipSettings.PercentAccuracyTemperature.ToString(CultureInfo.InvariantCulture);
+                PercentAccuracyTemperature =
+                    selectTypeVipSettings.PercentAccuracyTemperature.ToString(CultureInfo.InvariantCulture);
                 Temperature =
                     selectTypeVipSettings.MaxTemperature.ToString(CultureInfo.InvariantCulture);
+
+                ZeroTestInterval = selectTypeVipSettings.ZeroTestInterval;
+
+                TestAllTime = selectTypeVipSettings.TestAllTime;
+                TestIntervalTime = selectTypeVipSettings.TestIntervalTime;
 
                 FreqLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Freq;
                 AmplLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Ampl;
@@ -1658,13 +1791,17 @@ public class ViewModel : Notify
 
                 VoltageSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.Voltage;
                 CurrentSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.Current;
+                
+                VoltageAvailabilitySupply  = selectTypeVipSettings.GetDeviceParameters().SupplyValues.VoltageAvailability;
+                CurrentAvailabilitySupply  = selectTypeVipSettings.GetDeviceParameters().SupplyValues.CurrentAvailability;
+                
                 OutputOnSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.OutputOn;
                 OutputOffSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.OutputOff;
 
-                CurrentMeterCurrentMax = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.CurrMaxLimit;
-                TermocoupleType = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.TermocoupleType;
-                OutputOnThermoCurrent = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.OutputOn;
-                OutputOffThermoCurrent = selectTypeVipSettings.GetDeviceParameters().ThermoCurrentValues.OutputOff;
+                CurrentMeterCurrentMax = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.CurrMaxLimit;
+                TermocoupleType = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.TermocoupleType;
+                OutputOnThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOn;
+                OutputOffThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOff;
 
                 VoltMeterVoltMax = selectTypeVipSettings.GetDeviceParameters().VoltValues.VoltMaxLimit;
                 OutputOnVoltMeter = selectTypeVipSettings.GetDeviceParameters().VoltValues.OutputOn;
@@ -1784,6 +1921,31 @@ public class ViewModel : Notify
         set => Set(ref temperature, value);
     }
 
+    private double zeroTestInterval;
+
+    public double ZeroTestInterval
+    {
+        get => zeroTestInterval;
+        set => Set(ref zeroTestInterval, value);
+    }
+
+    private TimeSpan testAllTime;
+
+    public TimeSpan TestAllTime
+    {
+        get => testAllTime;
+        set => Set(ref testAllTime, value);
+    }
+
+
+    private TimeSpan testIntervalTime;
+
+    public TimeSpan TestIntervalTime
+    {
+        get => testIntervalTime;
+        set => Set(ref testIntervalTime, value);
+    }
+
     private int currentTypeVipSettings;
 
     public int CurrentTypeVipSettings
@@ -1900,6 +2062,28 @@ public class ViewModel : Notify
     {
         get => currentSupply;
         set => Set(ref currentSupply, value);
+    }
+
+    private string voltageAvailabilitySupply;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string VoltageAvailabilitySupply
+    {
+        get => voltageAvailabilitySupply;
+        set => Set(ref voltageAvailabilitySupply, value);
+    }
+
+    private string currentAvailabilitySupply;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string CurrentAvailabilitySupply
+    {
+        get => currentAvailabilitySupply;
+        set => Set(ref currentAvailabilitySupply, value);
     }
 
     private string outputOnSupply;

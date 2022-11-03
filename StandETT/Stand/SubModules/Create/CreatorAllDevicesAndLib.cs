@@ -60,32 +60,36 @@ class CreatorAllDevicesAndLib
             voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
             temp.Add(voltMeter);
 
-            BaseDevice thermoCurrentMeter = new ThermoCurrentMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 2 };
-            thermoCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
-            temp.Add(thermoCurrentMeter);
+            BaseDevice voltCurrentMeter = new VoltCurrentMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 1 };
+            voltCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
+            temp.Add(voltCurrentMeter);
 
+            // BaseDevice thermometer = new Thermometer("GDM-78255A") { RowIndex = 0, ColumnIndex = 2 };
+            // voltCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM10", 115200, 1, 0, 8);
+            // temp.Add(thermometer);
 
-            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 1 };
+            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 3 };
             supply.SetConfigDevice(TypePort.SerialInput, "COM5", 115200, 1, 0, 8);
             temp.Add(supply);
 
+
             // //TODO вернуть 
-            // BaseDevice smallLoad = new SmallLoad("SL") { RowIndex = 0, ColumnIndex = 3 };
+            // BaseDevice smallLoad = new SmallLoad("SL") { RowIndex = 0, ColumnIndex = 4 };
             // smallLoad.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             // temp.Add(smallLoad);
 
-            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 4 };
+            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 5 };
             bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
             bigLoad.AllDeviceError = new AllDeviceError();
             temp.Add(bigLoad);
 
             // //TODO вернуть 
-            // BaseDevice heat = new Heat("Heat") { RowIndex = 0, ColumnIndex = 5 };
+            // BaseDevice heat = new Heat("Heat") { RowIndex = 0, ColumnIndex = 6 };
             // heat.SetConfigDevice(TypePort.SerialInput, "COM80", 9600, 1, 0, 8);
             // temp.Add(heat);
             // heat.AllDeviceError = new AllDeviceError();
 
-            BaseDevice relayMeter = new RelayMeter("MRS") { RowIndex = 0, ColumnIndex = 5 };
+            BaseDevice relayMeter = new RelayMeter("MRS") { RowIndex = 0, ColumnIndex = 7 };
             relayMeter.SetConfigDevice(TypePort.SerialInput, "COM9", 9600, 1, 0, 8);
             relayMeter.AllDeviceError = new AllDeviceError();
             temp.Add(relayMeter);
@@ -436,14 +440,14 @@ class CreatorAllDevicesAndLib
             {
                 BigLoadValues = new BigLoadValues("300", "4", "2", "40", "1", "0"),
                 HeatValues = new HeatValues("1", "0"),
-                SupplyValues = new SupplyValues("2", "1", "1", "0"),
-                ThermoCurrentValues = new ThermoCurrentMeterValues("100", "k", "1", "0"),
+                SupplyValues = new SupplyValues("2", "1", "3", "0.5", "1", "0"),
+                VoltCurrentValues = new VoltCurrentMeterValues("100", "100", "k", "1", "0"),
                 VoltValues = new VoltMeterValues("100", "1", "0")
             });
             typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);
             typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().HeatValues);
             typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().SupplyValues);
-            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().ThermoCurrentValues);
+            typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltCurrentValues);
             typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltValues);
 
             //-
@@ -469,14 +473,14 @@ class CreatorAllDevicesAndLib
             {
                 BigLoadValues = new BigLoadValues("200", "3.3", "1.65", "20", "1", "0"),
                 HeatValues = new HeatValues("1", "0"),
-                SupplyValues = new SupplyValues("3", "2", "1", "0"),
-                ThermoCurrentValues = new ThermoCurrentMeterValues("10", "k", "1", "0"),
+                SupplyValues = new SupplyValues("3", "2", "1", "4", "0.5", "0"),
+                VoltCurrentValues = new VoltCurrentMeterValues("10", "100", "k", "1", "0"),
                 VoltValues = new VoltMeterValues("100", "1", "0")
             });
             typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);
             typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().HeatValues);
             typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().SupplyValues);
-            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().ThermoCurrentValues);
+            typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltCurrentValues);
             typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().VoltValues);
 
             deserializeTypeVips?.Add(typeVip70);

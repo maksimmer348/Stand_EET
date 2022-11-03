@@ -50,11 +50,21 @@ public class Vip : Notify
     }
     
     private string errorStatusRelay;
+    
     public string ErrorStatusRelay
     {
         get => Relay.ErrorStatus;
         set => Set(ref errorStatusRelay, value);
     }
+    
+    private string errorStatusVip;
+    
+    public string ErrorStatusVip
+    {
+        get => errorStatusVip;
+        set => Set(ref errorStatusVip, value);
+    }
+    
     [JsonIgnore] private StatusDeviceTest statusTest;
 
     [JsonIgnore]
@@ -128,21 +138,28 @@ public class Vip : Notify
     #region Значения Випа
 
     //Текущие значения на Випе
-    private double voltageOut1;
+    private decimal voltageOut1;
 
-    public double VoltageOut1
+    public decimal VoltageOut1
     {
         get => voltageOut1;
         set => Set(ref voltageOut1, value);
     }
 
-    public double VoltageOut2 { get; set; }
-    public double CurrentIn { get; set; }
-    public double Temperature { get; set; }
-    public double VoltageIn { get; set; }
+    public decimal VoltageOut2 { get; set; }
+    public decimal CurrentIn { get; set; }
+    
+   
+    private decimal temperature;
+    public decimal Temperature    
+    {
+        get => temperature;
+        set => Set(ref temperature, value);
+    }
 
-
-
+    
+    public decimal VoltageIn { get; set; }
+    
     #endregion
 
     public Vip(int id, RelayVip relayVip)

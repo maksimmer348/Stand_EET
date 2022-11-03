@@ -19,12 +19,22 @@
         "$type": "StandETT.SupplyValues, StandETT",
         "Voltage": "2",
         "Current": "1",
+        "VoltageAvailability": "3",
+        "CurrentAvailability": "0.5",
         "OutputOn": "1",
         "OutputOff": "0"
       },
       {
-        "$type": "StandETT.ThermoCurrentMeterValues, StandETT",
+        "$type": "StandETT.VoltCurrentMeterValues, StandETT",
         "CurrMaxLimit": "100",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      {
+        "$type": "StandETT.VoltMeterValues, StandETT",
+        "VoltMaxLimit": "100",
         "OutputOn": "1",
         "OutputOff": "0"
       }
@@ -45,11 +55,15 @@
       "SupplyValues": {
         "Voltage": "2",
         "Current": "1",
+        "VoltageAvailability": "3",
+        "CurrentAvailability": "0.5",
         "OutputOn": "1",
         "OutputOff": "0"
       },
-      "ThermoCurrentValues": {
+      "VoltCurrentValues": {
         "CurrMaxLimit": "100",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
         "OutputOn": "1",
         "OutputOff": "0"
       },
@@ -60,18 +74,23 @@
       }
     },
     "Type": "Vip70",
+    "Specifications": "ЯКЛЮ.436638.001 ТУ",
     "MaxTemperature": 70.0,
+    "PercentAccuracyTemperature": 0.0,
     "MaxVoltageIn": 220.0,
+    "PercentAccuracyVoltages": 5.0,
     "MaxVoltageOut1": 40.0,
+    "VoltageOut2Using": false,
     "MaxVoltageOut2": 45.0,
     "MaxCurrentIn": 2.5,
+    "PercentAccuracyCurrent": 10.0,
     "PrepareMaxCurrentIn": 0.5,
     "PrepareMaxVoltageOut1": 40.0,
     "PrepareMaxVoltageOut2": 45.0,
     "EnableTypeVipName": true,
-    "PercentAccuracyVoltages": 5.0,
-    "PercentAccuracyCurrent": 10.0,
-    "VoltageOut2Using": false
+    "ZeroTestInterval": 0.0,
+    "TestIntervalTime": "00:00:00",
+    "TestAllTime": "00:00:00"
   },
   {
     "BaseDeviceValues": [
@@ -93,12 +112,16 @@
         "$type": "StandETT.SupplyValues, StandETT",
         "Voltage": "2",
         "Current": "1",
+        "VoltageAvailability": "3",
+        "CurrentAvailability": "0.5",
         "OutputOn": "1",
         "OutputOff": "0"
       },
       {
-        "$type": "StandETT.ThermoCurrentMeterValues, StandETT",
+        "$type": "StandETT.VoltCurrentMeterValues, StandETT",
         "CurrMaxLimit": "100",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
         "OutputOn": "1",
         "OutputOff": "0"
       },
@@ -125,11 +148,15 @@
       "SupplyValues": {
         "Voltage": "3",
         "Current": "2",
-        "OutputOn": "1",
+        "VoltageAvailability": "1",
+        "CurrentAvailability": "4",
+        "OutputOn": "0.5",
         "OutputOff": "0"
       },
-      "ThermoCurrentValues": {
+      "VoltCurrentValues": {
         "CurrMaxLimit": "10",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
         "OutputOn": "1",
         "OutputOff": "0"
       },
@@ -140,17 +167,22 @@
       }
     },
     "Type": "Vip71",
+    "Specifications": "ЯКЛЮ.436638.001 ТУ",
     "MaxTemperature": 90.0,
+    "PercentAccuracyTemperature": 0.0,
     "MaxVoltageIn": 120.0,
+    "PercentAccuracyVoltages": 5.0,
     "MaxVoltageOut1": 20.0,
+    "VoltageOut2Using": false,
     "MaxVoltageOut2": 25.0,
     "MaxCurrentIn": 5.0,
+    "PercentAccuracyCurrent": 10.0,
     "PrepareMaxCurrentIn": 0.5,
     "PrepareMaxVoltageOut1": 20.0,
     "PrepareMaxVoltageOut2": 25.0,
     "EnableTypeVipName": true,
-    "PercentAccuracyVoltages": 5.0,
-    "PercentAccuracyCurrent": 10.0,
-    "VoltageOut2Using": false
+    "ZeroTestInterval": 0.0,
+    "TestIntervalTime": "00:00:00",
+    "TestAllTime": "00:00:00"
   }
 ]

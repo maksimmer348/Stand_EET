@@ -19,12 +19,19 @@ public enum TypeOfTestRun
     
     PrimaryCheckVips,
     PrimaryCheckVipsReady,
+    
     DeviceOperation,
     DeviceOperationReady,
+    
+    AvailabilityCheckVip,
+    AvailabilityCheckVipReady,
+    
     MeasurementZero,
     MeasurementZeroReady,
+    
     WaitSupplyMeasurementZero,
     WaitSupplyMeasurementZeroReady,
+    
     WaitHeatPlate,
     WaitHeatPlateReady,
     CyclicMeasurement,

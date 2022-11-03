@@ -160,6 +160,7 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                         <ColumnDefinition />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                 </Grid>
                             </ItemsPanelTemplate>
@@ -762,11 +763,15 @@
                                 <TextBlock Text="Max температура" />
                                 <TextBox Text="{Binding Temperature}" />
 
-                                <TextBlock DockPanel.Dock="Left" Text="Общее время замера" />
+
+                                <TextBlock DockPanel.Dock="Left" Text="Промежуток 0 замера" />
+                                <TextBox Text="{Binding ZeroTestInterval}" />
+
+                                <TextBlock DockPanel.Dock="Left" Text="Общее время замера" IsEnabled="False"/>
                                 <TextBox Text="{Binding TestAllTime}" />
 
                                 <TextBlock Text="Интервалы замеров" />
-                                <TextBox Text="{Binding TestIntervalTime}" />
+                                <TextBox Text="{Binding TestIntervalTime}"  IsEnabled="False"/>
 
 
                                 <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
@@ -871,10 +876,18 @@
                                 <TextBox Text="{Binding CurrentSupply }" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="Напряжение наличия" />
+                                <TextBox Text="{Binding VoltageAvailabilitySupply }" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="1">
+                                <TextBlock Text="Ток наличия" />
+                                <TextBox Text="{Binding CurrentAvailabilitySupply }" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="3" Grid.Column="0">
                                 <TextBlock Text="Выход вкл. (Output On)" />
                                 <TextBox Text="{Binding OutputOnSupply}" />
                             </StackPanel>
-                            <StackPanel Grid.Row="2" Grid.Column="1">
+                            <StackPanel Grid.Row="3" Grid.Column="1">
                                 <TextBlock Text="Выход выкл. (Output Off)" />
                                 <TextBox Text="{Binding OutputOffSupply}" />
                             </StackPanel>
@@ -894,16 +907,20 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.ColumnSpan="2">
-                                <TextBlock HorizontalAlignment="Center" Text="Термометр/Амперметр"
+                                <TextBlock HorizontalAlignment="Center" Text="Вольтметр/Амперметр"
                                            TextAlignment="Center" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
+                                <TextBlock Text="Напряжение (Volt)" />
+                                <TextBox Text="{Binding VoltMeterVoltMax}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="Ток (Сurr)" />
                                 <TextBox Text="{Binding CurrentMeterCurrentMax}" />
                             </StackPanel>
-                            <StackPanel Grid.Row="1" Grid.Column="1">
+                            <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock Text="Тип терпомары" />
-                                <TextBox Text="{Binding TermocoupleType}" />
+                                <TextBox Text="{Binding TermocoupleType}" IsEnabled="False"/>
                             </StackPanel>
                         </Grid>
 
@@ -950,14 +967,30 @@
 
                 <!--//-->
 
-                <ProgressBar Grid.Column="0" Value="{Binding PercentCurrentTest, Mode=OneWay}" Maximum="100"
-                             MinWidth="150"
-                             MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center"
-                             Foreground="{Binding ProgressColor}" />
-                <TextBlock Grid.Column="0"
-                           Text="{Binding StringFormat={}{0}%,Path=PercentCurrentTest, UpdateSourceTrigger=Explicit}"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <ProgressBar Grid.Row="0" Value="{Binding PercentCurrentTest, Mode=OneWay}" Maximum="100"
+                                 MinWidth="150"
+                                 MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Foreground="{Binding ProgressColor}" />
+                    <TextBlock Grid.Row="0"
+                               Text="{Binding StringFormat={}{0}%,Path=PercentCurrentTest, UpdateSourceTrigger=Explicit}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+
+                    <ProgressBar Grid.Row="1" Value="{Binding PercentCurrentSubTest, Mode=OneWay}" Maximum="100"
+                                 MinWidth="150"
+                                 MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Foreground="{Binding ProgressSubColor}" />
+                    <TextBlock Grid.Row="1"
+                               Text="{Binding StringFormat={}{0}%,Path=PercentCurrentSubTest, UpdateSourceTrigger=Explicit}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Grid>
 
                 <!--//-->
 

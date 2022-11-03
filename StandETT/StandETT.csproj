@@ -12,8 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EPPlus" Version="6.0.8" />
     <PackageReference Include="GodSharp.SerialPort" Version="1.2.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Syncfusion.XlsIO.Wpf" Version="20.3.0.50" />
   </ItemGroup>
 
   <ItemGroup>
