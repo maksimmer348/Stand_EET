@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace StandETT;
 
@@ -15,14 +16,14 @@ class CreatorAllDevicesAndLib
     /// <summary>
     /// Событие проверки коннекта к порту
     /// </summary>
-    public Action<BaseDevice, bool> PortConnecting;
+    public event Action<BaseDevice, bool> PortConnecting;
 
     /// <summary>
     /// Событие проверки коннекта к устройству
     /// </summary>
-    public Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
+    public event Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
 
-    public Action<BaseDevice, string> DeviceError;
+    public event Action<BaseDevice, string> DeviceError;
 
     #endregion
 
@@ -52,119 +53,134 @@ class CreatorAllDevicesAndLib
         var deserializeDevices = serializer.DeserializeDevices();
 
         mainRelayVip.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-        mainRelayVip.AllDeviceError = new AllDeviceError();
+
 
         if (deserializeDevices == null || !deserializeDevices.Any())
         {
-            BaseDevice voltMeter = new VoltMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 0 };
+            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 3 };
+            supply.SetConfigDevice(TypePort.SerialInput, "COM11", 115200, 1, 0, 8);
+            temp.Add(supply);
+
+            BaseDevice voltMeter = new VoltMeter("GDM-78255A")
+                { RowIndex = 0, ColumnIndex = 0, IsHiddenOutputOnOff = Visibility.Collapsed };
             voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
             temp.Add(voltMeter);
 
-            BaseDevice voltCurrentMeter = new VoltCurrentMeter("GDM-78255A") { RowIndex = 0, ColumnIndex = 1 };
+            BaseDevice voltCurrentMeter = new VoltCurrentMeter("GDM-78255A")
+                { RowIndex = 0, ColumnIndex = 1, IsHiddenOutputOnOff = Visibility.Collapsed };
             voltCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
             temp.Add(voltCurrentMeter);
 
-            // BaseDevice thermometer = new Thermometer("GDM-78255A") { RowIndex = 0, ColumnIndex = 2 };
-            // voltCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM10", 115200, 1, 0, 8);
-            // temp.Add(thermometer);
-
-            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 3 };
-            supply.SetConfigDevice(TypePort.SerialInput, "COM5", 115200, 1, 0, 8);
-            temp.Add(supply);
+            BaseDevice thermometer = new Thermometer("???") { RowIndex = 0, ColumnIndex = 2 };
+            thermometer.SetConfigDevice(TypePort.SerialInput, "COM88", 115200, 1, 0, 8);
+            temp.Add(thermometer);
 
 
-            // //TODO вернуть 
-            // BaseDevice smallLoad = new SmallLoad("SL") { RowIndex = 0, ColumnIndex = 4 };
-            // smallLoad.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // temp.Add(smallLoad);
-
-            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 5 };
+            BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 4 };
             bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
-            bigLoad.AllDeviceError = new AllDeviceError();
+
             temp.Add(bigLoad);
+            
+            BaseDevice heat = new Heat("???") { RowIndex = 1, ColumnIndex = 0 };
+            heat.SetConfigDevice(TypePort.SerialInput, "COM99", 9600, 1, 0, 8);
+            temp.Add(heat);
 
-            // //TODO вернуть 
-            // BaseDevice heat = new Heat("Heat") { RowIndex = 0, ColumnIndex = 6 };
-            // heat.SetConfigDevice(TypePort.SerialInput, "COM80", 9600, 1, 0, 8);
-            // temp.Add(heat);
-            // heat.AllDeviceError = new AllDeviceError();
 
-            BaseDevice relayMeter = new RelayMeter("MRS") { RowIndex = 0, ColumnIndex = 7 };
+            BaseDevice relayMeter = new RelayMeter("MRS")
+                { RowIndex = 1, ColumnIndex = 1, IsHiddenOutputOnOff = Visibility.Collapsed };
             relayMeter.SetConfigDevice(TypePort.SerialInput, "COM9", 9600, 1, 0, 8);
-            relayMeter.AllDeviceError = new AllDeviceError();
+
             temp.Add(relayMeter);
 
             BaseDevice relay0 = new RelayVip(0, "0");
             relay0.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay0.Prefix = "AD";
-            relay0.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay0);
 
             BaseDevice relay1 = new RelayVip(1, "1");
             relay1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay1.Prefix = "AE";
-            relay1.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay1);
 
             BaseDevice relay2 = new RelayVip(2, "2");
             relay2.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay2.Prefix = "AF";
-            relay2.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay2);
 
             BaseDevice relay3 = new RelayVip(3, "3");
             relay3.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay3.Prefix = "B0";
-            relay3.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay3);
 
             BaseDevice relay4 = new RelayVip(4, "C");
             relay4.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay4.Prefix = "B9";
-            relay4.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay4);
 
             BaseDevice relay5 = new RelayVip(5, "5");
             relay5.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay5.Prefix = "";
-            relay5.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay5);
 
             BaseDevice relay6 = new RelayVip(6, "6");
             relay6.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay6.Prefix = "";
-            relay6.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay6);
 
             BaseDevice relay7 = new RelayVip(7, "7");
             relay7.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay7.Prefix = "";
-            relay7.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay7);
 
             BaseDevice relay8 = new RelayVip(8, "8");
             relay8.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay8.Prefix = "";
-            relay8.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay8);
 
             BaseDevice relay9 = new RelayVip(9, "9");
             relay9.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay9.Prefix = "";
-            relay9.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay9);
 
             BaseDevice relay10 = new RelayVip(10, "A");
             relay10.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay10.Prefix = "";
-            relay10.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay10);
 
             BaseDevice relay11 = new RelayVip(11, "B");
             relay11.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             relay11.Prefix = "";
-            relay11.AllDeviceError = new AllDeviceError();
+
             temp.Add(relay11);
+
+            BaseDevice smallLoad0 = new RelayVip(0, "SL-0") { RowIndex = 1, ColumnIndex =2, IsHiddenOutputOnOff = Visibility.Collapsed };
+            smallLoad0.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
+            smallLoad0.Prefix = "";
+
+            temp.Add(smallLoad0);
+            
+            // BaseDevice smallLoad1 = new RelayVip(1, "SL-1") { RowIndex = 1, ColumnIndex = 3 };
+            // smallLoad1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
+            // smallLoad1.Prefix = "";
+            //
+            // temp.Add(smallLoad1);
+            //
+            // BaseDevice smallLoad2 = new RelayVip(2, "SL-2") { RowIndex = 1, ColumnIndex = 4 };
+            // smallLoad2.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
+            // smallLoad2.Prefix = "";
+            //
+            // temp.Add(smallLoad2);
 
             serializer.SerializeDevices(temp);
         }
@@ -242,6 +258,7 @@ class CreatorAllDevicesAndLib
             ColumnIndex = 3
         });
 
+        
         mainRelayVip.Relays = new(relays);
         return temp;
     }
@@ -517,8 +534,15 @@ class CreatorAllDevicesAndLib
         foreach (var device in devices)
         {
             device.PortConnecting += Port_Connecting;
-            device.DeviceReceiving += Device_Receiving;
             device.DeviceError += Device_Error;
+            // if (device is not SmallLoad)
+            // {
+            device.DeviceReceiving += Device_Receiving;
+            // }
+            // if (device is  SmallLoad s)
+            // {
+            //     s.LoadReceiving += Device_Receiving;
+            // }
         }
     }
 

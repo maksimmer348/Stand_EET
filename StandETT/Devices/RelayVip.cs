@@ -159,17 +159,22 @@ public class RelayVip : BaseDevice
 
     public RelayVip(int id, string name) : base(name)
     {
-        IsDeviceType = $"Реле ВИПА-{id}";
+        if (name.Contains("SL"))
+        {
+            IsDeviceType = $"Малая нагрузка-{id}";
+        }
+        else
+        {
+            IsDeviceType = $"Реле ВИПА-{id}";
+        }
         DeviceReceiving += Relay_Receiving;
     }
 
     private void Relay_Receiving(BaseDevice arg1, string arg2, DeviceCmd arg3)
     {
-        Debug.WriteLine($" relay vip {arg1.Name}/answ {arg2}");
-        if (NameCurrentCmd == "On")
+        if (NameCurrentCmd.Contains("On"))
         {
             StatusOnOff = OnOffStatus.None;
-            Debug.WriteLine($"if (NameCurrentCmd == On 172/{arg1.Name}");
             CtsRelayReceive.Cancel();
         }
     }

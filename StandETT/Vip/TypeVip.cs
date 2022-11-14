@@ -95,6 +95,9 @@ public class TypeVip : Notify
 
     //максимальные значения во время замера 0
     public decimal PrepareMaxCurrentIn { get; set; }
+    
+    public decimal AvailabilityMaxCurrentIn { get; set; }
+    
     public decimal PrepareMaxVoltageOut1 { get; set; }
     public decimal PrepareMaxVoltageOut2 { get; set; }
 
@@ -110,6 +113,8 @@ public class TypeVip : Notify
     public double ZeroTestInterval { get; set; }
     public TimeSpan TestIntervalTime { get; set; }
     public TimeSpan TestAllTime { get; set; }
+    
+ 
 
     #endregion
 
@@ -149,7 +154,8 @@ public class DeviceParameters
     public SupplyValues SupplyValues { get; set; }
     public VoltCurrentMeterValues VoltCurrentValues { get; set; }
     public VoltMeterValues VoltValues { get; set; }
-    //  public BaseDeviceValues SmallLoadValues { get; set; }
+    
+     public BaseDeviceValues SmallLoadValues { get; set; }
 }
 
 public class BaseDeviceValues

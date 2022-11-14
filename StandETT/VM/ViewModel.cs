@@ -81,6 +81,9 @@ public class ViewModel : Notify
         NextCmd = new ActionCommand(OnNextCmdExecuted, CanNextCmdExecuted);
         CloseActionWindowCmd = new ActionCommand(OnCloseActionWindowCmdExecuted, CanCloseActionWindowCmdExecuted);
 
+        CloseVipErrorWindowCmd =
+            new ActionCommand(OnCloseCloseVipErrorWindowCmdExecuted, CanCloseCloseVipErrorWindowCmdExecuted);
+
         #endregion
 
         #region Настройка устройств
@@ -106,6 +109,8 @@ public class ViewModel : Notify
 
         stand.OpenActionWindow += OpenActionWindow;
 
+        stand.OpenErrorVipWindow += OpenVipErrorWindow;
+
         //TODO убрать
         AllBtnsEnable();
         AllTabsEnable();
@@ -114,6 +119,8 @@ public class ViewModel : Notify
 
         // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
     }
+
+    private ActionWindow aw;
 
     private void OpenActionWindow(bool obj)
     {
@@ -129,7 +136,22 @@ public class ViewModel : Notify
         }
     }
 
-    private ActionWindow aw;
+    private VipErrorWindow verr;
+
+    private void OpenVipErrorWindow(bool obj)
+    {
+        if (obj)
+        {
+            verr = new VipErrorWindow()
+            {
+                DataContext = this
+            };
+            verr.Show();
+            verr.Closed += VewOnClosed;
+            WindowVipDisabled = false;
+        }
+    }
+
 
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -160,17 +182,21 @@ public class ViewModel : Notify
                 //AllTypeVips = standTest.ConfigVip.TypeVips;
             }
 
-            if (selectTab == 1)
+            if (selectTab == 2)
             {
-                var rnd = Random.Shared.Next(1000, 10000);
-                Vips[0].Name = rnd.ToString();
-                rnd = Random.Shared.Next(1000, 10000);
-                Vips[1].Name = rnd.ToString();
-                rnd = Random.Shared.Next(1000, 10000);
-                Vips[2].Name = rnd.ToString();
+                // var rnd = Random.Shared.Next(1000, 10000);
+                // Vips[0].Name = rnd.ToString();
+                // rnd = Random.Shared.Next(1000, 10000);
+                // //Vips[1].Name = rnd.ToString();
+                // rnd = Random.Shared.Next(1000, 10000);
+                // //Vips[2].Name = rnd.ToString();
             }
         }
     }
+
+    public double goToSelectTab;
+    
+    
 
     #endregion
 
@@ -278,6 +304,11 @@ public class ViewModel : Notify
         WindowDisabled = true;
     }
 
+    private void VewOnClosed(object sender, EventArgs e)
+    {
+        WindowVipDisabled = true;
+    }
+
     bool CanCancelAllTestCmdExecuted(object p)
     {
         return true;
@@ -309,6 +340,7 @@ public class ViewModel : Notify
 
     async Task OnStartTestDevicesCmdExecuted(object p)
     {
+        bool available = false;
         if (SelectTab == 0)
         {
             try
@@ -325,13 +357,16 @@ public class ViewModel : Notify
                 if (result == MessageBoxResult.No)
                 {
                     await stand.ResetAllTests();
-                    SelectTab = 0;
+                    goToSelectTab = 0;
+                    // SelectTab = 0;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
                     await stand.ResetAllTests();
-                    SelectTab = 3;
+
+                    goToSelectTab = 3;
+                    // SelectTab = 3;
                 }
             }
         }
@@ -342,12 +377,19 @@ public class ViewModel : Notify
             {
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
+            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные Випы"))
+            {
+                const string caption = "Ошибка предварительной проверки реле Випов";
+
+                var result = MessageBox.Show(e.Message, caption,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
 
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
-                    MessageBoxButton.YesNo);
+                    MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
                 {
@@ -362,31 +404,36 @@ public class ViewModel : Notify
                 }
             }
         }
-
         else if (SelectTab == 2)
         {
             try
             {
-                //TODO удалить
-                //stand.StartMeasurementCycle();
-
-                //--zero
-                bool mesZero = await stand.MeasurementZero();
-
-                if (mesZero)
-                {
-                    // var heat = await stand.PrepareMeasurementCycle();
-                    // if (heat)
-                    // {
-                    //   //  stand.StartMeasurementCycle();
-                    // }
-                }
+                //--available
+                // available = await stand.AvailabilityCheckVip();
+                // if (available)
+                // {
+                    //--zero
+                    //bool mesZero = await stand.MeasurementZero();
+                // }
+                //     if (mesZero)
+                //     {
+                //         // var heat = await stand.PrepareMeasurementCycle();
+                //         // if (heat)
+                //         // {
+                //         //   //  stand.StartMeasurementCycle();
+                //         // }
+                //     }
+                // }
+                
+                stand.StartMeasurementCycle();
+                
             }
+
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
                 const string caption = "Ошибка настройки парамтеров";
                 var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
-                    MessageBoxButton.YesNo);
+                    MessageBoxButton.YesNo, MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.Yes)
                 {
@@ -398,37 +445,41 @@ public class ViewModel : Notify
                     SelectTab = 4;
                 }
             }
-            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные реле випов!"))
+            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные"))
             {
-                const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + "Перейти в предварительную проверку реле Випов?", caption,
-                    MessageBoxButton.YesNo);
-
-                if (result == MessageBoxResult.Yes)
+                string caption = "Ошибка 0 замера";
+                if (!available)
                 {
-                    if (!stand.IsResetAll)
-                    {
-                        await stand.ResetAllTests();
-                    }
+                    caption = "Ошибка проерки наличия";
+                }
 
+                var result = MessageBox.Show(e.Message, caption,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.OK)
+                {
+                    // if (!stand.IsResetAll)
+                    // {
+                    //     await stand.ResetAllTests();
+                    // }
                     SelectTab = 1;
                 }
 
-                if (result == MessageBoxResult.No)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 0;
-                }
+                // if (result == MessageBoxResult.No)
+                // {
+                //     // if (!stand.IsResetAll)
+                //     // {
+                //     //     await stand.ResetAllTests();
+                //     // }
+                //     SelectTab = 0;
+                // }
             }
 
             catch (Exception e) when (e.Message.Contains("несколько випов"))
             {
                 const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.No)
                 {
@@ -447,14 +498,48 @@ public class ViewModel : Notify
                         await stand.ResetAllTests();
                     }
 
-                    SelectTab = 3;
+                    SelectTab = 4;
                 }
             }
+
             catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
-                    MessageBoxButton.YesNo);
+                    MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.No)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 1;
+                }
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (!stand.IsResetAll)
+                    {
+                        await stand.ResetAllTests();
+                    }
+
+                    SelectTab = 4;
+                }
+            }
+
+            catch (Exception e) when (e.Message.Contains("Следующие випы не функционируют"))
+            {
+                string caption = "Ошибка 0 замера";
+                if (!available)
+                {
+                    caption = "Ошибка проерки наличия";
+                }
+
+                var errorStr = e.Message.Replace("/", "\n ");
+                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
+                    MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
                 {
@@ -479,8 +564,15 @@ public class ViewModel : Notify
 
             catch (Exception e)
             {
-                const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+                string caption = "Ошибка 0 замера";
+                if (!available)
+                {
+                    caption = "Ошибка проерки наличия";
+                }
+
+                var errorStr = e.Message.Replace("/", "\n ");
+                var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
+                    MessageBoxImage.Error);
                 if (result == MessageBoxResult.No)
                 {
                     if (!stand.IsResetAll)
@@ -536,16 +628,32 @@ public class ViewModel : Notify
         return true;
     }
 
-
     public ICommand CloseActionWindowCmd { get; }
+
+    public bool StopAll { get; set; }
 
     Task OnCloseActionWindowCmdExecuted(object p)
     {
-        aw.Close();
+        StopAll = true;
+        //aw.Close();
+        SelectTab = goToSelectTab; 
         return Task.CompletedTask;
     }
 
     bool CanCloseActionWindowCmdExecuted(object p)
+    {
+        return true;
+    }
+
+    public ICommand CloseVipErrorWindowCmd { get; }
+
+    Task OnCloseCloseVipErrorWindowCmdExecuted(object p)
+    {
+        verr.Close();
+        return Task.CompletedTask;
+    }
+
+    bool CanCloseCloseVipErrorWindowCmdExecuted(object p)
     {
         return true;
     }
@@ -725,6 +833,8 @@ public class ViewModel : Notify
 
         typeConfig.Type = TypeVipNameSettings;
         typeConfig.PrepareMaxCurrentIn = Convert.ToDecimal(PrepareMaxCurrentIn);
+        typeConfig.AvailabilityMaxCurrentIn = Convert.ToDecimal(AvailabilityMaxCurrentIn);
+
         typeConfig.MaxCurrentIn = Convert.ToDecimal(MaxCurrentIn);
         typeConfig.PercentAccuracyCurrent = Convert.ToDecimal(PercentAccuracyCurrent);
         typeConfig.MaxVoltageOut1 = Convert.ToDecimal(MaxVoltageOut1);
@@ -747,7 +857,8 @@ public class ViewModel : Notify
             SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
                 CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
             VoltCurrentValues =
-                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType, OutputOnThermoCurrent,
+                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType,
+                    OutputOnThermoCurrent,
                     OutputOffThermoCurrent),
             VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
         });
@@ -789,6 +900,8 @@ public class ViewModel : Notify
             TypeVipNameSettings = null;
             EnableTypeVipName = true;
             PrepareMaxCurrentIn = null;
+            AvailabilityMaxCurrentIn = null;
+
             MaxCurrentIn = null;
             PercentAccuracyCurrent = null;
             MaxVoltageOut1 = null;
@@ -870,13 +983,20 @@ public class ViewModel : Notify
         set => Set(ref windowDisabled, value);
     }
 
+    private bool windowVipDisabled = true;
+
+    public bool WindowVipDisabled
+    {
+        get => windowVipDisabled;
+        set => Set(ref windowVipDisabled, value);
+    }
+
     /// <summary>
     ///
     /// </summary>
     public string CaptionAction => stand.CaptionAction;
 
     public string ErrorMessage => stand.ErrorMessage;
-
     public string ErrorOutput => stand.ErrorOutput;
 
     #endregion
@@ -970,6 +1090,13 @@ public class ViewModel : Notify
                 //     return string.Empty;
                 return "Устройство: " + stand.TestCurrentDevice.IsDeviceType + " " + stand.TestCurrentDevice.Name;
             }
+            else
+            {
+                if (stand.TestCurrentVip != null)
+                {
+                    return "Вип: " + stand.TestCurrentVip.IsDeviceType + " " + stand.TestCurrentVip.Name;
+                }
+            }
 
             return null;
         }
@@ -1049,6 +1176,8 @@ public class ViewModel : Notify
             {
                 TextCurrentTest = "Тесты прерваны, отключение устройств... ";
 
+                StopAll = false;
+                SelectTab = 5;
                 // //
                 // AllTabsDisable();
                 // AllBtnsDisable();
@@ -1761,8 +1890,12 @@ public class ViewModel : Notify
             {
                 TypeVipNameSettings = selectTypeVipSettings.Type;
                 EnableTypeVipName = selectTypeVipSettings.EnableTypeVipName;
+
                 PrepareMaxCurrentIn = selectTypeVipSettings.PrepareMaxCurrentIn.ToString(CultureInfo.InvariantCulture);
+                AvailabilityMaxCurrentIn =
+                    selectTypeVipSettings.AvailabilityMaxCurrentIn.ToString(CultureInfo.InvariantCulture);
                 MaxCurrentIn = selectTypeVipSettings.MaxCurrentIn.ToString(CultureInfo.InvariantCulture);
+
                 PercentAccuracyCurrent =
                     selectTypeVipSettings.PercentAccuracyCurrent.ToString(CultureInfo.InvariantCulture);
                 MaxVoltageOut1 = selectTypeVipSettings.PrepareMaxVoltageOut1.ToString(CultureInfo.InvariantCulture);
@@ -1791,10 +1924,12 @@ public class ViewModel : Notify
 
                 VoltageSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.Voltage;
                 CurrentSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.Current;
-                
-                VoltageAvailabilitySupply  = selectTypeVipSettings.GetDeviceParameters().SupplyValues.VoltageAvailability;
-                CurrentAvailabilitySupply  = selectTypeVipSettings.GetDeviceParameters().SupplyValues.CurrentAvailability;
-                
+
+                VoltageAvailabilitySupply =
+                    selectTypeVipSettings.GetDeviceParameters().SupplyValues.VoltageAvailability;
+                CurrentAvailabilitySupply =
+                    selectTypeVipSettings.GetDeviceParameters().SupplyValues.CurrentAvailability;
+
                 OutputOnSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.OutputOn;
                 OutputOffSupply = selectTypeVipSettings.GetDeviceParameters().SupplyValues.OutputOff;
 
@@ -1843,13 +1978,22 @@ public class ViewModel : Notify
         set => Set(ref enableTypeVipName, value);
     }
 
-    private string repareMaxCurrentIn;
+    private string prepareMaxCurrentIn;
 
     public string PrepareMaxCurrentIn
     {
-        get => repareMaxCurrentIn;
-        set => Set(ref repareMaxCurrentIn, value);
+        get => prepareMaxCurrentIn;
+        set => Set(ref prepareMaxCurrentIn, value);
     }
+
+    private string availabilityMaxCurrentIn;
+
+    public string AvailabilityMaxCurrentIn
+    {
+        get => availabilityMaxCurrentIn;
+        set => Set(ref availabilityMaxCurrentIn, value);
+    }
+
 
     private string maxCurrentIn;
 

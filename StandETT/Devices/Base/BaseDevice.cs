@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Media;
 using Newtonsoft.Json;
 using RJCP.IO.Ports;
@@ -58,7 +59,7 @@ public class BaseDevice : Notify
     }
 
     protected string nameExternalCmd;
-    
+
     /// <summary>
     /// Текущая команда устройства может из библиотеки
     /// </summary>
@@ -90,7 +91,7 @@ public class BaseDevice : Notify
     }
 
     public bool IsReceive { get; set; }
-    
+
     #endregion
 
     //---
@@ -115,14 +116,12 @@ public class BaseDevice : Notify
     /// Цвет статуса устройства
     /// </summary>
     [JsonIgnore]
-    public Brush StatusColor =>
-        StatusTest switch
-        {
-            StatusDeviceTest.Error => Brushes.Red,
-            StatusDeviceTest.Ok => Brushes.Green,
-            _ => Brushes.DarkGray
-        };
-
+    public Brush StatusColor => StatusTest switch
+    {
+        StatusDeviceTest.Error => Brushes.Red,
+        StatusDeviceTest.Ok => Brushes.Green,
+        _ => Brushes.DarkGray
+    };
 
     [JsonIgnore] private OnOffStatus statusOnOff;
 
@@ -152,6 +151,14 @@ public class BaseDevice : Notify
                 _ => Brushes.DarkGray
             };
         }
+    }
+
+    private Visibility isHidden = Visibility.Visible;
+
+    public Visibility IsHiddenOutputOnOff
+    {
+        get => isHidden;
+        set => Set(ref isHidden, value);
     }
 
     private string errorStatus;
@@ -215,27 +222,41 @@ public class BaseDevice : Notify
     /// <summary>
     /// Событие проверки коннекта к порту
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, bool> PortConnecting;
+    public event Action<BaseDevice, bool> PortConnecting;
+    
+    public void InvokePortConnecting(BaseDevice device, bool value) 
+    {
+        this.PortConnecting?.Invoke(device,value);
+    }
+    
+    /// <summary>
+    /// Событие приема данных с устройства
+    /// </summary>
+    public event Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
+    
+    public void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd) 
+    {
+        this.DeviceReceiving?.Invoke(device,receive, cmd);
+    }
 
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
-    [JsonIgnore] public Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
-
-    /// <summary>
-    /// Событие приема данных с устройства
-    /// </summary>
-    [JsonIgnore] public Action<BaseDevice, string> DeviceError;
-
+    public event Action<BaseDevice, string> DeviceError;
+    public void InvokeDeviceError(BaseDevice device, string receive) 
+    {
+        this.DeviceError?.Invoke(device,receive);
+    }
+    
     // /// <summary>
     // /// Событие проверки коннекта к устройству
     // /// </summary>
-    // [JsonIgnore] public Action<BaseDevice, bool, string> DeviceConnecting;
+    // [JsonIgnore] public event Action<BaseDevice, bool, string> DeviceConnecting;
 
     // /// <summary>
     // /// Событие приема данных с устройства
     // /// </summary>
-    // [JsonIgnore] public Action<BaseDevice, string> DeviceReceiving;
+    // [JsonIgnore] public event Action<BaseDevice, string> DeviceReceiving;
 
     #endregion
 
@@ -253,6 +274,8 @@ public class BaseDevice : Notify
 
     public int ColumnIndex { get; set; }
 
+    public bool IsNotCmd { get; set; }
+
 
     //
 
@@ -269,6 +292,7 @@ public class BaseDevice : Notify
     public BaseDevice(string name)
     {
         Name = name;
+        AllDeviceError = new AllDeviceError();
     }
 
     #endregion
@@ -363,7 +387,6 @@ public class BaseDevice : Notify
         SetInvoke();
         port.SetPort(Config.PortName, Config.Baud, Config.StopBits, Config.Parity, Config.DataBits);
         port.Dtr = true;
-       
     }
 
     private void SetInvoke()
@@ -406,6 +429,7 @@ public class BaseDevice : Notify
         PortConnecting.Invoke(this, isConnect);
     }
 
+
     /// <summary>
     /// Обработка события прнятого сообщения из устройства
     /// </summary>
@@ -427,7 +451,7 @@ public class BaseDevice : Notify
             }
         }
 
-        DeviceReceiving.Invoke(this, receive.ToLower(), CurrentCmd);
+        DeviceReceiving?.Invoke(this, receive.ToLower(), CurrentCmd);
     }
 
     private void Device_Error(string e)
@@ -450,7 +474,7 @@ public class BaseDevice : Notify
                                          !string.IsNullOrEmpty(CurrentCmd.Receive);
         AllDeviceError.ErrorLength = !string.IsNullOrEmpty(CurrentCmd.Length);
         AllDeviceError.ErrorTimeout =
-            !string.IsNullOrEmpty(CurrentCmd.Receive) || !string.IsNullOrEmpty(CurrentParameterGet)||IsReceive;
+            !string.IsNullOrEmpty(CurrentCmd.Receive) || !string.IsNullOrEmpty(CurrentParameterGet) || IsReceive;
         //
     }
 
@@ -464,18 +488,19 @@ public class BaseDevice : Notify
     public virtual void WriteCmd(string nameCommand, string parameter = null)
     {
         //stopwatch.Restart();
-        
+
         NameCurrentCmd = nameCommand;
         CurrentParameter = parameter;
 
         CurrentCmd = GetLibItem(nameCommand, Name);
 
         SetErrors();
-
+        IsNotCmd = false;
         if (CurrentCmd == null)
         {
+            IsNotCmd = true;
             throw new Exception(
-                $"Такое устройство - {IsDeviceType}/{Name} или команда - {nameCommand}, в библиотеке не найдены");
+                $"Такое устройство - {IsDeviceType}/{Name} \nили команда - {nameCommand}, в библиотеке не найдены!");
         }
 
         if (!string.IsNullOrEmpty(CurrentCmd.Length))
@@ -492,10 +517,8 @@ public class BaseDevice : Notify
             TypeReceive = TypeCmd.Hex;
             if (CurrentCmd.IsXor)
             {
-                
                 port.TransmitCmdHexString(CurrentCmd.Transmit + parameter, CurrentCmd.Delay,
                     CurrentCmd.Terminator.ReceiveTerminator, true);
-             
             }
             else
             {
@@ -529,14 +552,16 @@ public class BaseDevice : Notify
     {
         var result = LibCmd.DeviceCommands
             .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Key.NameCmd == cmd).Value;
+        IsNotCmd = false;
         if (result == null)
         {
-            throw new Exception($"Команда {cmd} для устройства {deviceName} не найдена");
+            IsNotCmd = true;
+            throw new Exception($"Команда {cmd} для устройства {deviceName} не найдена!\n");
         }
 
         return result;
     }
-    
+
     public void ExternalSetCmd(string nameCmd)
     {
         nameExternalCmd = nameCmd;
@@ -563,6 +588,4 @@ public class BaseDevice : Notify
     // }
 
     #endregion
-    
-   
 }

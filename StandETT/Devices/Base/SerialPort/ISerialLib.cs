@@ -34,20 +34,21 @@ public interface ISerialLib
     public void Close();
 
     public void DiscardInBuffer();
-    
+
     /// <summary>
     /// Событие конекта к порту 
     /// </summary>
-    Action<bool> PortConnecting { get; set; }
+    public event Action<bool> PortConnecting;
 
     /// <summary>
     /// Событие ответа устройства
     /// </summary>
-    Action<byte[]> Receiving { get; set; }
+    public event Action<byte[]> Receiving;
+
     /// <summary>
     /// Событие ошибки устройства
     /// </summary>
-    public Action<string> ErrorPort { get; set; }
+    public event Action<string> ErrorPort;
 
     /// <summary>
     /// Настройка порта 
@@ -135,7 +136,7 @@ public interface ISerialLib
 
         return "";
     }
-   
+
     /// <summary>
     /// Xor калькулятор для хекс строки 
     /// </summary>
@@ -154,6 +155,6 @@ public interface ISerialLib
     }
 
     void DtrEnable();
-    
+
     void SetReceiveLenght(int receiveLenght);
 }

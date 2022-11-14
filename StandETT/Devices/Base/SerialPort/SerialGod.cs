@@ -19,11 +19,9 @@ public class SerialGod : ISerialLib
         port.DiscardInBuffer();
     }
 
-    public Action<bool> PortConnecting { get; set; }
-    public Action<byte[]> Receiving { get; set; }
-    public Action<string> ErrorPort { get; set; }
-
-    
+    public event Action<bool> PortConnecting;
+    public event Action<byte[]> Receiving;
+    public event Action<string> ErrorPort;
 
     public void SetPort(string pornName, int baud, int stopBits, int parity, int dataBits, bool dtr = false)
     {

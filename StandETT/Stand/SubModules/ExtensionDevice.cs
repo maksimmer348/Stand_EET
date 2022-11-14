@@ -16,6 +16,19 @@ public static class ExtensionDevice
     }
 }
 
+public static class ExtensionRelay
+{
+    public static T GetTypeDevice<T>(this ObservableCollection<RelayVip> baseDevices) where T : RelayVip
+    {
+        return (T)baseDevices.FirstOrDefault(x => x is T);
+    }
+    public static T GetTypeDevice<T>(this List<RelayVip> baseDevices) where T : RelayVip
+    {
+        return (T)baseDevices.FirstOrDefault(x => x is T);
+    }
+}
+
+
 public static class ExtensionParameters
 {
     public static T GetTypeDevice<T>(this BaseDeviceValues parameters) where T : BaseDeviceValues

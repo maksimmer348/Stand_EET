@@ -13,7 +13,6 @@ public class MainRelay : BaseDevice
     private static object syncRoot = new();
     private RelayVip currentRelayVip;
 
-
     /// <summary>
     /// Применение настроек, подключение событий и старт устройства
     /// </summary>
@@ -54,7 +53,7 @@ public class MainRelay : BaseDevice
         return instance;
     }
 
-    [JsonIgnore] public ObservableCollection<RelayVip> Relays = new();
+    [JsonIgnore] public ObservableCollection<RelayVip> Relays { get; set; }= new();
 
     public MainRelay(string name) : base(name)
     {
@@ -68,7 +67,7 @@ public class MainRelay : BaseDevice
         ErrorStatus = string.Empty;
         foreach (var relay in Relays)
         {
-            relay.PortConnecting?.Invoke(relay, true);
+            relay.InvokePortConnecting(relay, true);
         }
     }
 
@@ -78,12 +77,12 @@ public class MainRelay : BaseDevice
         {
             foreach (var relay in Relays)
             {
-                relay.DeviceError.Invoke(relay, error);
+                relay.InvokeDeviceError(relay, error);
             }
         }
         else
         {
-            currentRelayVip.DeviceError.Invoke(currentRelayVip, error);
+            currentRelayVip.InvokeDeviceError(currentRelayVip, error);
         }
     }
 
@@ -93,15 +92,18 @@ public class MainRelay : BaseDevice
         // currentRelayVip.AllDeviceError.ErrorTimeout = false;
         try
         {
-            var prefix = receive.Substring(2, 2);
+            string prefix = null;
+
+            prefix = receive.Contains("6f") ? receive.Substring(3, 1) : receive.Substring(2, 2);
+
             var currentRelayVipPrefix = Relays.FirstOrDefault(x => x.Prefix.ToLower() == prefix);
             if (currentRelayVipPrefix != null)
             {
-                currentRelayVipPrefix.DeviceReceiving?.Invoke(currentRelayVipPrefix, receive, cmd);
+                currentRelayVipPrefix.Device_Receiving(currentRelayVipPrefix, receive, cmd);
             }
             else
             {
-                currentRelayVip.DeviceReceiving?.Invoke(currentRelayVip, receive, cmd);
+                currentRelayVip.Device_Receiving(currentRelayVip, receive, cmd);
             }
         }
         catch (ArgumentOutOfRangeException e)

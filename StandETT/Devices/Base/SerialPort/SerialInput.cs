@@ -18,13 +18,12 @@ public class SerialInput : ISerialLib
     public int Delay { get; set; }
     
     // public long Ss { get => Port.Ss; }
-    
-    
 
-    public Action<bool> PortConnecting { get; set; }
-    public Action<byte[]> Receiving { get; set; }
 
-    public Action<string> ErrorPort { get; set; }
+
+    public event Action<bool> PortConnecting;
+    public event Action<byte[]> Receiving;
+    public event Action<string> ErrorPort;
 
     /// <summary>
     /// Адаптер значений для библиотеки 
@@ -183,13 +182,11 @@ public class SerialInput : ISerialLib
 
     public void OnPortConnectionStatusChanged(object sender, ConnectionStatusChangedEventArgs args)
     {
-        PortConnecting.Invoke(args.Connected);
+        PortConnecting?.Invoke(args.Connected);
     }
-
     public void OnPortMessageReceived(object sender, MessageReceivedEventArgs args)
     {
-        //Debug.WriteLine(s.ElapsedMilliseconds); 
-        Receiving.Invoke(args.Data);
+        Receiving?.Invoke(args.Data);
     }
 
     public void TransmitCmdTextString(string cmd, int delay = 0, string terminator = null)

@@ -11,6 +11,6 @@ public class BigLoad : BaseDevice
     public bool Output { get; set; }
     public BigLoad(string name) : base(name)
     {
-        IsDeviceType = "Большая нагрузка/Генератор";
+        IsDeviceType = "Большая нагрузка";
     }
 }
