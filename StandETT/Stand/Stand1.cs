@@ -882,15 +882,20 @@ public class Stand1 : Notify
         SetPriorityStatusStand(0, clearAll: true);
         //
 
-        bool isErrorRelayVip = false;
-        TempChecks t = TempChecks.Start();
-
-        // установки настройек приобров
-
         //
         PercentCurrentTest = 20;
         //
+        // установки настройек приобров
+        TempChecks t = TempChecks.Start();
 
+        foreach (var vip in vipsTested)
+        {
+            if (t.IsOk)
+            {
+                await OutputDevice(vip.Relay, t: t, forcedOff: true, on: false);
+            }
+        }
+        
         //большой нагрузки
         if (t.IsOk)
         {
@@ -1236,7 +1241,6 @@ public class Stand1 : Notify
                 throw new Exception("Отсутвуют инициализировнные Випы!");
             }
 
-
             timer.Elapsed += TimerOnElapsed;
             timer.Enabled = true;
             timer.Start();
@@ -1304,6 +1308,10 @@ public class Stand1 : Notify
         //
         //         b++;
         //     }
+        foreach (var vip in vipsTested)
+        {
+            var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CycleCheck, t: tp);
+        }
 
         if (intervalCheckerCycle.Check())
         {
@@ -1316,7 +1324,7 @@ public class Stand1 : Notify
 
             foreach (var vip in vipsTested)
             {
-                var dataMeasurement = await MeasurementTick(vip, t: tp);
+                var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
 
                 Debug.WriteLine(s.ElapsedMilliseconds + $"mc/{b}");
 
@@ -1335,7 +1343,8 @@ public class Stand1 : Notify
 
             if (b == 1)
             {
-                intervalCheckerCycle.Interval = (float)vipsTested[0].Type.TestIntervalTime.TotalSeconds;
+                intervalCheckerCycle.Interval = 24;
+                //intervalCheckerCycle.Interval = (float)vipsTested[0].Type.TestIntervalTime.TotalSeconds;
             }
 
             b++;
@@ -1351,7 +1360,7 @@ public class Stand1 : Notify
             {
                 foreach (var vip in vipsTested)
                 {
-                    var dataMeasurement = await MeasurementTick(vip, t: tp);
+                    var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
                     Debug.WriteLine(s.ElapsedMilliseconds + $"mc/last");
                     if (!tp.IsOk)
                     {
@@ -1380,7 +1389,8 @@ public class Stand1 : Notify
     }
 
     //--tick--test--ass
-    async Task<(bool result, Vip vip)> MeasurementTick(Vip vip, int countChecked = 3, int loopDelay = 1000,
+    async Task<(bool result, Vip vip)> MeasurementTick(Vip vip, TypeOfTestRun typeTest, int countChecked = 3,
+        int loopDelay = 1000,
         TempChecks t = null)
     {
         //
@@ -1390,7 +1400,7 @@ public class Stand1 : Notify
         // await Task.Delay(TimeSpan.FromMilliseconds(3000));
         TempChecks tp = TempChecks.Start();
 
-        if (tp.IsOk) await TestVip(vip, TypeOfTestRun.CyclicMeasurement, tp);
+        if (tp.IsOk) await TestVip(vip, typeTest, tp);
 
         return (false, vip);
     }
@@ -1886,8 +1896,7 @@ public class Stand1 : Notify
                         currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}",
                         colorSubTest: Brushes.Orange);
                     //
-
-
+                    
                     if (!string.IsNullOrEmpty(paramSet))
                     {
                         SetGdmReceive(device, paramSet);
@@ -2798,14 +2807,20 @@ public class Stand1 : Notify
         decimal temperature = vip.Temperature;
 
         //проверка приборов входящих в стенд при цикл. испытаниях
-        if (typeTest is TypeOfTestRun.CyclicMeasurement)
+        if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
         {
             currentDevice = devices.GetTypeDevice<Supply>();
             await WriteIdentCommand(currentDevice, "Status", t: tp);
             currentDevice = devices.GetTypeDevice<BigLoad>();
             await WriteIdentCommand(currentDevice, "Status", t: tp);
-            currentDevice = devices.GetTypeDevice<SmallLoad>();
-            await WriteIdentCommand(currentDevice, "Status", t: tp);
+
+            //TODO вернуть когда появятся все нагрузки или исправится номера текущих
+            //var ss = allDevices.FirstOrDefault(x => x.Name.Contains("SL") && x.Prefix == vip.Id.ToString());
+
+            //TODO удалить когда появятся все нагрузки или исправится номера текущих
+            var ss = allRelayVips.FirstOrDefault(x => x.Name.Contains("SL") && x.Prefix == "4");
+            //TODO удалить когда появятся все нагрузки или исправится номера текущих
+            await WriteIdentCommand(ss, "Status", t: tp);
         }
 
         //волтьтметра
@@ -2822,9 +2837,12 @@ public class Stand1 : Notify
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
                 2, 1000, tp, "Get func", "Get volt meter");
 
+        //TODO уточнить до или после Проверка на внутренние ошибки плат Випов и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
+        //Включение реле Випа (если уже не включен)
+        if (tp.IsOk) await OutputDevice(vip.Relay, t: tp);
 
         //TODO вернуть!
-        //TODO уточнить до или после вкл и в каких случаях (AvailabilityCheckVip/MeasurementZero)
+        //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
         // //Проверка на внутренние ошибки плат Випов
         // TempChecks tpe = TempChecks.Start();
         // //алгоритм проверки текущего випа на внутренние ошибки
@@ -2853,15 +2871,11 @@ public class Stand1 : Notify
         // }
         //TODO вернуть!
 
-        //TODO уточнить до или после проверки и в каких случаях (AvailabilityCheckVip/MeasurementZero)
-        //Включение реле Випа (енсли уже не включено)
-        if (tp.IsOk) await OutputDevice(vip.Relay, t: tp);
 
         if (tp.IsOk)
         {
             //переключение канала измерений Випа на 1
             if (tp.IsOk) await SetTestChannelVip(vip, 1, tp);
-
 
             //TODO подбирать вручную
             //TODO уточнить нужно ли выводить на тексбокс
@@ -2870,10 +2884,10 @@ public class Stand1 : Notify
             double delay = typeTest switch
             {
                 //TODO уточнить про эти значение задержки 
-                TypeOfTestRun.AvailabilityCheckVip => 100,
+                TypeOfTestRun.AvailabilityCheckVip => 500,
                 TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
-                TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 100,
-                _ => 100
+                TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 500,
+                _ => 500
             };
 
             try
@@ -2895,7 +2909,7 @@ public class Stand1 : Notify
             }
 
             //измерение показаний 1 канала с двух подканалов
-            var receiveData1 = await WriteIdentCommands(currentDevices, "Get all value", t: tp, isReceiveVal: true);
+            var receivesData1 = await WriteIdentCommands(currentDevices, "Get all value", t: tp, isReceiveVal: true);
 
             //
             SetPriorityStatusStand(2, $"Тест Випа: ", percentSubTest: 30, colorSubTest: Brushes.Violet,
@@ -2907,6 +2921,7 @@ public class Stand1 : Notify
             TempChecks tpv2 = TempChecks.Start();
             TypeCheckVal typeVolt1 = TypeCheckVal.None;
             TypeCheckVal typeVolt2 = TypeCheckVal.None;
+
             if (tp.IsOk)
             {
                 //TODO уточнить правильно ли сделано (в каком случае каки дожны быть значения и вывод их в тектбоксы)
@@ -2914,32 +2929,27 @@ public class Stand1 : Notify
                 //проверка напряжений для режима проверки наличия и 0 замера
                 //1 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
 
+                switch (typeTest)
+                {
+                    case TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero:
+                        typeVolt1 = TypeCheckVal.PrepareVoltage1;
+                        typeVolt2 = TypeCheckVal.PrepareVoltage2;
+                        break;
+                    case TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck:
+                        typeVolt1 = TypeCheckVal.Voltage1;
+                        typeVolt2 = TypeCheckVal.Voltage2;
+                        break;
+                }
+
                 //проверка замеров напряжения 1 подканал 
-                voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receiveData1);
+                voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receivesData1);
+                CheckValueInVip(vip, voltage1, typeVolt1, tpv1);
+                vip.VoltageOut1 = voltage1;
 
                 //проверка замеров напряжения 2 подканал 
                 if (vip.Type.PrepareMaxVoltageOut2 > 0)
                 {
-                    voltage2 = GetValueReceives(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData1);
-                }
-
-                if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
-                {
-                    typeVolt1 = TypeCheckVal.PrepareVoltage1;
-                    typeVolt2 = TypeCheckVal.PrepareVoltage2;
-                }
-
-                if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
-                {
-                    typeVolt1 = TypeCheckVal.Voltage1;
-                    typeVolt2 = TypeCheckVal.Voltage2;
-                }
-
-                CheckValueInVip(vip, voltage1, typeVolt1, tpv1);
-                vip.VoltageOut1 = voltage1;
-
-                if (vip.Type.PrepareMaxVoltageOut2 > 0)
-                {
+                    voltage2 = GetValueReceives(devices.GetTypeDevice<VoltCurrentMeter>(), receivesData1);
                     CheckValueInVip(vip, voltage2, typeVolt2, tpv2);
                     vip.VoltageOut2 = voltage2;
                 }
@@ -2957,8 +2967,7 @@ public class Stand1 : Notify
             //измерение тока 2 канала с 1 подканала 
             currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
             var receiveData2 = await WriteIdentCommand(currentDevice, "Get all value", t: tp, isReceiveVal: true);
-
-
+            
             //задание чекера для 1 подканала тока
             TempChecks tpc = TempChecks.Start();
             TypeCheckVal typeCurr = TypeCheckVal.None;
@@ -2966,7 +2975,7 @@ public class Stand1 : Notify
             if (tp.IsOk)
             {
                 //TODO уточнить правильно ли сделано (в каком случае каки дожны быть значения и вывод их в тектбоксы)
-                
+
                 //2 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
                 current = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData2);
 
@@ -2979,9 +2988,9 @@ public class Stand1 : Notify
                 //проверка тока для режима 0 замера
                 if (typeTest is TypeOfTestRun.MeasurementZero)
                 {
-                   
                     typeCurr = TypeCheckVal.PrepareCurrent;
                 }
+
                 //проверка напряжений для режима цикла испытаний
                 if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
                 {
@@ -3004,245 +3013,148 @@ public class Stand1 : Notify
             // }
             //TODO вернуть каогда появится термометр
 
+            bool extraError = true;
+            isError = false;
+
             //если какойто из чекеров false
             if (!tpv1.IsOk || !tpv2.IsOk || !tpc.IsOk || !tpt.IsOk)
             {
                 await OutputDevice(vip.Relay, t: tp, on: false);
-                
                 //для добавления косой черты в строку сообщения
-                bool extraError = false;
-
+                extraError = false;
                 isError = true;
-                
                 vip.StatusTest = StatusDeviceTest.Error;
+                vip.ErrorStatusVip = null;
+
+                decimal typeVipVoltage1 = 0;
+                decimal typeVipVoltage2 = 0;
+                decimal typeVipcurrent = 0;
 
                 if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
                 {
-                    var vipVoltage1 = vip.Type.PrepareMaxVoltageOut1;
+                    typeVipVoltage1 = vip.Type.PrepareMaxVoltageOut1;
+                    typeVipVoltage2 = vip.Type.PrepareMaxVoltageOut2;
 
-                    if (!tpv1.IsOk)
+                    if (typeTest is TypeOfTestRun.AvailabilityCheckVip)
                     {
-                        if (voltage1 > vipVoltage1)
-                        {
-                            vip.ErrorVip.VoltageOut1High = true;
-                            var over = voltage1 - vip.Type.PrepareMaxVoltageOut1;
-                            vip.ErrorStatusVip += $"U1вых.↑ на {over}В ";
-                            extraError = true;
-                        }
-
-                        if (voltage1 < vip.Type.PrepareMaxVoltageOut1)
-                        {
-                            vip.ErrorVip.VoltageOut1Low = true;
-                            var over = vip.Type.PrepareMaxVoltageOut1 - voltage1;
-                            vip.ErrorStatusVip += $"U1вых.↓ на {over}В ";
-                            extraError = true;
-                        }
+                        typeVipcurrent = vip.Type.AvailabilityMaxCurrentIn;
                     }
-
-                    if (!tpv2.IsOk)
+                    else
                     {
-                        if (voltage2 > vip.Type.PrepareMaxVoltageOut2)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.VoltageOut2High = true;
-                            var over = voltage2 - vip.Type.PrepareMaxVoltageOut2;
-                            vip.ErrorStatusVip += $"U1вых.↑ на {over}В ";
-                            extraError = true;
-                        }
-
-                        if (voltage2 < vip.Type.PrepareMaxVoltageOut2)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.VoltageOut2Low = true;
-                            var over = vip.Type.PrepareMaxVoltageOut2 - voltage2;
-                            vip.ErrorStatusVip += $"U1вых.↓ на {over}В ";
-                            extraError = true;
-                        }
-                    }
-
-                    if (!tpc.IsOk)
-                    {
-                        if (current > vip.Type.PrepareMaxCurrentIn)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.CurrentInHigh = true;
-                            var over = current - vip.Type.PrepareMaxCurrentIn;
-                            vip.ErrorStatusVip += $" Iвх.↑ на {over}A ";
-                            extraError = true;
-                        }
-
-                        if (current < vip.Type.PrepareMaxCurrentIn)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.CurrentInHigh = true;
-                            var over = vip.Type.PrepareMaxCurrentIn - current;
-                            vip.ErrorStatusVip += $" Iвх.↓ на {over}A ";
-                            extraError = true;
-                        }
-                    }
-
-                    if (!tpt.IsOk)
-                    {
-                        if (temperature > vip.Type.MaxTemperature)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.TemperatureHigh = true;
-                            var over = temperature - vip.Type.MaxTemperature;
-                            vip.ErrorStatusVip += $"T↑ на {over}℃";
-                            extraError = true;
-                        }
-
-                        if (temperature < vip.Type.MaxTemperature)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.TemperatureHigh = true;
-                            var over = vip.Type.MaxTemperature - temperature;
-                            vip.ErrorStatusVip += $"T↓ на {over}℃";
-                            extraError = true;
-                        }
+                        typeVipcurrent = vip.Type.AvailabilityMaxCurrentIn;
                     }
                 }
 
-                if (typeTest is TypeOfTestRun.CyclicMeasurement)
+                if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
                 {
-                    vip.StatusTest = StatusDeviceTest.Error;
+                    typeVipVoltage1 = vip.Type.MaxVoltageOut1;
+                    typeVipVoltage2 = vip.Type.MaxVoltageOut2;
+                    typeVipcurrent = vip.Type.MaxCurrentIn;
+                }
 
-                    if (!tpv1.IsOk)
+                if (!tpv1.IsOk)
+                {
+                    if (voltage1 > typeVipVoltage1)
                     {
-                        if (voltage1 > vip.Type.PrepareMaxVoltageOut1)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.VoltageOut1High = true;
-                            var over = voltage1 - vip.Type.PrepareMaxVoltageOut1;
-                            vip.ErrorStatusVip = $"U1вых.↑ на {over}В ";
-                            extraError = true;
-                        }
-
-                        if (voltage1 < vip.Type.PrepareMaxVoltageOut1)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.VoltageOut1Low = true;
-                            var over = vip.Type.PrepareMaxVoltageOut1 - voltage1;
-                            vip.ErrorStatusVip = $"U1вых.↓ на {over}В ";
-                            extraError = true;
-                        }
+                        vip.ErrorVip.VoltageOut1High = true;
+                        var over = voltage1 - typeVipVoltage1;
+                        vip.ErrorStatusVip = $"U1вых.↑ на {over}В ";
+                        extraError = true;
                     }
 
-                    if (!tpv2.IsOk)
+                    if (voltage1 < typeVipVoltage1)
                     {
-                        if (voltage2 > vip.Type.PrepareMaxVoltageOut2)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
+                        vip.ErrorVip.VoltageOut1Low = true;
+                        var over = typeVipVoltage1 - voltage1;
+                        vip.ErrorStatusVip = $"U1вых.↓ на {over}В ";
+                        extraError = true;
+                    }
+                }
 
-                            vip.ErrorVip.VoltageOut2High = true;
-                            var over = voltage2 - vip.Type.PrepareMaxVoltageOut2;
-                            vip.ErrorStatusVip = $"U1вых.↑ на {over}В ";
-                            extraError = true;
+                if (!tpv2.IsOk)
+                {
+                    if (voltage2 > typeVipVoltage2)
+                    {
+                        if (extraError)
+                        {
+                            vip.ErrorStatusVip += "/";
                         }
 
-                        if (voltage2 < vip.Type.PrepareMaxVoltageOut2)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.VoltageOut2Low = true;
-                            var over = vip.Type.PrepareMaxVoltageOut2 - voltage2;
-                            vip.ErrorStatusVip = $"U1вых.↓ на {over}В ";
-                            extraError = true;
-                        }
+                        vip.ErrorVip.VoltageOut2High = true;
+                        var over = voltage2 - typeVipVoltage2;
+                        vip.ErrorStatusVip += $"U1вых.↑ на {over}В ";
+                        extraError = true;
                     }
 
-                    if (!tpc.IsOk)
+                    if (voltage2 < typeVipVoltage2)
                     {
-                        if (current > vip.Type.PrepareMaxCurrentIn)
+                        if (extraError)
                         {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.CurrentInHigh = true;
-                            var over = current - vip.Type.PrepareMaxCurrentIn;
-                            vip.ErrorStatusVip += $" Iвх.↑ на {over}A ";
+                            vip.ErrorStatusVip += "/";
                         }
 
-                        if (current < vip.Type.PrepareMaxCurrentIn)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
+                        vip.ErrorVip.VoltageOut2Low = true;
+                        var over = typeVipVoltage2;
+                        vip.ErrorStatusVip += $"U1вых.↓ на {over}В ";
+                        extraError = true;
+                    }
+                }
 
-                            vip.ErrorVip.CurrentInHigh = true;
-                            var over = vip.Type.PrepareMaxCurrentIn - current;
-                            vip.ErrorStatusVip += $" Iвх.↓ на {over}A ";
+                if (!tpc.IsOk)
+                {
+                    if (current > typeVipcurrent)
+                    {
+                        if (extraError)
+                        {
+                            vip.ErrorStatusVip += "/";
                         }
+
+                        vip.ErrorVip.CurrentInHigh = true;
+                        var over = current - typeVipcurrent;
+                        vip.ErrorStatusVip += $" Iвх.↑ на {over}A ";
+                        extraError = true;
                     }
 
-                    if (!tpt.IsOk)
+                    if (current < typeVipcurrent)
                     {
-                        if (temperature > vip.Type.MaxTemperature)
+                        if (extraError)
                         {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
-
-                            vip.ErrorVip.TemperatureHigh = true;
-                            var over = temperature - vip.Type.MaxTemperature;
-                            vip.ErrorStatusVip += $"T↑ на {over}℃";
-                            extraError = true;
+                            vip.ErrorStatusVip += "/";
                         }
 
-                        if (temperature < vip.Type.MaxTemperature)
-                        {
-                            if (extraError)
-                            {
-                                vip.ErrorStatusVip += "/";
-                            }
+                        vip.ErrorVip.CurrentInHigh = true;
+                        var over = typeVipcurrent - current;
+                        vip.ErrorStatusVip += $" Iвх.↓ на {over}A ";
+                        extraError = true;
+                    }
+                }
 
-                            vip.ErrorVip.TemperatureHigh = true;
-                            var over = vip.Type.MaxTemperature - temperature;
-                            vip.ErrorStatusVip += $"T↓ на {over}℃";
-                            extraError = true;
+                if (!tpt.IsOk)
+                {
+                    if (temperature > vip.Type.MaxTemperature)
+                    {
+                        if (extraError)
+                        {
+                            vip.ErrorStatusVip += "/";
                         }
+
+                        vip.ErrorVip.TemperatureHigh = true;
+                        var over = temperature - vip.Type.MaxTemperature;
+                        vip.ErrorStatusVip += $"T↑ на {over}℃";
+                        extraError = true;
+                    }
+
+                    if (temperature < vip.Type.MaxTemperature)
+                    {
+                        if (extraError)
+                        {
+                            vip.ErrorStatusVip += "/";
+                        }
+
+                        vip.ErrorVip.TemperatureHigh = true;
+                        var over = vip.Type.MaxTemperature - temperature;
+                        vip.ErrorStatusVip += $"T↓ на {over}℃";
+                        extraError = true;
                     }
                 }
             }
@@ -3256,6 +3168,7 @@ public class Stand1 : Notify
             if (!isError)
             {
                 vip.StatusTest = StatusDeviceTest.Ok;
+                vip.ErrorStatusVip = "Ok";
                 if (typeTest is TypeOfTestRun.MeasurementZero or TypeOfTestRun.CyclicMeasurement)
                 {
                     //

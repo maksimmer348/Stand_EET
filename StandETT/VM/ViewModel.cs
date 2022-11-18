@@ -116,7 +116,6 @@ public class ViewModel : Notify
         AllTabsEnable();
         SelectTab = 0;
         //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
-        
     }
 
     private ActionWindow aw;
@@ -406,13 +405,13 @@ public class ViewModel : Notify
             try
             {
                 //--available
-               available = await stand.AvailabilityCheckVip();
+                available = await stand.AvailabilityCheckVip();
 
-               if (available)
+                if (available)
                 {
                     //--zero
-                    bool mesZero = await stand.MeasurementZero();
-                    
+                    // bool mesZero = await stand.MeasurementZero();
+
                     // if (mesZero)
                     // {
                     //     var heat = await stand.PrepareMeasurementCycle();
@@ -420,13 +419,13 @@ public class ViewModel : Notify
                     //     {
                     //--cycle--cucle
 
-                    await stand.EnableLoads();
+                    // await stand.EnableLoads();
                     //stand.StartMeasurementCycle();
                     //     }
                     // }
                 }
 
-                // stand.StartMeasurementCycle();
+                stand.StartMeasurementCycle();
             }
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
