@@ -234,7 +234,7 @@
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <TextBlock Grid.ColumnSpan="2" Text="{Binding Type}" />
+                                        <TextBlock Grid.ColumnSpan="2" Text="{Binding Name}" />
                                     </Grid>
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
@@ -808,7 +808,7 @@
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid>
-                                            <TextBlock Grid.ColumnSpan="2" Text="{Binding Type}" />
+                                            <TextBlock Grid.ColumnSpan="2" Text="{Binding Name}" />
                                         </Grid>
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>

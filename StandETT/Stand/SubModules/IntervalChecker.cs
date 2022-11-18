@@ -9,7 +9,7 @@ public class IntervalChecker
     private long last;
 
     private bool autoReset;
-    public float Interval { get; private set; }
+    public float Interval { get; set; }
     public int Count { get; private set; }
 
     public float IntervalRange { get; set; } = 1;

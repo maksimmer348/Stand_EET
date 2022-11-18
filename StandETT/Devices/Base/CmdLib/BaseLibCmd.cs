@@ -124,7 +124,7 @@ public class BaseLibCmd
         }
     }
 
-    //TODO нужно ли переписвать
+    //TODO на будущее
     /// <summary>
     ///  Изменить значение команды по ключу
     /// </summary>

@@ -95,7 +95,7 @@ public class RelayVip : BaseDevice
         Name = Name;
         NameCurrentCmd = nameCommand;
         
-        if (NameCurrentCmd == "On")
+        if (NameCurrentCmd != null && NameCurrentCmd.Contains("On"))
         {
             StatusOnOff = OnOffStatus.Switching;
         }
@@ -145,7 +145,6 @@ public class RelayVip : BaseDevice
         {
             return StatusOnOff switch
             {
-                
                 OnOffStatus.Off => Brushes.Red,
                 OnOffStatus.On => Brushes.Green,
                 OnOffStatus.Switching => Brushes.BlueViolet,
@@ -170,6 +169,7 @@ public class RelayVip : BaseDevice
         DeviceReceiving += Relay_Receiving;
     }
 
+    //private Stopwatch s = new Stopwatch();
     private void Relay_Receiving(BaseDevice arg1, string arg2, DeviceCmd arg3)
     {
         if (NameCurrentCmd.Contains("On"))

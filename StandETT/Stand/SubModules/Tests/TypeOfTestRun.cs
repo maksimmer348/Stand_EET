@@ -34,9 +34,15 @@ public enum TypeOfTestRun
     
     WaitHeatPlate,
     WaitHeatPlateReady,
+    
+    SmallLoadOutput,
+    SmallLoadOutputReady,
+    
+    CycleCheck,
     CyclicMeasurement,
     CyclicMeasurementReady,
     CycleWait,
+    
     Error,
     OutputDevice,
     OutputDeviceReady

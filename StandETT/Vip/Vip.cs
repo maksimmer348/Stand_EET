@@ -7,8 +7,7 @@ namespace StandETT;
 public class Vip : Notify
 {
     #region --Индентификация Випа
-
-    //
+    
     //расположение в таблице окна пограммы
     public int RowIndex { get; set; }
 
@@ -24,7 +23,7 @@ public class Vip : Notify
     public string Name
     {
         get => name;
-        set => Set(ref name, value); //, nameof(StatusColor));
+        set => Set(ref name, value);
     }
 
     /// <summary>
@@ -125,6 +124,16 @@ public class Vip : Notify
                 }
 
                 ErrorStatusVip += "U2вых.↓";
+            }
+
+            if (ErrorVip.TemperatureHigh)
+            {
+                if (extraError)
+                {
+                    ErrorStatusVip += "/";
+                }
+
+                ErrorStatusVip += "T↑";
             }
 
             if (!ErrorVip.CheckIsUnselectError())
@@ -249,6 +258,7 @@ public class Vip : Notify
             {
                 OnOffStatus.On => Brushes.Green,
                 OnOffStatus.Off => Brushes.Red,
+                OnOffStatus.Switching => Brushes.BlueViolet,
                 _ => Brushes.DarkGray
             };
         }
@@ -271,7 +281,7 @@ public class Vip : Notify
 
     #endregion
 
-    #region Значения Випа
+    #region --Значения Випа
 
     //Текущие значения на Випе
     private decimal voltageOut1;
@@ -308,6 +318,13 @@ public class Vip : Notify
 
 
     public decimal VoltageIn { get; set; }
+
+    #endregion
+
+    #region --Адрес для репортера
+
+    public int Channel1AddrNum { get; set; }
+    public int Channel2AddrNum { get; set; }
 
     #endregion
 

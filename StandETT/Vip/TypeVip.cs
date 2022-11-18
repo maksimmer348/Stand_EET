@@ -9,7 +9,6 @@ public class TypeVip : Notify
 {
     private static TypeVip instance;
     private static object syncRoot = new();
-
     public static TypeVip getInstance()
     {
         if (instance == null)
@@ -24,19 +23,21 @@ public class TypeVip : Notify
         return instance;
     }
 
-    private string type;
+    #region --Индетификатор типа Випа
+
+    private string name;
 
     /// <summary>
     /// Тип Випа
     /// </summary>
-    public string Type
+    public string Name
     {
-        get => type;
-        set => Set(ref type, value);
+        get => name;
+        set => Set(ref name, value);
     }
 
+    //TODO уточнить куда вывести это
     private string specifications = "ЯКЛЮ.436638.001 ТУ";
-
     /// <summary>
     /// Тип Випа
     /// </summary>
@@ -46,7 +47,10 @@ public class TypeVip : Notify
         set => Set(ref specifications, value);
     }
 
-    #region Значения для Випов
+    #endregion
+   
+
+    #region --Значения для Випов
 
     //максимальные значения во время цикла испытаниий 1...n, они означают ошибку
     public decimal MaxTemperature { get; set; }
@@ -120,7 +124,7 @@ public class TypeVip : Notify
 
     //
 
-    #region Значения для приброров
+    #region --Значения для приброров
 
     public ObservableCollection<BaseDeviceValues> BaseDeviceValues = new ObservableCollection<BaseDeviceValues>();
 
@@ -146,6 +150,9 @@ public class TypeVip : Notify
 
     #endregion
 }
+
+#region --Параметры для приборов
+
 
 public class DeviceParameters
 {
@@ -369,14 +376,6 @@ public class VoltCurrentMeterValues : BaseDeviceValues
     }
 }
 
-public enum ModeGdm
-{
-    None,
-    Voltage,
-    Themperature,
-    Current,
-}
-
 public class BigLoadValues : BaseDeviceValues
 {
     public string Freq { get; set; }
@@ -439,3 +438,13 @@ public class SupplyValues : BaseDeviceValues
         CurrentAvailability = currentAvailability;
     }
 }
+
+public enum ModeGdm
+{
+    None,
+    Voltage,
+    Themperature,
+    Current,
+}
+
+#endregion

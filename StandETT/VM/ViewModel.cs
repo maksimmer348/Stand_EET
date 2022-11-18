@@ -111,13 +111,12 @@ public class ViewModel : Notify
 
         stand.OpenErrorVipWindow += OpenVipErrorWindow;
 
-        //TODO убрать
+        //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
         AllBtnsEnable();
         AllTabsEnable();
         SelectTab = 0;
-        //TODO убрать
-
-        // CreateReportCmd = new ActionCommand(OnCreateReportCmdExecuted, CanCreateReportCmdExecuted);
+        //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
+        
     }
 
     private ActionWindow aw;
@@ -195,8 +194,6 @@ public class ViewModel : Notify
     }
 
     public double goToSelectTab;
-    
-    
 
     #endregion
 
@@ -409,26 +406,28 @@ public class ViewModel : Notify
             try
             {
                 //--available
-                // available = await stand.AvailabilityCheckVip();
-                // if (available)
-                // {
-                    //--zero
-                    //bool mesZero = await stand.MeasurementZero();
-                // }
-                //     if (mesZero)
-                //     {
-                //         // var heat = await stand.PrepareMeasurementCycle();
-                //         // if (heat)
-                //         // {
-                //         //   //  stand.StartMeasurementCycle();
-                //         // }
-                //     }
-                // }
-                
-                stand.StartMeasurementCycle();
-                
-            }
+               available = await stand.AvailabilityCheckVip();
 
+               if (available)
+                {
+                    //--zero
+                    bool mesZero = await stand.MeasurementZero();
+                    
+                    // if (mesZero)
+                    // {
+                    //     var heat = await stand.PrepareMeasurementCycle();
+                    //     if (heat)
+                    //     {
+                    //--cycle--cucle
+
+                    await stand.EnableLoads();
+                    //stand.StartMeasurementCycle();
+                    //     }
+                    // }
+                }
+
+                // stand.StartMeasurementCycle();
+            }
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
                 const string caption = "Ошибка настройки парамтеров";
@@ -478,7 +477,8 @@ public class ViewModel : Notify
             catch (Exception e) when (e.Message.Contains("несколько випов"))
             {
                 const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
+                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
+                    MessageBoxButton.YesNo,
                     MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.No)
@@ -502,7 +502,8 @@ public class ViewModel : Notify
                 }
             }
 
-            catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
+            catch (Exception e) when (e.Message.Contains("Текущий ток") ||
+                                      e.Message.Contains("Текущее напряжение"))
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
@@ -538,7 +539,8 @@ public class ViewModel : Notify
                 }
 
                 var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
+                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption,
+                    MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
@@ -571,7 +573,8 @@ public class ViewModel : Notify
                 }
 
                 var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
+                var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption,
+                    MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
                 if (result == MessageBoxResult.No)
                 {
@@ -636,7 +639,7 @@ public class ViewModel : Notify
     {
         StopAll = true;
         //aw.Close();
-        SelectTab = goToSelectTab; 
+        SelectTab = goToSelectTab;
         return Task.CompletedTask;
     }
 
@@ -714,11 +717,11 @@ public class ViewModel : Notify
             OnPropertyChanged(nameof(SelectedDeviceCmd));
 
 
-            stand.timeMachine.CountChecked = CountChecked;
-            stand.timeMachine.AllTimeChecked = AllTimeChecked;
+            // stand.timeMachine.CountChecked = CountChecked;
+            // stand.timeMachine.AllTimeChecked = AllTimeChecked;
 
             stand.SerializeDevice();
-            stand.SerializeTime();
+            // stand.SerializeTime();
         }
         catch (Exception e)
         {
@@ -831,7 +834,7 @@ public class ViewModel : Notify
     {
         var typeConfig = new TypeVip();
 
-        typeConfig.Type = TypeVipNameSettings;
+        typeConfig.Name = TypeVipNameSettings;
         typeConfig.PrepareMaxCurrentIn = Convert.ToDecimal(PrepareMaxCurrentIn);
         typeConfig.AvailabilityMaxCurrentIn = Convert.ToDecimal(AvailabilityMaxCurrentIn);
 
@@ -865,7 +868,7 @@ public class ViewModel : Notify
 
         stand.AddTypeVips(typeConfig);
 
-        selectedTypeVips.Source = SelectTypeVipSettings?.Type;
+        selectedTypeVips.Source = SelectTypeVipSettings?.Name;
         OnPropertyChanged(nameof(SelectedTypeVips));
 
         stand.SerializeTypeVips();
@@ -1527,8 +1530,8 @@ public class ViewModel : Notify
                 OnPropertyChanged(nameof(IndexTerminatorTransmit));
 
 
-                CountChecked = stand.timeMachine.CountChecked;
-                AllTimeChecked = stand.timeMachine.AllTimeChecked;
+                // CountChecked = stand.timeMachine.CountChecked;
+                // AllTimeChecked = stand.timeMachine.AllTimeChecked;
             }
             catch (Exception e)
             {
@@ -1888,7 +1891,7 @@ public class ViewModel : Notify
 
             try
             {
-                TypeVipNameSettings = selectTypeVipSettings.Type;
+                TypeVipNameSettings = selectTypeVipSettings.Name;
                 EnableTypeVipName = selectTypeVipSettings.EnableTypeVipName;
 
                 PrepareMaxCurrentIn = selectTypeVipSettings.PrepareMaxCurrentIn.ToString(CultureInfo.InvariantCulture);
@@ -1944,7 +1947,7 @@ public class ViewModel : Notify
 
 
                 //обновление типа випа выбранного
-                selectedTypeVips.Source = SelectTypeVipSettings?.Type;
+                selectedTypeVips.Source = SelectTypeVipSettings?.Name;
                 OnPropertyChanged(nameof(SelectedTypeVips));
             }
             catch (Exception e)
