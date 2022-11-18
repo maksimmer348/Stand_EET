@@ -2798,7 +2798,7 @@ public class Stand1 : Notify
         decimal temperature = vip.Temperature;
 
         //проверка приборов входящих в стенд при цикл. испытаниях
-        if (typeTest == TypeOfTestRun.CyclicMeasurement)
+        if (typeTest is TypeOfTestRun.CyclicMeasurement)
         {
             currentDevice = devices.GetTypeDevice<Supply>();
             await WriteIdentCommand(currentDevice, "Status", t: tp);
@@ -2867,7 +2867,6 @@ public class Stand1 : Notify
             //TODO уточнить нужно ли выводить на тексбокс
             //интервал для времени устаканивания напряжений 
 
-            
             double delay = typeTest switch
             {
                 //TODO уточнить про эти значение задержки 
@@ -2906,44 +2905,43 @@ public class Stand1 : Notify
             //задание чекера для 1 и 2 подканала напряжений
             TempChecks tpv1 = TempChecks.Start();
             TempChecks tpv2 = TempChecks.Start();
+            TypeCheckVal typeVolt1 = TypeCheckVal.None;
+            TypeCheckVal typeVolt2 = TypeCheckVal.None;
             if (tp.IsOk)
             {
                 //TODO уточнить правильно ли сделано (в каком случае каки дожны быть значения и вывод их в тектбоксы)
 
                 //проверка напряжений для режима проверки наличия и 0 замера
                 //1 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
-                if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
-                {
-                    //проверка замеров напряжения 1 подканал 
-                    voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receiveData1);
-                    CheckValueInVip(vip, voltage1, TypeCheckVal.PrepareVoltage1, tpv1);
-                    vip.VoltageOut1 = voltage1;
 
-                    //проверка замеров напряжения 2 подканал 
-                    if (vip.Type.PrepareMaxVoltageOut2 > 0)
-                    {
-                        voltage2 = GetValueReceives(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData1);
-                        CheckValueInVip(vip, voltage2, TypeCheckVal.PrepareVoltage2, tpv2);
-                        vip.VoltageOut2 = voltage2;
-                    }
+                //проверка замеров напряжения 1 подканал 
+                voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receiveData1);
+
+                //проверка замеров напряжения 2 подканал 
+                if (vip.Type.PrepareMaxVoltageOut2 > 0)
+                {
+                    voltage2 = GetValueReceives(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData1);
                 }
 
-                //проверка напряжений для режима цикла испытаний
-                //1 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
+                if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
+                {
+                    typeVolt1 = TypeCheckVal.PrepareVoltage1;
+                    typeVolt2 = TypeCheckVal.PrepareVoltage2;
+                }
+
                 if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
                 {
-                    //проверка замеров напряжения 1 подканал 
-                    voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receiveData1);
-                    CheckValueInVip(vip, voltage1, TypeCheckVal.Voltage1, tpv1);
-                    vip.VoltageOut1 = voltage1;
+                    typeVolt1 = TypeCheckVal.Voltage1;
+                    typeVolt2 = TypeCheckVal.Voltage2;
+                }
 
-                    //проверка замеров напряжения 2 подканал 
-                    if (vip.Type.PrepareMaxVoltageOut2 > 0)
-                    {
-                        voltage2 = GetValueReceives(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData1);
-                        CheckValueInVip(vip, voltage2, TypeCheckVal.Voltage2, tpv2);
-                        vip.VoltageOut2 = voltage2;
-                    }
+                CheckValueInVip(vip, voltage1, typeVolt1, tpv1);
+                vip.VoltageOut1 = voltage1;
+
+                if (vip.Type.PrepareMaxVoltageOut2 > 0)
+                {
+                    CheckValueInVip(vip, voltage2, typeVolt2, tpv2);
+                    vip.VoltageOut2 = voltage2;
                 }
             }
 
@@ -2960,40 +2958,38 @@ public class Stand1 : Notify
             currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
             var receiveData2 = await WriteIdentCommand(currentDevice, "Get all value", t: tp, isReceiveVal: true);
 
+
             //задание чекера для 1 подканала тока
             TempChecks tpc = TempChecks.Start();
+            TypeCheckVal typeCurr = TypeCheckVal.None;
+
             if (tp.IsOk)
             {
                 //TODO уточнить правильно ли сделано (в каком случае каки дожны быть значения и вывод их в тектбоксы)
-
-                //проверка напряжений для режима проверки наличия
+                
                 //2 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
+                current = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData2);
+
+                //проверка тока для режима проверки наличия
                 if (typeTest is TypeOfTestRun.AvailabilityCheckVip)
                 {
-                    //проверка замеров тока 1 подканал 
-                    current = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData2);
-                    CheckValueInVip(vip, current, TypeCheckVal.AvailabilityCurrent, tpc);
-                    vip.CurrentIn = current;
+                    typeCurr = TypeCheckVal.AvailabilityCurrent;
                 }
 
                 //проверка тока для режима 0 замера
                 if (typeTest is TypeOfTestRun.MeasurementZero)
                 {
-                    //проверка замеров тока 1 подканал 
-                    current = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData2);
-                    CheckValueInVip(vip, current, TypeCheckVal.PrepareCurrent, tpc);
-                    vip.CurrentIn = current;
+                   
+                    typeCurr = TypeCheckVal.PrepareCurrent;
                 }
-
                 //проверка напряжений для режима цикла испытаний
                 if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
                 {
-                    //проверка замеров тока 1 подканал 
-                    current = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveData2);
-                    CheckValueInVip(vip, current, TypeCheckVal.Current, tpc);
-
-                    vip.CurrentIn = current;
+                    typeCurr = TypeCheckVal.Current;
                 }
+
+                CheckValueInVip(vip, current, typeCurr, tpc);
+                vip.CurrentIn = current;
             }
 
             //TODO вернуть каогда появится термометр
@@ -3011,13 +3007,13 @@ public class Stand1 : Notify
             //если какойто из чекеров false
             if (!tpv1.IsOk || !tpv2.IsOk || !tpc.IsOk || !tpt.IsOk)
             {
+                await OutputDevice(vip.Relay, t: tp, on: false);
+                
                 //для добавления косой черты в строку сообщения
                 bool extraError = false;
 
                 isError = true;
-                //if (tp.IsOk)
-                await OutputDevice(vip.Relay, t: tp, on: false);
-
+                
                 vip.StatusTest = StatusDeviceTest.Error;
 
                 if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
@@ -4504,6 +4500,7 @@ internal enum Threshold
 
 internal enum TypeCheckVal
 {
+    None = 0,
     Current,
     Voltage1,
     Voltage2,
