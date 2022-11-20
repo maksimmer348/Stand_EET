@@ -1308,6 +1308,7 @@ public class Stand1 : Notify
         //
         //         b++;
         //     }
+        
         foreach (var vip in vipsTested)
         {
             var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CycleCheck, t: tp);
@@ -1397,9 +1398,10 @@ public class Stand1 : Notify
         SetPriorityStatusStand(1, $"Цикл замера номер{b}", vip.Relay, percentSubTest: 0,
             currentCountCheckedSubTest: $"Попытка: {0}/{countChecked}", colorSubTest: Brushes.White);
         //
-        // await Task.Delay(TimeSpan.FromMilliseconds(3000));
         TempChecks tp = TempChecks.Start();
 
+        
+        
         if (tp.IsOk) await TestVip(vip, typeTest, tp);
 
         return (false, vip);
@@ -1611,10 +1613,12 @@ public class Stand1 : Notify
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
+            
             ctsAllCancel = new CancellationTokenSource();
             t?.Add(false);
             return false;
         }
+
         catch (Exception e)
         {
             //
@@ -1858,7 +1862,11 @@ public class Stand1 : Notify
                 {
                     if (i > 1)
                     {
+                        //добавить кансел и проверить как будет работаьть
+                        ctsReceiveDevice?.Cancel();
+                        //где создаются проставить дебаги чтобы понять какой вызвает task canncelled
                         ctsReceiveDevice = new CancellationTokenSource();
+                        Debug.WriteLine("ctsReceiveDevice");
                         await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsReceiveDevice.Token);
                     }
 
@@ -1998,8 +2006,20 @@ public class Stand1 : Notify
             t?.Add(false);
             return deviceReceived;
         }
+        
+        //добавить catch без when тобы понять 
+        catch (TaskCanceledException e)
+        {
+            Debug.WriteLine($"ctsAllCancel: {ctsAllCancel.IsCancellationRequested}");
+            Debug.WriteLine($"ctsConnectDevice: {ctsConnectDevice.IsCancellationRequested}");
+            Debug.WriteLine($"ctsReceiveDevice: {ctsReceiveDevice.IsCancellationRequested}");
+            throw;
+        }
+        
         catch (Exception e)
         {
+            //
+            Debug.WriteLine(e);
             //
             SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", device, percentSubTest: 100,
                 colorSubTest: Brushes.Red);
