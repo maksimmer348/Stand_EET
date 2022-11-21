@@ -223,31 +223,32 @@ public class BaseDevice : Notify
     /// Событие проверки коннекта к порту
     /// </summary>
     public event Action<BaseDevice, bool> PortConnecting;
-    
-    public void InvokePortConnecting(BaseDevice device, bool value) 
+
+    public void InvokePortConnecting(BaseDevice device, bool value)
     {
-        this.PortConnecting?.Invoke(device,value);
+        this.PortConnecting?.Invoke(device, value);
     }
-    
+
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
     public event Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
-    
-    public void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd) 
+
+    public void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        this.DeviceReceiving?.Invoke(device,receive, cmd);
+        this.DeviceReceiving?.Invoke(device, receive, cmd);
     }
 
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
     public event Action<BaseDevice, string> DeviceError;
-    public void InvokeDeviceError(BaseDevice device, string receive) 
+
+    public void InvokeDeviceError(BaseDevice device, string receive)
     {
-        this.DeviceError?.Invoke(device,receive);
+        this.DeviceError?.Invoke(device, receive);
     }
-    
+
     // /// <summary>
     // /// Событие проверки коннекта к устройству
     // /// </summary>
@@ -567,25 +568,22 @@ public class BaseDevice : Notify
         nameExternalCmd = nameCmd;
     }
 
-    //TODO вернуть
-    // protected ( KeyValuePair<DeviceIdentCmd, DeviceCmd> cmd, BaseDevice baseDevice) GetLibItemInReceive(
-    //     string receiveCmd,
-    //     string deviceName,
-    //     List<BaseDevice> baseDevices)
-    // {
-    //     try
-    //     {
-    //         var deviceCmd = LibCmd.DeviceCommands
-    //             .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Value.Receive == receiveCmd);
-    //         var baceDevice = baseDevices.FirstOrDefault(x => x.Name == deviceName);
-    //
-    //         return (deviceCmd, baceDevice);
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         throw new Exception($"Exception: Проблема с библиотекой команд {e.Message}");
-    //     }
-    // }
+    protected ( KeyValuePair<DeviceIdentCmd, DeviceCmd> cmd, BaseDevice baseDevice) GetLibItemInReceive(
+        string receiveCmd, string deviceName, List<BaseDevice> baseDevices)
+    {
+        try
+        {
+            var deviceCmd = LibCmd.DeviceCommands
+                .FirstOrDefault(x => x.Key.NameDevice == deviceName && x.Value.Receive == receiveCmd);
+            var baceDevice = baseDevices.FirstOrDefault(x => x.Name == deviceName);
+
+            return (deviceCmd, baceDevice);
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Exception: Проблема с библиотекой команд {e.Message}");
+        }
+    }
 
     #endregion
 }

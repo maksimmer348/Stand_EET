@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OfficeOpenXml;
-using Syncfusion.XlsIO;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
 using ExcelHorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment;
 using ExcelVerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment;
-
 
 namespace StandETT;
 
@@ -20,7 +14,6 @@ public class ReportCreator
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
 
-    // private ExcelWorksheet excelWorksheet;
     private string pathReport = "";
     private string pathErrorReport = "";
 
@@ -31,14 +24,14 @@ public class ReportCreator
         ExcelWorksheet excelWorksheet = excelWorkBook.Worksheets.First(x => x.Name.Contains("Лист1"));
 
         excelWorksheet.Cells["C1"].Value =
-            $"ПРОТОКОЛ № {hd.ReportNum} {hd.ReportData}г.\nЦеховых испытаний\n{hd.TypeVip} {hd.Specifications} ТУ";
+            $"ПРОТОКОЛ № {hd.ReportNum} {hd.ReportData}г.\nЦеховых испытаний\n{hd.TypeVip} {hd.Specifications}";
         excelWorksheet.Cells["C1:R1"].Merge = true;
         excelWorksheet.Column(3).Style.Font.Size = 12;
         excelWorksheet.Column(3).Style.WrapText = true;
         excelWorksheet.Column(3).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
         excelWorksheet.Column(3).Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
-        excelWorksheet.Cells["G3"].Value = $"номер {hd.TypeVip}";
+        excelWorksheet.Cells["G3"].Value = $"Номер {hd.TypeVip}";
         excelWorksheet.Cells["C1:R1"].Merge = true;
         excelWorksheet.Column(3).Style.Font.Size = 12;
         excelWorksheet.Column(3).Style.WrapText = true;
@@ -65,10 +58,8 @@ public class ReportCreator
             string addrErrors2 = $"{addr.channel2Addr}:{onlyLetters2}19";
             excelWorksheet.Cells[addr.nameAddr].Value = vip.Name;
 
-            excelWorksheet.Cells[addrErrors1].Value =
-                0; //vip.VoltageOut1 == 0 ? vip.VoltageOut1 : null;
-            excelWorksheet.Cells[addrErrors2].Value =
-                0; //vip.VoltageOut2 == 0 ? vip.VoltageOut2 : null;
+            excelWorksheet.Cells[addrErrors1].Value = 0;
+            excelWorksheet.Cells[addrErrors2].Value = 0;
 
             excelWorksheet.Cells[addr.channel1Addr].Value =
                 vip.VoltageOut1;
@@ -87,19 +78,6 @@ public class ReportCreator
         await excelPackage.SaveAsync();
     }
 
-    // public async Task CreateHeadersErrorReport(HeaderReport hd)
-    // {
-    //     using var excelPackage = new ExcelPackage(pathReport);
-    //     ExcelWorkbook excelWorkBook = excelPackage.Workbook;
-    //     ExcelWorksheet excelWorksheet = excelWorkBook.Worksheets.First(x => x.Name.Contains("Ошибки"));
-    //     
-    //     excelWorksheet.Cells[addr.addrName].Value = vip.Name;
-    //     excelWorksheet.Cells[addr.addrChannel1].Value =
-    //         vip.VoltageOut1; //vip.VoltageOut1 == 0 ? vip.VoltageOut1 : null;
-    //     excelWorksheet.Cells[addr.addrChannel2].Value =
-    //         vip.VoltageOut2; //vip.VoltageOut2 == 0 ? vip.VoltageOut2 : null;
-    // }
-
     public async Task CreateErrorReport(Vip vip)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
@@ -116,27 +94,27 @@ public class ReportCreator
         var timeNow = $"\n{DateTime.Now:HH:mm:ss}";
 
         excelWorksheet.Cells[addr.channel1Addr].Value =
-            vip.ErrorVip.VoltageOut1High || vip.ErrorVip.VoltageOut1Low  ? $"{vip.VoltageOut1}{timeNow}" : null;
+            vip.ErrorVip.VoltageOut1High || vip.ErrorVip.VoltageOut1Low ? $"{vip.VoltageOut1}{timeNow}" : null;
         excelWorksheet.Cells[addr.channel2Addr].Value =
-            vip.ErrorVip.VoltageOut2High ||  vip.ErrorVip.VoltageOut2Low ? $"{vip.VoltageOut2}{timeNow}" : null;
+            vip.ErrorVip.VoltageOut2High || vip.ErrorVip.VoltageOut2Low ? $"{vip.VoltageOut2}{timeNow}" : null;
 
         excelWorksheet.Cells[addr.currentInAddr].Value =
             vip.ErrorVip.CurrentInHigh ? $"{vip.CurrentIn}{timeNow}" : null;
-        excelWorksheet.Cells[addr.tempAddr].Value =
+        excelWorksheet.Cells[addr.tempAddr] .Value =
             vip.ErrorVip.TemperatureHigh ? $"{vip.Temperature}{timeNow}" : null;
         excelWorksheet.Cells[addr.errConnectAddr].Value =
             vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Ошибка{timeNow}" : null;
 
         await excelPackage.SaveAsync();
     }
-
-
+    
     (string nameAddr, string channel1Addr, string channel2Addr) GetChannelAddrReport(Vip vipReport)
     {
         var channel1AddrNum = vipReport.Channel1AddrNum;
         var channel2AddrNum = vipReport.Channel2AddrNum;
 
         var nameAddr = $"G5";
+        
         var channel1Addr = $"G{channel1AddrNum}";
         var channel2Addr = $"G{channel2AddrNum}";
 
@@ -202,14 +180,9 @@ public class ReportCreator
         return (nameAddr, channel1Addr, channel2Addr);
     }
 
-
     (string nameAddr, string channel1Addr, string channel2Addr, string currentInAddr, string tempAddr, string
-        errConnectAddr)
-        GetChannelAddrErrorReport(
-            Vip vip)
+        errConnectAddr) GetChannelAddrErrorReport(Vip vip)
     {
-        var nameAddr = $"D4";
-
         var channel1AddrErrNum = 5;
         if (vip.ErrorVip.VoltageOut1Low)
         {
@@ -226,16 +199,20 @@ public class ReportCreator
         var tempAddrNum = 10;
         var errConnectAddrNum = 11;
 
+        var nameAddr = $"D4";
+
         var channel1ErrAddr = $"D{channel1AddrErrNum}";
         var channel2ErrAddr = $"D{channel2AddrErrNum}";
+
         var currentErrAddr = $"D{currentInAddrNum}";
         var tempAddr = $"D{tempAddrNum}";
-
         var errConnectAdd = $"D{errConnectAddrNum}";
+
         switch (vip.Id)
         {
             case 1:
-                nameAddr = $"H4";
+                nameAddr = $"E4";
+
                 channel1ErrAddr = $"E{channel1AddrErrNum}";
                 channel2ErrAddr = $"E{channel2AddrErrNum}";
 
@@ -244,7 +221,8 @@ public class ReportCreator
                 errConnectAdd = $"E{errConnectAddrNum}";
                 break;
             case 2:
-                nameAddr = $"I4";
+                nameAddr = $"F4";
+
                 channel1ErrAddr = $"F{channel1AddrErrNum}";
                 channel2ErrAddr = $"F{channel2AddrErrNum}";
 
@@ -253,7 +231,8 @@ public class ReportCreator
                 errConnectAdd = $"F{errConnectAddrNum}";
                 break;
             case 3:
-                nameAddr = $"J4";
+                nameAddr = $"G4";
+
                 channel1ErrAddr = $"G{channel1AddrErrNum}";
                 channel2ErrAddr = $"G{channel2AddrErrNum}";
 
@@ -262,7 +241,8 @@ public class ReportCreator
                 errConnectAdd = $"G{errConnectAddrNum}";
                 break;
             case 4:
-                nameAddr = $"K4";
+                nameAddr = $"H4";
+
                 channel1ErrAddr = $"H{channel1AddrErrNum}";
                 channel2ErrAddr = $"H{channel2AddrErrNum}";
 
@@ -271,7 +251,8 @@ public class ReportCreator
                 errConnectAdd = $"H{errConnectAddrNum}";
                 break;
             case 5:
-                nameAddr = $"L4";
+                nameAddr = $"I4";
+
                 channel1ErrAddr = $"I{channel1AddrErrNum}";
                 channel2ErrAddr = $"I{channel2AddrErrNum}";
 
@@ -280,7 +261,8 @@ public class ReportCreator
                 errConnectAdd = $"I{errConnectAddrNum}";
                 break;
             case 6:
-                nameAddr = $"M4";
+                nameAddr = $"J4";
+
                 channel1ErrAddr = $"J{channel1AddrErrNum}";
                 channel2ErrAddr = $"J{channel2AddrErrNum}";
 
@@ -289,7 +271,8 @@ public class ReportCreator
                 errConnectAdd = $"J{errConnectAddrNum}";
                 break;
             case 7:
-                nameAddr = $"N4";
+                nameAddr = $"K4";
+
                 channel1ErrAddr = $"K{channel1AddrErrNum}";
                 channel2ErrAddr = $"K{channel2AddrErrNum}";
 
@@ -298,7 +281,8 @@ public class ReportCreator
                 errConnectAdd = $"K{errConnectAddrNum}";
                 break;
             case 8:
-                nameAddr = $"O4";
+                nameAddr = $"L4";
+
                 channel1ErrAddr = $"L{channel1AddrErrNum}";
                 channel2ErrAddr = $"L{channel2AddrErrNum}";
 
@@ -307,7 +291,8 @@ public class ReportCreator
                 errConnectAdd = $"L{errConnectAddrNum}";
                 break;
             case 9:
-                nameAddr = $"P4";
+                nameAddr = $"M4";
+
                 channel1ErrAddr = $"M{channel1AddrErrNum}";
                 channel2ErrAddr = $"M{channel2AddrErrNum}";
 
@@ -316,7 +301,8 @@ public class ReportCreator
                 errConnectAdd = $"M{errConnectAddrNum}";
                 break;
             case 10:
-                nameAddr = $"Q4";
+                nameAddr = $"N4";
+
                 channel1ErrAddr = $"N{channel1AddrErrNum}";
                 channel2ErrAddr = $"N{channel2AddrErrNum}";
 
@@ -325,7 +311,8 @@ public class ReportCreator
                 errConnectAdd = $"N{errConnectAddrNum}";
                 break;
             case 11:
-                nameAddr = $"R4";
+                nameAddr = $"O4";
+
                 channel1ErrAddr = $"O{channel1AddrErrNum}";
                 channel2ErrAddr = $"O{channel2AddrErrNum}";
 

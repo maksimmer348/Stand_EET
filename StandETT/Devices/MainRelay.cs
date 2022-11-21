@@ -12,6 +12,7 @@ public class MainRelay : BaseDevice
     private static MainRelay instance;
     private static object syncRoot = new();
     private RelayVip currentRelayVip;
+    [JsonIgnore] public ObservableCollection<RelayVip> Relays { get; set; } = new();
 
     /// <summary>
     /// Применение настроек, подключение событий и старт устройства
@@ -52,9 +53,6 @@ public class MainRelay : BaseDevice
 
         return instance;
     }
-
-    [JsonIgnore] public ObservableCollection<RelayVip> Relays { get; set; }= new();
-
     public MainRelay(string name) : base(name)
     {
         PortConnecting += Port_Connecting;
@@ -88,8 +86,6 @@ public class MainRelay : BaseDevice
 
     private void Relay_Receive(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        //ErrorStatus = string.Empty;
-        // currentRelayVip.AllDeviceError.ErrorTimeout = false;
         try
         {
             string prefix = null;

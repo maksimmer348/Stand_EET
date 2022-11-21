@@ -20,6 +20,7 @@ public class Stand1 : Notify
     #region Вспомогательное/Отладка
 
     Stopwatch s = new();
+    Stopwatch s1 = new();
 
     #endregion
 
@@ -606,6 +607,7 @@ public class Stand1 : Notify
     //--приборы--проверка--check--devices--primary
     public async Task<bool> PrimaryCheckDevices(int countChecked = 3, int loopDelay = 3000)
     {
+        s.Restart();
         //
         TestRun = TypeOfTestRun.PrimaryCheckDevices;
         ProgressColor = Brushes.Green;
@@ -625,14 +627,23 @@ public class Stand1 : Notify
 
 
         await CheckConnectPorts(devices.ToList(), t: t);
-
+        
+        //
+        Debug.WriteLine($"Установка портов/{s.ElapsedMilliseconds} mc");
+        s.Restart();
+        //
+        
+        s.Restart();
         if (t.IsOk)
         {
             PercentCurrentTest = 70;
             t = TempChecks.Start();
-            await WriteIdentCommands(devices.ToList(), "Status", countChecked: countChecked, t: t,
-                loopDelay: loopDelay);
-
+            await WriteIdentCommands(devices.ToList(), "Status",
+                countChecked: countChecked, loopDelay: loopDelay, t: t);
+            //
+            Debug.WriteLine($"Установка утсройств/{s.ElapsedMilliseconds} mc");
+            s.Restart();
+            //
             if (t.IsOk)
             {
                 //отключение инциализированых устройств если они вдруг оказались включены
@@ -673,6 +684,8 @@ public class Stand1 : Notify
     //--випы--vips--relay--check--проверка--
     public async Task<bool> PrimaryCheckVips(int countChecked = 3, int loopDelay = 3000)
     {
+        s.Restart();
+        
         //
         TestRun = TypeOfTestRun.PrimaryCheckVips;
         ProgressColor = Brushes.Green;
@@ -730,6 +743,11 @@ public class Stand1 : Notify
         mainRelay.Relays = relayVipsTested;
         await CheckConnectPort(mainRelay, t: t);
 
+        //
+        Debug.WriteLine($"Установка портов випов/{s.ElapsedMilliseconds} mc");
+        s.Restart();
+        //
+        
         if (t.IsOk)
         {
             PercentCurrentTest = 70;
@@ -743,7 +761,12 @@ public class Stand1 : Notify
                 {
                     await OutputDevice(relay, t: t, forcedOff: true, on: false);
                 }
+              
             }
+            //
+            Debug.WriteLine($"Установка випов/{s.ElapsedMilliseconds} mc");
+            s.Restart();
+            //
             //TODO удалить как появятся все команды випов 
 
             if (t.IsOk)
@@ -777,7 +800,7 @@ public class Stand1 : Notify
     }
 
     //--предварительные--наличие--AvailabilityCheckVip
-    public async Task<bool> AvailabilityCheckVip(int countChecked = 3, int loopDelay = 1000)
+    public async Task<bool> AvailabilityCheckVip(int countChecked = 3, int loopDelay = 3000)
     {
         //задаем репортер тут тк будет исолпьзоватся ерроррепортер
         report = new ReportCreator();
@@ -817,11 +840,17 @@ public class Stand1 : Notify
 
         await OutputDevice(currentDevice, t: tp);
 
+        s1.Restart();
+
         foreach (var vipTested in vipsTested)
         {
-            if (tp.IsOk) await TestVip(vipTested, TypeOfTestRun.AvailabilityCheckVip, tp);
+            if (tp.IsOk) await TestVip(vipTested, TypeOfTestRun.AvailabilityCheckVip,t: tp);
+            Debug.WriteLine(s.ElapsedMilliseconds + $"ms/AvailabilityCheckVip");
         }
-
+        //
+        Debug.WriteLine($"Проверка наличия/{s1.ElapsedMilliseconds} mc");
+        //
+        
         if (resetAll) return false;
 
         if (vipsStopped.Any())
@@ -895,7 +924,7 @@ public class Stand1 : Notify
                 await OutputDevice(vip.Relay, t: t, forcedOff: true, on: false);
             }
         }
-        
+
         //большой нагрузки
         if (t.IsOk)
         {
@@ -963,7 +992,7 @@ public class Stand1 : Notify
                 s.Start();
                 foreach (var vipTested in vipsTested)
                 {
-                    if (t.IsOk) await TestVip(vipTested, TypeOfTestRun.MeasurementZero, t);
+                    if (t.IsOk) await TestVip(vipTested, TypeOfTestRun.MeasurementZero,t: t);
                     //Debug.Write($"Zero - {vipTested.Id}/{s.ElapsedMilliseconds}");
                 }
 
@@ -1225,14 +1254,14 @@ public class Stand1 : Notify
                 timer.Elapsed -= TimerOnElapsed;
             }
 
-            timer = new System.Timers.Timer(1);
+            timer = new System.Timers.Timer(30000);
             try
             {
                 var testIntervalTime = (float)vipsTested[0].Type.TestIntervalTime.TotalSeconds;
                 var testAllTime = (float)vipsTested[0].Type.TestAllTime.TotalSeconds;
 
                 //oneIntervalCheckerCycle = new(1800);
-                intervalCheckerCycle = new(12);
+                intervalCheckerCycle = new(60000);
                 intervalCheckerStop = new(testAllTime);
                 isMeasurementOne = false;
             }
@@ -1266,18 +1295,19 @@ public class Stand1 : Notify
     // --timer
     private async void TimerOnElapsed(object sender, ElapsedEventArgs e)
     {
-        bool isMeasurement = false;
+        // bool isMeasurement = false;
 
-        TempChecks tp = TempChecks.Start();
 
-        if (timer.Interval < 6000)
-        {
-            timer.Interval = 6000;
-        }
+        //TODO вернуть
+        // if (timer.Interval < 60000)
+        // {
+        //     timer.Interval = 60000;
+        // }
+        //TODO вернуть
 
-        //
-        SetPriorityStatusStand(2, $"Тик замера {a++}", clearAll: true);
-        //
+        // //
+        // SetPriorityStatusStand(2, $"Тик замера {a++}", clearAll: true);
+        // //
 
         s.Restart();
         // if (oneIntervalCheckerCycle.Check())
@@ -1308,85 +1338,91 @@ public class Stand1 : Notify
         //
         //         b++;
         //     }
-        
+
+        TempChecks tp = TempChecks.Start();
+
         foreach (var vip in vipsTested)
         {
             var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CycleCheck, t: tp);
         }
 
-        if (intervalCheckerCycle.Check())
-        {
-            isMeasurementOne = true;
-            isMeasurement = true;
-
-            //
-            SetPriorityStatusStand(2, $"Цикл замера {b}", clearAll: true);
-            //
-
-            foreach (var vip in vipsTested)
-            {
-                var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
-
-                Debug.WriteLine(s.ElapsedMilliseconds + $"mc/{b}");
-
-                if (!tp.IsOk)
-                {
-                    //oneIntervalCheckerCycle.Reset();
-                    intervalCheckerCycle.Reset();
-                    intervalCheckerStop.Reset();
-                    timer.Elapsed -= TimerOnElapsed;
-                    timer.Stop();
-
-                    timerError?.Invoke($"Вип - {vip.Name} не ответил или ответил с ошибкой.\n");
-                    return;
-                }
-            }
-
-            if (b == 1)
-            {
-                intervalCheckerCycle.Interval = 24;
-                //intervalCheckerCycle.Interval = (float)vipsTested[0].Type.TestIntervalTime.TotalSeconds;
-            }
-
-            b++;
-        }
-
-        if (intervalCheckerStop.Check())
-        {
-            //
-            SetPriorityStatusStand(1, $"Последний тик замера", clearAll: true);
-            //
-
-            if (isMeasurement)
-            {
-                foreach (var vip in vipsTested)
-                {
-                    var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
-                    Debug.WriteLine(s.ElapsedMilliseconds + $"mc/last");
-                    if (!tp.IsOk)
-                    {
-                        intervalCheckerCycle.Reset();
-                        intervalCheckerStop.Reset();
-                        timer.Elapsed -= TimerOnElapsed;
-                        timer.Stop();
-
-                        timerError?.Invoke($"Вип - {vip.Name} не ответил или ответил с ошибкой.\n");
-                        return;
-                    }
-                }
-
-                //
-                SetPriorityStatusStand(1, $"Циклические замеры заверщены успешно!", clearAll: true);
-                //
-            }
-
-            intervalCheckerCycle.Reset();
-            intervalCheckerStop.Reset();
-            timer.Elapsed -= TimerOnElapsed;
-            timer.Stop();
-
-            await ResetAllTests();
-        }
+        Debug.WriteLine(s.ElapsedMilliseconds + $"mc/CycleCheck/{b}");
+        
+        b++;
+        
+        // if (intervalCheckerCycle.Check())
+        // {
+        //     isMeasurementOne = true;
+        //     isMeasurement = true;
+        //
+        //     //
+        //     SetPriorityStatusStand(2, $"Цикл замера {b}", clearAll: true);
+        //     //
+        //
+        //     foreach (var vip in vipsTested)
+        //     {
+        //         var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
+        //
+        //         Debug.WriteLine(s.ElapsedMilliseconds + $"mc/{b}");
+        //
+        //         if (!tp.IsOk)
+        //         {
+        //             //oneIntervalCheckerCycle.Reset();
+        //             intervalCheckerCycle.Reset();
+        //             intervalCheckerStop.Reset();
+        //             timer.Elapsed -= TimerOnElapsed;
+        //             timer.Stop();
+        //
+        //             timerError?.Invoke($"Вип - {vip.Name} не ответил или ответил с ошибкой.\n");
+        //             return;
+        //         }
+        //     }
+        //
+        //     if (b == 1)
+        //     {
+        //         intervalCheckerCycle.Interval = 24;
+        //         //intervalCheckerCycle.Interval = (float)vipsTested[0].Type.TestIntervalTime.TotalSeconds;
+        //     }
+        //
+        //     b++;
+        // }
+        //
+        // if (intervalCheckerStop.Check())
+        // {
+        //     //
+        //     SetPriorityStatusStand(1, $"Последний тик замера", clearAll: true);
+        //     //
+        //
+        //     if (isMeasurement)
+        //     {
+        //         foreach (var vip in vipsTested)
+        //         {
+        //             var dataMeasurement = await MeasurementTick(vip, TypeOfTestRun.CyclicMeasurement, t: tp);
+        //             Debug.WriteLine(s.ElapsedMilliseconds + $"mc/last");
+        //             if (!tp.IsOk)
+        //             {
+        //                 intervalCheckerCycle.Reset();
+        //                 intervalCheckerStop.Reset();
+        //                 timer.Elapsed -= TimerOnElapsed;
+        //                 timer.Stop();
+        //
+        //                 timerError?.Invoke($"Вип - {vip.Name} не ответил или ответил с ошибкой.\n");
+        //                 return;
+        //             }
+        //         }
+        //
+        //         //
+        //         SetPriorityStatusStand(1, $"Циклические замеры заверщены успешно!", clearAll: true);
+        //         //
+        //     }
+        //
+        //     intervalCheckerCycle.Reset();
+        //     intervalCheckerStop.Reset();
+        //     timer.Elapsed -= TimerOnElapsed;
+        //     timer.Stop();
+        //
+        //     await ResetAllTests();
+        // }
     }
 
     //--tick--test--ass
@@ -1400,9 +1436,8 @@ public class Stand1 : Notify
         //
         TempChecks tp = TempChecks.Start();
 
-        
-        
-        if (tp.IsOk) await TestVip(vip, typeTest, tp);
+
+        if (tp.IsOk) await TestVip(vip, typeTest,t: tp);
 
         return (false, vip);
     }
@@ -1529,7 +1564,7 @@ public class Stand1 : Notify
     /// <param name="externalDelay">Общая задержка проверки (default = 100)</param>
     /// <param name="countChecks">Колво проверок если не работает</param>
     /// <returns name="errorDevice"></returns>
-    async Task<bool> CheckConnectPort(BaseDevice device, int countChecked = 5, int loopDelay = 200, TempChecks t = null)
+    async Task<bool> CheckConnectPort(BaseDevice device, int countChecked = 3, int loopDelay = 200, TempChecks t = null)
     {
         if (resetAll)
         {
@@ -1613,7 +1648,6 @@ public class Stand1 : Notify
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
-            
             ctsAllCancel = new CancellationTokenSource();
             t?.Add(false);
             return false;
@@ -1651,7 +1685,7 @@ public class Stand1 : Notify
     /// <param name="device">Устройство</param>
     /// <param name="externalDelay">Общая задержка проверки (default = 100)</param>
     /// <returns name="errorDevice"></returns>
-    async Task<bool> CheckConnectPorts(List<BaseDevice> devices, int countChecked = 5, int loopDelay = 200,
+    async Task<bool> CheckConnectPorts(List<BaseDevice> devices, int countChecked = 3, int loopDelay = 200,
         TempChecks t = null)
     {
         if (resetAll)
@@ -1808,21 +1842,20 @@ public class Stand1 : Notify
     /// <summary>
     /// Запись одинакоывой команды с проверкой
     /// </summary>
-    /// <param name="device"></param>
+    /// <param name="deviceCheck"></param>
     /// <param name="nameCmd"></param>
     /// <param name="paramSet"></param>
     /// <param name="paramGet"></param>
     /// <param name="countChecked"></param>
     /// <param name="loopDelay"></param>
     /// <param name="t"></param>
-    /// <param name="token"></param>
     /// <param name="isReceiveVal"></param>
     /// <param name="toList"></param>
     /// <param name="tempChecks"></param>
     /// <param name="isLast"></param>
-    private async Task<KeyValuePair<BaseDevice, string>> WriteIdentCommand(BaseDevice device,
-        string nameCmd, string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 200,
-        TempChecks t = null, CancellationToken token = default, bool isReceiveVal = false)
+    private async Task<KeyValuePair<BaseDevice, string>> WriteIdentCommand(BaseDevice deviceCheck, string nameCmd,
+        string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 200, TempChecks t = null,
+        bool isReceiveVal = false)
     {
         KeyValuePair<BaseDevice, string> deviceReceived = default;
 
@@ -1832,17 +1865,17 @@ public class Stand1 : Notify
             return deviceReceived;
         }
 
-        CurrentWriteDevices = new() { device };
+        CurrentWriteDevices = new() { deviceCheck };
         //удаление прердыдущих ответов от устройств
-        RemoveReceive(device);
+        RemoveReceive(deviceCheck);
 
         KeyValuePair<BaseDevice, bool> verifiedDevice;
 
         //если прибор от кторого приходят данные не содержится в библиотеке а при первом приеме данных так и будет
-        if (!receiveInDevice.ContainsKey(device))
+        if (!receiveInDevice.ContainsKey(deviceCheck))
         {
             //добавляем туда данные и создаем список в ктороые будет записаны ответы от прибора
-            receiveInDevice.Add(device, new List<string>());
+            receiveInDevice.Add(deviceCheck, new List<string>());
         }
 
         try
@@ -1850,20 +1883,20 @@ public class Stand1 : Notify
             for (int i = 1; i <= countChecked; i++)
             {
                 //
-                SetPriorityStatusStand(4, $"запись команды в устройство", device, percentSubTest: 0,
+                SetPriorityStatusStand(4, $"запись команды в устройство", deviceCheck, percentSubTest: 0,
                     currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}",
                     colorSubTest: Brushes.Orange);
                 //
 
-                device.ErrorStatus = null;
-                device.StatusTest = StatusDeviceTest.None;
+                deviceCheck.ErrorStatus = null;
+                deviceCheck.StatusTest = StatusDeviceTest.None;
 
                 try
                 {
                     if (i > 1)
                     {
                         //добавить кансел и проверить как будет работаьть
-                        ctsReceiveDevice?.Cancel();
+                        //ctsReceiveDevice?.Cancel();
                         //где создаются проставить дебаги чтобы понять какой вызвает task canncelled
                         ctsReceiveDevice = new CancellationTokenSource();
                         Debug.WriteLine("ctsReceiveDevice");
@@ -1872,14 +1905,14 @@ public class Stand1 : Notify
 
                     if (!resetAll)
                     {
-                        if (!device.PortIsOpen)
+                        if (!deviceCheck.PortIsOpen)
                         {
                             SetPriorityStatusStand(4, $"порт закрыт, переподключение...", clearAll: true);
 
-                            if (!await CheckConnectPort(device, 3))
+                            if (!await CheckConnectPort(deviceCheck, 3))
                             {
                                 //
-                                SetPriorityStatusStand(4, $"порт не открыт, ошибка!", device,
+                                SetPriorityStatusStand(4, $"порт не открыт, ошибка!", deviceCheck,
                                     colorSubTest: Brushes.Red);
                                 //
                                 t?.Add(false);
@@ -1893,29 +1926,29 @@ public class Stand1 : Notify
                     }
 
                     //установка гет парамтра
-                    device.CurrentParameterGet = paramGet;
-                    device.IsReceive = isReceiveVal;
+                    deviceCheck.CurrentParameterGet = paramGet;
+                    deviceCheck.IsReceive = isReceiveVal;
 
                     //запись команды в каждое устройсттво
-                    device.WriteCmd(nameCmd, paramSet);
+                    deviceCheck.WriteCmd(nameCmd, paramSet);
 
                     //
-                    SetPriorityStatusStand(4, $"запись команды в устройство", device, percentSubTest: 50,
+                    SetPriorityStatusStand(4, $"запись команды в устройство", deviceCheck, percentSubTest: 50,
                         currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}",
                         colorSubTest: Brushes.Orange);
                     //
-                    
+
                     if (!string.IsNullOrEmpty(paramSet))
                     {
-                        SetGdmReceive(device, paramSet);
+                        SetGdmReceive(deviceCheck, paramSet);
                     }
 
                     if (!string.IsNullOrEmpty(paramGet) && string.IsNullOrEmpty(paramSet))
                     {
-                        device.CurrentParameter = paramGet;
+                        deviceCheck.CurrentParameter = paramGet;
                     }
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(device.CurrentCmd?.Delay ?? 200),
+                    await Task.Delay(TimeSpan.FromMilliseconds(deviceCheck.CurrentCmd?.Delay ?? 200),
                         ctsReceiveDevice.Token);
 
                     if (t == null)
@@ -1934,11 +1967,11 @@ public class Stand1 : Notify
                     //если тест остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
                     {
-                        deviceReceived = GetReceiveLast(device);
+                        deviceReceived = GetReceiveLast(deviceCheck);
                         t?.Add(false);
                         if (deviceReceived.Key == null)
                         {
-                            return new KeyValuePair<BaseDevice, string>(device, "Stop tests");
+                            return new KeyValuePair<BaseDevice, string>(deviceCheck, "Stop tests");
                         }
 
                         return deviceReceived;
@@ -1946,14 +1979,14 @@ public class Stand1 : Notify
                 }
 
                 // Проверка устройств
-                verifiedDevice = GetVerifiedDevice(device);
+                verifiedDevice = GetVerifiedDevice(deviceCheck);
 
                 if (verifiedDevice.Value)
                 {
                     verifiedDevice.Key.StatusTest = StatusDeviceTest.Ok;
 
                     //
-                    SetPriorityStatusStand(4, $"запись команды в устройство, ок!", device, percentSubTest: 100,
+                    SetPriorityStatusStand(4, $"запись команды в устройство, ок!", deviceCheck, percentSubTest: 100,
                         colorSubTest: Brushes.Orange);
                     //
 
@@ -1992,12 +2025,12 @@ public class Stand1 : Notify
             }
 
             //
-            SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", device, percentSubTest: 100,
+            SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", deviceCheck, percentSubTest: 100,
                 colorSubTest: Brushes.Red);
             //
 
             t?.Add(false);
-            deviceReceived = GetReceiveLast(device);
+            deviceReceived = GetReceiveLast(deviceCheck);
             return deviceReceived;
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
@@ -2006,7 +2039,7 @@ public class Stand1 : Notify
             t?.Add(false);
             return deviceReceived;
         }
-        
+
         //добавить catch без when тобы понять 
         catch (TaskCanceledException e)
         {
@@ -2015,13 +2048,13 @@ public class Stand1 : Notify
             Debug.WriteLine($"ctsReceiveDevice: {ctsReceiveDevice.IsCancellationRequested}");
             throw;
         }
-        
+
         catch (Exception e)
         {
             //
             Debug.WriteLine(e);
             //
-            SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", device, percentSubTest: 100,
+            SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", deviceCheck, percentSubTest: 100,
                 colorSubTest: Brushes.Red);
             //
 
@@ -2039,20 +2072,19 @@ public class Stand1 : Notify
     /// <summary>
     /// Запись одинаковых команд с проверкой
     /// </summary>
-    /// <param name="devices"></param>
+    /// <param name="deviceChecks"></param>
     /// <param name="cmd"></param>
     /// <param name="paramSet"></param>
     /// <param name="paramGet"></param>
     /// <param name="countChecked"></param>
-    /// <param name="t"></param>
     /// <param name="loopDelay"></param>
-    /// <param name="token"></param>
+    /// <param name="t"></param>
     /// <param name="isReceiveVal"></param>
     /// <param name="toList"></param>
     /// <param name="tempChecks"></param>
-    private async Task<Dictionary<BaseDevice, List<string>>> WriteIdentCommands(List<BaseDevice> devices,
-        string cmd = null, string paramSet = null, string paramGet = null, int countChecked = 3, TempChecks t = null,
-        int loopDelay = 200, CancellationToken token = default, bool isReceiveVal = false)
+    private async Task<Dictionary<BaseDevice, List<string>>> WriteIdentCommands(List<BaseDevice> deviceChecks,
+        string cmd = null, string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 200,
+        TempChecks t = null, bool isReceiveVal = false)
     {
         var deviceReceived = new Dictionary<BaseDevice, List<string>>();
 
@@ -2062,10 +2094,10 @@ public class Stand1 : Notify
             return deviceReceived;
         }
 
-        CurrentWriteDevices = devices;
+        CurrentWriteDevices = deviceChecks;
 
         var verifiedDevices = new Dictionary<BaseDevice, bool>();
-        var tempDevices = devices;
+        var tempDevices = deviceChecks;
         var checkDevices = new List<KeyValuePair<BaseDevice, bool>>();
 
         var isRelay = false;
@@ -2073,7 +2105,7 @@ public class Stand1 : Notify
         var delays = new List<int>(tempDevices.Count);
 
         //удаление прердыдущих ответов от устройств
-        RemoveReceives(devices);
+        RemoveReceives(deviceChecks);
 
         float extPercent = 0;
         try
@@ -2101,6 +2133,7 @@ public class Stand1 : Notify
                         //
 
                         SetPriorityStatusStand(4, currentDeviceSubTest: tempDevices[0], percentSubTest: extPercent);
+                        //ctsReceiveDevice.Cancel();
                         ctsReceiveDevice = new CancellationTokenSource();
                         await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsReceiveDevice.Token);
                     }
@@ -2261,7 +2294,7 @@ public class Stand1 : Notify
                         colorSubTest: Brushes.Orange, clearAll: true);
                     //
 
-                    devices.ForEach(x => x.StatusTest = StatusDeviceTest.Ok);
+                    deviceChecks.ForEach(x => x.StatusTest = StatusDeviceTest.Ok);
 
                     t?.Add(true);
                     deviceReceived = GetReceives();
@@ -2570,7 +2603,7 @@ public class Stand1 : Notify
     }
 
 
-    private async Task<bool> SetTestChannelVip(Vip vip, int channel = 1, TempChecks t = null)
+    private async Task<bool> SetTestChannelVip(Vip vip, int channel = 1, int innerCountCheck = 1, int innerDelay = 200, TempChecks t = null)
     {
         var relayMeter = devices.GetTypeDevice<RelayMeter>();
         var nameCmds = GetRelayChannelCmds(vip.Id);
@@ -2582,7 +2615,7 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"переключение 1 канала измерений Вип - {vip.Name}", percentSubTest: 40,
                 colorSubTest: Brushes.DarkSalmon, clearAll: true);
 
-            await WriteIdentCommand(relayMeter, nameCmds.cannel1, countChecked: 2,
+            await WriteIdentCommand(relayMeter, nameCmds.cannel1, countChecked: innerCountCheck,
                 t: tp);
         }
 
@@ -2591,7 +2624,7 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"переключение 2 канала измерений Вип - {vip.Name}", percentSubTest: 80,
                 colorSubTest: Brushes.DarkSalmon, clearAll: true);
 
-            await WriteIdentCommand(relayMeter, nameCmds.cannel2, countChecked: 2,
+            await WriteIdentCommand(relayMeter, nameCmds.cannel2, countChecked: innerCountCheck,
                 t: tp);
         }
 
@@ -2810,13 +2843,16 @@ public class Stand1 : Notify
 
 
     //--tv--test
-    private async Task<bool> TestVip(Vip vip, TypeOfTestRun typeTest, TempChecks t)
+    private async Task<bool> TestVip(Vip vip, TypeOfTestRun typeTest, int innerCountCheck = 3, int innerDelay = 200, TempChecks t = null)
     {
+        s.Restart();
         //
         SetPriorityStatusStand(2, $"тест Випа", percentSubTest: 0, colorSubTest: Brushes.Violet, currentVipSubTest: vip,
             clearAll: true);
         //
 
+      
+        
         TempChecks tp = TempChecks.Start();
 
         var isError = false;
@@ -2848,18 +2884,28 @@ public class Stand1 : Notify
         var getVoltValues = GetParameterForDevice().VoltValues;
         if (tp.IsOk)
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
-                2, 1000, tp, "Get func", "Get volt meter");
+                innerCountCheck, innerDelay, tp, "Get func", "Get volt meter");
 
         //волтьтамеперметра
         currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
         var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
         if (tp.IsOk)
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
-                2, 1000, tp, "Get func", "Get volt meter");
+                innerCountCheck, innerDelay, tp, "Get func", "Get volt meter");
 
+        //
+        Debug.WriteLine($"Установка приборов/{s.ElapsedMilliseconds} mc /{typeTest}");
+        s.Restart();
+        //
+        
         //TODO уточнить до или после Проверка на внутренние ошибки плат Випов и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
         //Включение реле Випа (если уже не включен)
         if (tp.IsOk) await OutputDevice(vip.Relay, t: tp);
+
+        //
+        Debug.WriteLine($"Включение випа/{s.ElapsedMilliseconds} mc /{typeTest}");
+        s.Restart();
+        //
 
         //TODO вернуть!
         //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
@@ -2891,12 +2937,18 @@ public class Stand1 : Notify
         // }
         //TODO вернуть!
 
-
+      
+        
         if (tp.IsOk)
         {
             //переключение канала измерений Випа на 1
-            if (tp.IsOk) await SetTestChannelVip(vip, 1, tp);
+            if (tp.IsOk) await SetTestChannelVip(vip, 1, t:tp);
 
+            //
+            Debug.WriteLine($"Установка канала 1/{s.ElapsedMilliseconds} mc /{typeTest}");
+            s.Restart();
+            //
+            
             //TODO подбирать вручную
             //TODO уточнить нужно ли выводить на тексбокс
             //интервал для времени устаканивания напряжений 
@@ -2914,9 +2966,10 @@ public class Stand1 : Notify
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(delay), ctsAllCancel.Token);
             }
+            
             catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
             {
-                t.Add(false);
+                t?.Add(false);
                 return false;
             }
 
@@ -2961,6 +3014,8 @@ public class Stand1 : Notify
                         break;
                 }
 
+                
+                
                 //проверка замеров напряжения 1 подканал 
                 voltage1 = GetValueReceives(devices.GetTypeDevice<VoltMeter>(), receivesData1);
                 CheckValueInVip(vip, voltage1, typeVolt1, tpv1);
@@ -2975,19 +3030,24 @@ public class Stand1 : Notify
                 }
             }
 
+            //
+            Debug.WriteLine($"Замер напряжений/{s.ElapsedMilliseconds - 500} mc /{typeTest}");
+            s.Restart();
+            //
+            
             //переключение волтьтамеперметра в режим амперметра
             currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
             if (tp.IsOk)
                 await SetCheckValueInDevice(currentDevice, "Set curr meter", getThermoCurrentValues.CurrMaxLimit,
-                    2, 1000, tp, "Get func", "Get curr meter");
+                    innerCountCheck, innerDelay, tp, "Get func", "Get curr meter");
 
             //переключение на 2 канал для измерения тока
-            if (tp.IsOk) await SetTestChannelVip(vip, 2, tp);
+            if (tp.IsOk) await SetTestChannelVip(vip, 2, t: tp);
 
             //измерение тока 2 канала с 1 подканала 
             currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
             var receiveData2 = await WriteIdentCommand(currentDevice, "Get all value", t: tp, isReceiveVal: true);
-            
+
             //задание чекера для 1 подканала тока
             TempChecks tpc = TempChecks.Start();
             TypeCheckVal typeCurr = TypeCheckVal.None;
@@ -3021,6 +3081,11 @@ public class Stand1 : Notify
                 vip.CurrentIn = current;
             }
 
+            //
+            Debug.WriteLine($"Переключение на 2 канал и замер тока/{s.ElapsedMilliseconds} mc /{typeTest}");
+            s.Restart();
+            //
+            
             //TODO вернуть каогда появится термометр
             // currentDevice = devices.GetTypeDevice<Thermometer>();
             // var receiveDataT = await WriteIdentCommand(currentDevice, "Get all value", t: tp, isReceiveVal: true);
@@ -3039,7 +3104,11 @@ public class Stand1 : Notify
             //если какойто из чекеров false
             if (!tpv1.IsOk || !tpv2.IsOk || !tpc.IsOk || !tpt.IsOk)
             {
-                await OutputDevice(vip.Relay, t: tp, on: false);
+                
+                //TODO вернуть
+                //await OutputDevice(vip.Relay, t: tp, on: false);
+                //TODO вернуть
+                
                 //для добавления косой черты в строку сообщения
                 extraError = false;
                 isError = true;
@@ -3180,8 +3249,8 @@ public class Stand1 : Notify
             }
         }
 
-        vipsTested = GetIsTestedVips();
-        vipsStopped = GetStoppedVips();
+        // vipsTested = GetIsTestedVips();
+        // vipsStopped = GetStoppedVips();
 
         if (tp.IsOk)
         {
@@ -3775,6 +3844,7 @@ public class Stand1 : Notify
     /// <param name="device">Устройство</param>
     /// <param name="channel"></param>
     /// <param name="countChecked"></param>
+    /// <param name="innerCountCheck"></param>
     /// <param name="externalDelay"></param>
     /// <param name="t"></param>
     /// <param name="forcedOff"></param>
@@ -3783,7 +3853,8 @@ public class Stand1 : Notify
     /// <param name="values">Ответ который утройство должно отправить в ответ на запрос output</param>
     /// <returns>Результат включения/выключение</returns>
     private async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device, int channel = -1,
-        int countChecked = 3, int externalDelay = 400, TempChecks t = null, bool forcedOff = false, bool on = true)
+        int countChecked = 3, int innerCountCheck = 1, int externalDelay = 200, TempChecks t = null,
+        bool forcedOff = false, bool on = true)
     {
         #region настройка
 
@@ -3861,7 +3932,7 @@ public class Stand1 : Notify
                 {
                     if (i == 1)
                     {
-                        await CheckConnectPort(device, 2, t: tp);
+                        await CheckConnectPort(device, innerCountCheck, t: tp);
                     }
                     else
                     {
@@ -3900,25 +3971,25 @@ public class Stand1 : Notify
                             {
                                 if (channel == 1)
                                 {
-                                    var receiveOutput = await WriteIdentCommand(r, "On1", countChecked: 1,
+                                    var receiveOutput = await WriteIdentCommand(r, "On1", countChecked: innerCountCheck,
                                         loopDelay: externalDelay, t: tp);
                                 }
 
                                 if (channel == 2)
                                 {
-                                    var receiveOutput = await WriteIdentCommand(r, "On2", countChecked: 1,
+                                    var receiveOutput = await WriteIdentCommand(r, "On2", countChecked: innerCountCheck,
                                         loopDelay: externalDelay, t: tp);
                                 }
 
                                 if (channel == 3)
                                 {
-                                    var receiveOutput = await WriteIdentCommand(r, "On3", countChecked: 1,
+                                    var receiveOutput = await WriteIdentCommand(r, "On3", countChecked: innerCountCheck,
                                         loopDelay: externalDelay, t: tp);
                                 }
 
                                 if (channel == 4)
                                 {
-                                    var receiveOutput = await WriteIdentCommand(r, "On4", countChecked: 1,
+                                    var receiveOutput = await WriteIdentCommand(r, "On4", countChecked: innerCountCheck,
                                         loopDelay: externalDelay, t: tp);
                                 }
 
@@ -3940,7 +4011,7 @@ public class Stand1 : Notify
                             {
                                 //TODO добавить когда появтся команды от Влада
                                 // //опрос выхода устройства
-                                // var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp);
+                                // var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck, t: tp);
                                 //
                                 // //если выход выкл 
                                 // if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
@@ -3949,16 +4020,18 @@ public class Stand1 : Notify
                                 //     await WriteIdentCommand(device, SetOutputOnCmdName);
                                 //
                                 //     //опрос выхода утсртойства
-                                //     cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1,
+                                //     cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
                                 //         loopDelay: externalDelay, t: tp);
                                 // }
 
                                 var cmdResult =
-                                    await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp);
+                                    await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
+                                        t: tp);
 
                                 if (tp.IsOk && r.StatusOnOff == OnOffStatus.Off || r.StatusOnOff == OnOffStatus.None)
                                 {
-                                    var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName, countChecked: 1,
+                                    var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName,
+                                        countChecked: innerCountCheck,
                                         loopDelay: externalDelay, t: tp);
                                 }
 
@@ -4019,7 +4092,8 @@ public class Stand1 : Notify
                         else
                         {
                             //опрос выхода устройства
-                            var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp);
+                            var cmdResult = await WriteIdentCommand(device, getOutputCmdName,
+                                countChecked: innerCountCheck, t: tp);
 
                             //если выход выкл 
                             if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
@@ -4028,7 +4102,8 @@ public class Stand1 : Notify
                                 await WriteIdentCommand(device, SetOutputOnCmdName);
 
                                 //опрос выхода утсртойства
-                                cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1,
+                                cmdResult = await WriteIdentCommand(device, getOutputCmdName,
+                                    countChecked: innerCountCheck,
                                     loopDelay: externalDelay, t: tp);
                             }
 
@@ -4126,25 +4201,25 @@ public class Stand1 : Notify
                         {
                             if (channel == 1)
                             {
-                                var receiveOutput = await WriteIdentCommand(r, "Off1", countChecked: 1,
+                                var receiveOutput = await WriteIdentCommand(r, "Off1", countChecked: innerCountCheck,
                                     loopDelay: externalDelay, t: tp);
                             }
 
                             if (channel == 2)
                             {
-                                var receiveOutput = await WriteIdentCommand(r, "Off2", countChecked: 1,
+                                var receiveOutput = await WriteIdentCommand(r, "Off2", countChecked: innerCountCheck,
                                     loopDelay: externalDelay, t: tp);
                             }
 
                             if (channel == 3)
                             {
-                                var receiveOutput = await WriteIdentCommand(r, "Off3", countChecked: 1,
+                                var receiveOutput = await WriteIdentCommand(r, "Off3", countChecked: innerCountCheck,
                                     loopDelay: externalDelay, t: tp);
                             }
 
                             if (channel == 4)
                             {
-                                var receiveOutput = await WriteIdentCommand(r, "Off4", countChecked: 1,
+                                var receiveOutput = await WriteIdentCommand(r, "Off4", countChecked: innerCountCheck,
                                     loopDelay: externalDelay, t: tp);
                             }
 
@@ -4165,7 +4240,8 @@ public class Stand1 : Notify
                         else
                         {
                             s.Restart();
-                            var receiveOutput = await WriteIdentCommand(r, SetOutputOffCmdName, countChecked: 1,
+                            var receiveOutput = await WriteIdentCommand(r, SetOutputOffCmdName,
+                                countChecked: innerCountCheck,
                                 loopDelay: externalDelay,
                                 t: tp);
 
@@ -4193,7 +4269,8 @@ public class Stand1 : Notify
                     else
                     {
                         //опрос выхода устройства
-                        var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1, t: tp);
+                        var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
+                            t: tp);
 
                         //если выход вкл 
                         if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
@@ -4202,7 +4279,7 @@ public class Stand1 : Notify
                             await WriteIdentCommand(device, SetOutputOffCmdName);
 
                             //опрос выхода устройства
-                            cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: 1,
+                            cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
                                 loopDelay: externalDelay, t: tp);
                         }
 

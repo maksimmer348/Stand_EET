@@ -853,7 +853,7 @@
                                 <TextBlock Text="TMax" />
                                 <TextBox Text="{Binding Temperature}" />
 
-                                <TextBlock DockPanel.Dock="Left" Text="t стаб. 0 замера" />
+                                <TextBlock DockPanel.Dock="Left" Text="Время стаб. 0 замера" />
                                 <TextBox Text="{Binding ZeroTestInterval}" />
 
                                 <TextBlock DockPanel.Dock="Left" Text="t общ. цикла" IsEnabled="False" />

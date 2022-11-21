@@ -81,9 +81,6 @@ public class ViewModel : Notify
         NextCmd = new ActionCommand(OnNextCmdExecuted, CanNextCmdExecuted);
         CloseActionWindowCmd = new ActionCommand(OnCloseActionWindowCmdExecuted, CanCloseActionWindowCmdExecuted);
 
-        CloseVipErrorWindowCmd =
-            new ActionCommand(OnCloseCloseVipErrorWindowCmdExecuted, CanCloseCloseVipErrorWindowCmdExecuted);
-
         #endregion
 
         #region Настройка устройств
@@ -107,47 +104,11 @@ public class ViewModel : Notify
 
         #endregion
 
-        stand.OpenActionWindow += OpenActionWindow;
-
-        stand.OpenErrorVipWindow += OpenVipErrorWindow;
-
         //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
         AllBtnsEnable();
         AllTabsEnable();
         SelectTab = 0;
         //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
-    }
-
-    private ActionWindow aw;
-
-    private void OpenActionWindow(bool obj)
-    {
-        if (obj)
-        {
-            aw = new ActionWindow()
-            {
-                DataContext = this
-            };
-            aw.Show();
-            aw.Closed += AwOnClosed;
-            WindowDisabled = false;
-        }
-    }
-
-    private VipErrorWindow verr;
-
-    private void OpenVipErrorWindow(bool obj)
-    {
-        if (obj)
-        {
-            verr = new VipErrorWindow()
-            {
-                DataContext = this
-            };
-            verr.Show();
-            verr.Closed += VewOnClosed;
-            WindowVipDisabled = false;
-        }
     }
 
 
@@ -643,19 +604,6 @@ public class ViewModel : Notify
     }
 
     bool CanCloseActionWindowCmdExecuted(object p)
-    {
-        return true;
-    }
-
-    public ICommand CloseVipErrorWindowCmd { get; }
-
-    Task OnCloseCloseVipErrorWindowCmdExecuted(object p)
-    {
-        verr.Close();
-        return Task.CompletedTask;
-    }
-
-    bool CanCloseCloseVipErrorWindowCmdExecuted(object p)
     {
         return true;
     }

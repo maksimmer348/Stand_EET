@@ -1,11 +1,13 @@
-﻿namespace StandETT;
+﻿using System;
+
+namespace StandETT;
+
 
 public class TimeMachine : Notify
 {
-    
     private static object syncRoot = new();
     private static TimeMachine instance;
-
+    
     public static TimeMachine getInstance()
     {
         if (instance == null)
@@ -33,10 +35,5 @@ public class TimeMachine : Notify
     {
         get => allTimeChecked;
         set => Set(ref allTimeChecked, value);
-    }
-
-    public TimeMachine() 
-    {
-        
     }
 }

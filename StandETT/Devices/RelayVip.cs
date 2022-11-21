@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 public class RelayVip : BaseDevice
 {
     public int Id { get; set; }
-    //public string Id { get; set; }
 
     public CancellationTokenSource CtsRelayReceive = new();
 
@@ -105,18 +104,6 @@ public class RelayVip : BaseDevice
 
         MainRelay.WriteCmdRelay(this, CurrentCmd, parameter);
     }
-
-    // private void Device_Error(BaseDevice device, string error)
-    // {
-    //     ErrorStatus = $"Ошибка уcтройства {Name}, {error}";
-    //     DeviceError?.Invoke(this, error);
-    // }
-    //
-    // private void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
-    // {
-    //     DeviceReceiving.Invoke(this, receive.ToLower(), cmd);
-    // }
-
 
     /// <summary>
     /// Статус выхода устройства

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace StandETT;
@@ -170,6 +169,7 @@ class CreatorAllDevicesAndLib
 
             temp.Add(smallLoad0);
             
+            //TODO вернуть
             // BaseDevice smallLoad1 = new RelayVip(1, "SL-1") { RowIndex = 1, ColumnIndex = 3 };
             // smallLoad1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
             // smallLoad1.Prefix = "";
@@ -181,7 +181,8 @@ class CreatorAllDevicesAndLib
             // smallLoad2.Prefix = "";
             //
             // temp.Add(smallLoad2);
-
+            //TODO вернуть
+            
             serializer.SerializeDevices(temp);
         }
         else
@@ -535,14 +536,7 @@ class CreatorAllDevicesAndLib
         {
             device.PortConnecting += Port_Connecting;
             device.DeviceError += Device_Error;
-            // if (device is not SmallLoad)
-            // {
             device.DeviceReceiving += Device_Receiving;
-            // }
-            // if (device is  SmallLoad s)
-            // {
-            //     s.LoadReceiving += Device_Receiving;
-            // }
         }
     }
 
