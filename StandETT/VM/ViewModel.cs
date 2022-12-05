@@ -57,6 +57,7 @@ public class ViewModel : Notify
     /// </summary>
     public ObservableCollection<TypeVip> TypeVips => cfgTypeVips.TypeVips;
 
+
     #endregion
 
     //---
@@ -98,7 +99,9 @@ public class ViewModel : Notify
         RemoveTypeVipSettingsCmd =
             new ActionCommand(OnRemoveTypeVipSettingsCmdExecuted, CanRemoveTypeVipSettingsCmdExecuted);
 
-        stand.timerError += TimerError;
+        stand.timerErrorMeasurement += TimerErrorMeasurement;
+        stand.timerErrorDevice += TimerErrorDevice;
+        stand.timerOk += TimerOkMeasurement;
 
         #endregion
 
@@ -131,26 +134,7 @@ public class ViewModel : Notify
     public double SelectTab
     {
         get => selectTab;
-
-        set
-        {
-            Set(ref selectTab, value);
-
-            if (selectTab == 4 || selectTab == 1)
-            {
-                //AllTypeVips = standTest.ConfigVip.TypeVips;
-            }
-
-            if (selectTab == 2)
-            {
-                // var rnd = Random.Shared.Next(1000, 10000);
-                // Vips[0].Name = rnd.ToString();
-                // rnd = Random.Shared.Next(1000, 10000);
-                // //Vips[1].Name = rnd.ToString();
-                // rnd = Random.Shared.Next(1000, 10000);
-                // //Vips[2].Name = rnd.ToString();
-            }
-        }
+        set => Set(ref selectTab, value);
     }
 
     public double goToSelectTab;
@@ -271,22 +255,34 @@ public class ViewModel : Notify
         return true;
     }
 
-    private void TimerError(string message)
+    private void TimerErrorMeasurement(string message)
     {
-        Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
         {
-            const string caption = "Ошибка 0 замера";
-            var result = MessageBox.Show(message + " Перейти в настройки?", caption, MessageBoxButton.YesNo);
+            await stand.ResetAllTests();
+            const string caption = "Тесты завершены с ошибкой замеров!";
+            var result = MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+        }));
+    }
 
-            if (result == MessageBoxResult.Yes)
-            {
-                SelectTab = 3;
-            }
+    private void TimerErrorDevice(string message)
+    {
+        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+        {
+            await stand.ResetAllTests();
+            const string caption = "Тесты завершены с ошибкой устройств!";
+            var result = MessageBox.Show(message + "Перейти в настройки устройств?", caption, MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }));
+    }
 
-            if (result == MessageBoxResult.No)
-            {
-                SelectTab = 1;
-            }
+    private void TimerOkMeasurement(string message)
+    {
+        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+        {
+            await stand.ResetAllTests();
+            const string caption = "Тесты завершены без ошибок!";
+            var result = MessageBox.Show(message, caption, MessageBoxButton.OK);
         }));
     }
 
@@ -341,6 +337,13 @@ public class ViewModel : Notify
                 var result = MessageBox.Show(e.Message, caption,
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            catch (Exception e) when(e.Message.ToLower().Contains("отчет"))
+            {
+                const string caption = "Ошибка создания отчета";
+
+                var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
@@ -368,25 +371,33 @@ public class ViewModel : Notify
                 //--available
                 available = await stand.AvailabilityCheckVip();
 
+                // //TODO удалить
+                // if (available)
+                // {
+                //     stand.StartMeasurementCycle();
+                // }
+                //
+                // //TODO удалить
+                // return;
+
                 if (available)
                 {
-                    //--zero
-                    // bool mesZero = await stand.MeasurementZero();
+                    // //--zero
+                    bool mesZero = await stand.MeasurementZero();
 
-                    // if (mesZero)
-                    // {
-                    //     var heat = await stand.PrepareMeasurementCycle();
-                    //     if (heat)
-                    //     {
-                    //--cycle--cucle
-
-                    // await stand.EnableLoads();
-                    //stand.StartMeasurementCycle();
-                    //     }
-                    // }
+                    if (mesZero)
+                    {
+                        // var heat = await stand.PrepareMeasurementCycle();
+                        // if (heat)
+                        // {
+                        ////--cycle--cucle
+                        await stand.EnableLoads();
+                        stand.StartMeasurementCycle();
+                        // }
+                    }
                 }
 
-                stand.StartMeasurementCycle();
+                //stand.StartMeasurementCycle();
             }
             catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
@@ -1112,8 +1123,7 @@ public class ViewModel : Notify
 
             if (stand.TestRun == TypeOfTestRun.Stop)
             {
-                TextCurrentTest = "Стенд остановлен";
-
+                TextCurrentTest = "Стенд остановлен, Ок!";
                 // //
                 // AllTabsDisable();
                 // AllBtnsEnable();
@@ -1122,7 +1132,7 @@ public class ViewModel : Notify
                 // PrimaryCheckDevicesTab = true;
             }
 
-            else if (stand.TestRun == TypeOfTestRun.Stoped)
+            else if (stand.TestRun == TypeOfTestRun.Stopped)
             {
                 TextCurrentTest = "Тесты прерваны, отключение устройств... ";
 
@@ -1283,11 +1293,11 @@ public class ViewModel : Notify
                 // CheckVipsTab = true;
             }
 
-            //    else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
-            //    {
-            //        TextCurrentTest = " Нулевой замер ОК";
-            //        AllTabsEnable();
-            //    }
+            else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
+            {
+                TextCurrentTest = " Нулевой замер ОК";
+                //AllTabsEnable();
+            }
 
             //    //-
 
@@ -1321,13 +1331,19 @@ public class ViewModel : Notify
 
             //    //-
 
-            //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
-            //    {
-            //        TextCurrentTest = " Циклический замер";
-            //        Al_lTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
-
+            else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
+            {
+                TextCurrentTest = " Циклические замеры: ";
+                // AllTabsDisable();
+                // CheckVipsTab = true;
+            }
+            else if (stand.TestRun == TypeOfTestRun.CyclicMeasurementReady)
+            {
+                TextCurrentTest = " Циклическиe замеры закончены";
+                // AllTabsDisable();
+                // CheckVipsTab = true;
+            }
+            
             //    else if (stand.TestRun == TypeOfTestRun.CycleWait)
             //    {
             //        TextCurrentTest = " Ожидание замер";
@@ -1335,12 +1351,7 @@ public class ViewModel : Notify
             //        CheckVipsTab = true;
             //    }
 
-            //    else if (stand.TestRun == TypeOfTestRun.CyclicMeasurementReady)
-            //    {
-            //        TextCurrentTest = " Циклический замеы закончены";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
+          
 
             //-
 
@@ -1906,6 +1917,17 @@ public class ViewModel : Notify
 
     public string TypeVipName { get; set; }
     private readonly CollectionViewSource selectedTypeVips = new();
+    
+    private string reportNum;
+    public string ReportNum
+    {
+        get => reportNum;
+        set
+        {
+            Set(ref reportNum, value);
+            stand.ReportNum = value;
+        }
+    }
 
     /// <summary>
     /// Для показа/обновление типа випов
@@ -1990,6 +2012,7 @@ public class ViewModel : Notify
     }
 
     private bool voltageOuе2Using;
+    
     private string percentAccuracyVoltages;
 
     public string PercentAccuracyVoltages
@@ -2279,6 +2302,10 @@ public class ViewModel : Notify
         get => outputOffVoltmeter;
         set => Set(ref outputOffVoltmeter, value);
     }
+    
+    public string TimeTestStart => stand.TimeTestStart;
+    public string TimeTestNext => stand.TimeTestNext;
+    public string TimeTestStop => stand.TimeTestStop;
 
     #endregion
 

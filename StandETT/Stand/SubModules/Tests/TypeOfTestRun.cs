@@ -6,9 +6,9 @@
 public enum TypeOfTestRun
 {
     None = 0,
-    Stoped,
+    Stopped,
     Stop,
-  
+    StopError,
     PrimaryCheckDevices,
     PrimaryCheckDevicesReady,
     CheckPortsReady,

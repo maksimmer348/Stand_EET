@@ -104,22 +104,9 @@ public class RelayVip : BaseDevice
 
         MainRelay.WriteCmdRelay(this, CurrentCmd, parameter);
     }
-
-    /// <summary>
-    /// Статус выхода устройства
-    /// </summary>
-    [JsonIgnore]
-    public bool Output { get; set; }
-
-    /// <summary>
-    /// Вид ошибки Випа
-    /// </summary>
-    [JsonIgnore]
-    public RelayVipError ErrorVip { get; set; }
-
+    
     private OnOffStatus statusOnOff;
     
-
     public OnOffStatus StatusOnOff
     {
         get => statusOnOff;

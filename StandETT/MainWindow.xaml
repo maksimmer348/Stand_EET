@@ -225,22 +225,30 @@
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
 
-                    <DockPanel Grid.Row="0" Grid.ColumnSpan="3" MinWidth="300" VerticalAlignment="Center"
+                    <Grid Grid.Row="0" Grid.ColumnSpan="3" MinWidth="300" VerticalAlignment="Center"
                                HorizontalAlignment="Stretch">
-                        <ComboBox Margin="7" DockPanel.Dock="Left" MinHeight="10" MinWidth="200"
-                                  HorizontalAlignment="Stretch" ItemsSource="{Binding TypeVips}"
-                                  SelectedItem="{Binding SelectTypeVip, UpdateSourceTrigger=PropertyChanged}"
-                                  SelectedIndex="{Binding SelectTypeVipIndex}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid>
-                                        <TextBlock Grid.ColumnSpan="2" Text="{Binding Name}" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <TextBlock Margin="10" DockPanel.Dock="Left">Выбор типа ВИПа</TextBlock>
-                    </DockPanel>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <DockPanel>
+                            <ComboBox Margin="7" DockPanel.Dock="Left" MinHeight="10" MinWidth="200"
+                                      HorizontalAlignment="Stretch" ItemsSource="{Binding TypeVips}"
+                                      SelectedItem="{Binding SelectTypeVip, UpdateSourceTrigger=PropertyChanged}"
+                                      SelectedIndex="{Binding SelectTypeVipIndex}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <TextBlock Grid.ColumnSpan="2" Text="{Binding Name}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Margin="10" DockPanel.Dock="Left">Выбор типа Випа</TextBlock>
+                            <TextBox Margin="10" Width="200" Text="{Binding ReportNum}"></TextBox>
+                            <TextBlock Margin="10" DockPanel.Dock="Left">Номер отчета Випов</TextBlock>
+                        </DockPanel>
+                    </Grid>
 
                     <ItemsControl Grid.Row="1" ItemsSource="{Binding Vips}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
@@ -385,16 +393,10 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock HorizontalAlignment="Center"> Начало испытаний 25.07.01/ 12:07:10</TextBlock>
-                            <TextBlock HorizontalAlignment="Center">Следующий замер через 00:21:32</TextBlock>
-                            <TextBlock HorizontalAlignment="Center">
-                                До конца испытаний 10:00:4
-                            </TextBlock>
-
-                            <Button MinHeight="10" MinWidth="80"
-                                    Content="Создать отчет"
-                                    Command="{Binding CreateReportCmd}" Width="94" />
+                        <StackPanel Margin="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestStart, UpdateSourceTrigger=PropertyChanged, StringFormat=Начало испытаний: {0}}" />
+                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Следующий замер через: {0}}" />
+                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestStop, UpdateSourceTrigger=PropertyChanged, StringFormat=До конца испытаний: {0}}" />
                         </StackPanel>
 
                     </Grid>

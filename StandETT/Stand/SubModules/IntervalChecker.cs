@@ -6,12 +6,12 @@ namespace StandETT;
 public class IntervalChecker
 {
     private Stopwatch watch;
+    
     private long last;
-
+    
     private bool autoReset;
     public float Interval { get; set; }
     public int Count { get; private set; }
-
     public float IntervalRange { get; set; } = 1;
 
     public double Elapsed { get; private set; }
@@ -20,10 +20,8 @@ public class IntervalChecker
     public IntervalChecker(float interval, bool autoReset = false)
     {
         watch = new Stopwatch();
-
         Interval = interval;
         this.autoReset = autoReset;
-
         Start();
     }
 
@@ -53,11 +51,17 @@ public class IntervalChecker
         Count = 0;
     }
 
+    public void Stop()
+    {
+        watch.Stop();
+        Elapsed = 0;
+        Count = 0;
+    }
+
     public void Restart()
     {
         watch.Restart();
         Reset();
-        
     }
 
     public void Restart(float newInterval)

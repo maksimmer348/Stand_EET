@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using OfficeOpenXml;
@@ -16,6 +17,12 @@ public class ReportCreator
 
     private string pathReport = "";
     private string pathErrorReport = "";
+
+    public bool CheckHeadersReport(HeaderReport hd)
+    {
+        var path = @$"Протокол № {hd.ReportNum} от {hd.ReportData}.xlsx";
+        return File.Exists(path);
+    }
 
     public async Task CreateHeadersReport(HeaderReport hd)
     {
@@ -50,35 +57,37 @@ public class ReportCreator
 
         var addr = GetChannelAddrReport(vip);
 
+        excelWorksheet.Cells[addr.nameAddr].Value = vip.Name;
+
         if (isError)
         {
             var onlyLetters1 = new String(addr.channel1Addr.Where(Char.IsLetter).ToArray()).ToUpper();
-            var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();
             string addrErrors1 = $"{addr.channel1Addr}:{onlyLetters1}11";
-            string addrErrors2 = $"{addr.channel2Addr}:{onlyLetters2}19";
-            excelWorksheet.Cells[addr.nameAddr].Value = vip.Name;
-
             excelWorksheet.Cells[addrErrors1].Value = 0;
-            excelWorksheet.Cells[addrErrors2].Value = 0;
+            excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
 
-            excelWorksheet.Cells[addr.channel1Addr].Value =
-                vip.VoltageOut1;
-            excelWorksheet.Cells[addr.channel2Addr].Value =
-                vip.VoltageOut2;
+            if (vip.Type.PrepareMaxVoltageOut2 > 0)
+            {
+                var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();
+                string addrErrors2 = $"{addr.channel2Addr}:{onlyLetters2}19";
+                excelWorksheet.Cells[addrErrors2].Value = 0;
+                excelWorksheet.Cells[addr.channel2Addr].Value = vip.VoltageOut2;
+            }
         }
         else
         {
-            excelWorksheet.Cells[addr.nameAddr].Value = vip.Name;
-            excelWorksheet.Cells[addr.channel1Addr].Value =
-                vip.VoltageOut1;
-            excelWorksheet.Cells[addr.channel2Addr].Value =
-                vip.VoltageOut2;
+            excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
+
+            if (vip.Type.PrepareMaxVoltageOut2 > 0)
+            {
+                excelWorksheet.Cells[addr.channel2Addr].Value = vip.VoltageOut2;
+            }
         }
 
         await excelPackage.SaveAsync();
     }
 
-    public async Task CreateErrorReport(Vip vip)
+    public async Task CreateErrorReport(Vip vip, bool isReset = false)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
 
@@ -93,28 +102,36 @@ public class ReportCreator
 
         var timeNow = $"\n{DateTime.Now:HH:mm:ss}";
 
-        excelWorksheet.Cells[addr.channel1Addr].Value =
-            vip.ErrorVip.VoltageOut1High || vip.ErrorVip.VoltageOut1Low ? $"{vip.VoltageOut1}{timeNow}" : null;
-        excelWorksheet.Cells[addr.channel2Addr].Value =
-            vip.ErrorVip.VoltageOut2High || vip.ErrorVip.VoltageOut2Low ? $"{vip.VoltageOut2}{timeNow}" : null;
+        if (!isReset)
+        {
+            excelWorksheet.Cells[addr.channel1Addr].Value =
+                vip.ErrorVip.VoltageOut1High || vip.ErrorVip.VoltageOut1Low ? $"{vip.VoltageOut1}{timeNow}" : null;
+            excelWorksheet.Cells[addr.channel2Addr].Value =
+                vip.ErrorVip.VoltageOut2High || vip.ErrorVip.VoltageOut2Low ? $"{vip.VoltageOut2}{timeNow}" : null;
 
-        excelWorksheet.Cells[addr.currentInAddr].Value =
-            vip.ErrorVip.CurrentInHigh ? $"{vip.CurrentIn}{timeNow}" : null;
-        excelWorksheet.Cells[addr.tempAddr] .Value =
-            vip.ErrorVip.TemperatureHigh ? $"{vip.Temperature}{timeNow}" : null;
-        excelWorksheet.Cells[addr.errConnectAddr].Value =
-            vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Ошибка{timeNow}" : null;
+            excelWorksheet.Cells[addr.currentInAddr].Value =
+                vip.ErrorVip.CurrentInHigh ? $"{vip.CurrentIn}{timeNow}" : null;
+            excelWorksheet.Cells[addr.tempAddr].Value =
+                vip.ErrorVip.TemperatureHigh ? $"{vip.Temperature}{timeNow}" : null;
+            excelWorksheet.Cells[addr.errConnectAddr].Value =
+                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Ошибка{timeNow}" : null;
+        }
+        else
+        {
+            excelWorksheet.Cells[addr.errConnectAddr + 1].Value =
+                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Сброс{timeNow}" : null;
+        }
 
         await excelPackage.SaveAsync();
     }
-    
+
     (string nameAddr, string channel1Addr, string channel2Addr) GetChannelAddrReport(Vip vipReport)
     {
         var channel1AddrNum = vipReport.Channel1AddrNum;
         var channel2AddrNum = vipReport.Channel2AddrNum;
 
         var nameAddr = $"G5";
-        
+
         var channel1Addr = $"G{channel1AddrNum}";
         var channel2Addr = $"G{channel2AddrNum}";
 
@@ -328,7 +345,7 @@ public class ReportCreator
 
 public class HeaderReport
 {
-    public HeaderReport(int reportNum, TypeVip v)
+    public HeaderReport(string reportNum, TypeVip v)
     {
         ReportNum = reportNum;
         ReportData = DateTime.Now.ToString("dd-MM-yyyy");
@@ -336,7 +353,7 @@ public class HeaderReport
         Specifications = v.Specifications;
     }
 
-    public int ReportNum { get; set; }
+    public string ReportNum { get; set; }
     public string ReportData { get; set; }
     public string TypeVip { get; set; }
     public string Specifications { get; set; }
