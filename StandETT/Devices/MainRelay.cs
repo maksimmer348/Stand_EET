@@ -53,6 +53,7 @@ public class MainRelay : BaseDevice
 
         return instance;
     }
+
     public MainRelay(string name) : base(name)
     {
         PortConnecting += Port_Connecting;
@@ -93,6 +94,18 @@ public class MainRelay : BaseDevice
             prefix = receive.Contains("6f") ? receive.Substring(3, 1) : receive.Substring(2, 2);
 
             var currentRelayVipPrefix = Relays.FirstOrDefault(x => x.Prefix.ToLower() == prefix);
+            string[] trimByte = { "00" };
+
+            // var test = receive.Substring(receive.Length - 2, 2);
+            //
+            
+            if (receive.Substring(0, 2) == "00" || receive.Substring(receive.Length - 2, 2) == "00")
+            {
+                Debug.WriteLine($"namecmd - {NameCurrentCmd}/{receive.Length}");
+                var temp =  receive.Replace("00", "");
+                receive = temp;
+            }
+
             if (currentRelayVipPrefix != null)
             {
                 currentRelayVipPrefix.Device_Receiving(currentRelayVipPrefix, receive, cmd);
