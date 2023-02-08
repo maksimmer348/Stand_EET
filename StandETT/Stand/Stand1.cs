@@ -732,16 +732,26 @@ public class Stand1 : Notify
         //TODO убрать когда эти приборы появятся в стенде
 
         await CheckConnectPorts(devices.ToList(), t: t);
-        
-        supplyLoads =  new(devices.Where(d =>  d.Name.Contains("SL")));
+
+        //вычленяем нагрузки из общего списка приборов тк они висят на одной шине и
+        //обычные методы проверки порта и команд не подходят
+        supplyLoads = new(devices.Where(d => d.Name.Contains("SL")));
+        //проверка порта первой нагрузки тк они все висят на одном порту
         await CheckConnectPort(supplyLoads[0], t: t);
 
         if (t.IsOk)
         {
             PercentCurrentTest = 70;
             t = TempChecks.Start();
+            //проверка внешних приборов
             await WriteIdentCommands(devices.ToList(), "Status",
                 countChecked: innerCountCheck, loopDelay: innerDelay, t: t);
+            //проверка нагрузок
+            foreach (var sl in supplyLoads)
+            {
+                await WriteIdentCommand(sl, "Status",
+                    countChecked: innerCountCheck, loopDelay: innerDelay, t: t);
+            }
 
             if (t.IsOk)
             {
@@ -769,7 +779,6 @@ public class Stand1 : Notify
     //--випы--vips--relay--check--проверка--
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
-      
         s.Restart();
         //
         TestRun = TypeOfTestRun.PrimaryCheckVips;
@@ -777,15 +786,12 @@ public class Stand1 : Notify
         PercentCurrentTest = 30;
         SetPriorityStatusStand(0, clearAll: true);
         //
-
         TempChecks t = TempChecks.Start();
-        await OutputLoadInChannel(vips[0],t);
-       // return false;
         await ResetAllVips(innerCountCheck, innerDelay, t);
-        
+
         //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
         vipsTested = GetIsTestedVips();
-        
+
         //проверки полей ввода випов
         if (!vipsTested.Any())
         {
@@ -793,7 +799,7 @@ public class Stand1 : Notify
             PercentCurrentTest = 0;
             throw new Exception("Отсутвуют номера Випов!");
         }
-        
+
         //предварительное создание класса отчета
         report = new ReportCreator();
         //проверки полей ввода имени файла отчета
@@ -801,18 +807,20 @@ public class Stand1 : Notify
         {
             throw new Exception("Введите корректный номер отчета");
         }
+
         if (report.CheckHeadersReport(new HeaderReport(ReportNum, vips[0].Type)))
         {
             throw new Exception("Отчет с таким номером уже сущетвует");
         }
-        
+
         relayVipsTested.Clear();
         foreach (var vip in vipsTested)
         {
             relayVipsTested.Add(vip.Relay);
         }
+
         mainRelay.Relays = relayVipsTested;
-        
+
         await CheckConnectPort(mainRelay, t: t);
 
         if (t.IsOk)
@@ -826,19 +834,18 @@ public class Stand1 : Notify
                 await WriteIdentCommand(relay, "Status", countChecked: innerCountCheck, loopDelay: innerDelay, t: t);
 
                 //TODO удалить после отладки
-                if (t.IsOk)
-                {
-                    await OutputDevice(relay, t: t, forcedOff: true, on: false);
-                }
-                if (t.IsOk)
-                {
-                    await OutputDevice(relay, t: t);
-                }
-
-           
-               
+                // if (t.IsOk)
+                // {
+                //     await OutputDevice(relay, t: t, forcedOff: true, on: false);
+                // }
+                //
+                // if (t.IsOk)
+                // {
+                //     await OutputDevice(relay, t: t);
+                // }
                 //TODO удалить после отладки
             }
+
             if (t.IsOk)
             {
                 //
@@ -1634,68 +1641,84 @@ public class Stand1 : Notify
         TempChecks tp = TempChecks.Start();
 
         //TODO вернуть когда появятся все нагрузки или исправится номера текущих
-        //var ss = allDevices.FirstOrDefault(x => x.Name.Contains("SL") && x.Prefix == vip.Id.ToString());
+        // var ss = devices.FirstOrDefault(x => x.Name.Contains("SL") && x.Prefix == (vip.Id + 1).ToString());
 
         //TODO удалить когда появятся все нагрузки или исправится номера текущих
-        var ss = allRelayVips.FirstOrDefault(x => x.Name.Contains("SL") && x.Prefix == "4");
+        var supplyLoads = allRelayVips.Where(x => x.Name.Contains("SL")).ToList();
         //TODO удалить когда появятся все нагрузки или исправится номера текущих
 
-        if (ss != null)
+        //
+        SetPriorityStatusStand(2, $"переключение 1 канала измерений Вип - {vip.Name}", percentSubTest: 40,
+            colorSubTest: Brushes.DodgerBlue, clearAll: true);
+        //
+        if (on)
         {
-            //
-            SetPriorityStatusStand(2, $"переключение 1 канала измерений Вип - {vip.Name}", percentSubTest: 40,
-                colorSubTest: Brushes.DodgerBlue, clearAll: true);
-            //
+            vip.StatusSmallLoad = OnOffStatus.Switching;
+        }
+
+        RelayVip sl = null;
+        
+        if (vip.Id is 0 or 1 or 2 or 3)
+        {
+            sl = supplyLoads.FirstOrDefault(x => x.Prefix == "1");
+            await OutputDevice(sl, vip.Id + 1, t: tp, on: on);
+        }
+        else if (vip.Id is 4 or 5 or 6 or 7)
+        {
+            sl = supplyLoads.FirstOrDefault(x => x.Prefix == "2");
+            await OutputDevice(sl, vip.Id - 3, t: tp, on: on);
+        }
+        else if (vip.Id is 8 or 9 or 10 or 11)
+        {
+            sl = supplyLoads.FirstOrDefault(x => x.Prefix == "3");
+            await OutputDevice(sl, vip.Id - 7, t: tp, on: on);
+        }
+
+        // if (vip.Id is 0 or 4 or 8)
+        //     await OutputDevice(ss, 1, t: tp, on: on);
+        // else if (vip.Id is 1 or 5 or 9)
+        //     await OutputDevice(ss, 2, t: tp, on: on);
+        // else if (vip.Id is 2 or 6 or 10)
+        //     await OutputDevice(ss, 3, t: tp, on: on);
+        // else if (vip.Id is 3 or 7 or 11) await OutputDevice(ss, 4, t: tp, on: on);
+
+        if (tp.IsOk)
+        {
             if (on)
             {
-                vip.StatusSmallLoad = OnOffStatus.Switching;
+                //
+                SetPriorityStatusStand(2, $"Включение {vip.Id} канала малой нагрузки {sl?.Prefix} ,Ок!",
+                    percentSubTest: 100,
+                    colorSubTest: Brushes.DodgerBlue, clearAll: true);
+                //
+                vip.StatusSmallLoad = OnOffStatus.On;
+                if (sl != null) sl.StatusOnOff = OnOffStatus.On;
             }
-
-            if (vip.Id is 0 or 4 or 8)
-                await OutputDevice(ss, 1, t: tp, on: on);
-            else if (vip.Id is 1 or 5 or 9)
-                await OutputDevice(ss, 2, t: tp, on: on);
-            else if (vip.Id is 2 or 6 or 10)
-                await OutputDevice(ss, 3, t: tp, on: on);
-            else if (vip.Id is 3 or 7 or 11) await OutputDevice(ss, 4, t: tp, on: on);
-
-            if (tp.IsOk)
+            else
             {
-                if (on)
-                {
-                    //
-                    SetPriorityStatusStand(2, $"Включение {vip.Id} канала малой нагрузки {ss?.Prefix} ,Ок!",
-                        percentSubTest: 100,
-                        colorSubTest: Brushes.DodgerBlue, clearAll: true);
-                    //
-                    vip.StatusSmallLoad = OnOffStatus.On;
-                    ss.StatusOnOff = OnOffStatus.On;
-                }
-                else
-                {
-                    //
-                    SetPriorityStatusStand(2, $"Отключение {vip.Id} канала малой нагрузки {ss?.Prefix} ,Ок!",
-                        percentSubTest: 100,
-                        colorSubTest: Brushes.DodgerBlue, clearAll: true);
-                    //
-                    vip.StatusSmallLoad = OnOffStatus.Off;
-                    ss.StatusOnOff = OnOffStatus.Off;
-                }
-
-                t?.Add(true);
-                return true;
+                //
+                SetPriorityStatusStand(2, $"Отключение {vip.Id} канала малой нагрузки {sl?.Prefix} ,Ок!",
+                    percentSubTest: 100,
+                    colorSubTest: Brushes.DodgerBlue, clearAll: true);
+                //
+                vip.StatusSmallLoad = OnOffStatus.Off;
+                if (sl != null) sl.StatusOnOff = OnOffStatus.Off;
             }
 
-            //
-            SetPriorityStatusStand(2, $"Вкл/выкл {vip.Id} канала малой нагрузки {ss?.Prefix}, ошибка!",
-                percentSubTest: 100, colorSubTest: Brushes.Red, clearAll: true);
-            //
-
-            vip.StatusSmallLoad = OnOffStatus.None;
-            ss.StatusOnOff = OnOffStatus.None;
-            t?.Add(false);
-            return false;
+            t?.Add(true);
+            return true;
         }
+
+        //
+        SetPriorityStatusStand(2, $"Вкл/выкл {vip.Id} канала малой нагрузки {sl?.Prefix}, ошибка!",
+            percentSubTest: 100, colorSubTest: Brushes.Red, clearAll: true);
+        //
+
+        vip.StatusSmallLoad = OnOffStatus.None;
+        if (sl != null) sl.StatusOnOff = OnOffStatus.None;
+        t?.Add(false);
+        return false;
+
 
         t?.Add(false);
         return false;
@@ -1873,9 +1896,8 @@ public class Stand1 : Notify
     async Task<bool> CheckConnectPorts(List<BaseDevice> devices, int countChecked = 3, int loopDelay = 200,
         TempChecks t = null)
     {
-
         devices.RemoveAll(i => i.Name.Contains("SL"));
-        
+
         if (resetAll)
         {
             t?.Add(false);
@@ -2091,9 +2113,9 @@ public class Stand1 : Notify
                         await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsReceiveDevice.Token);
                     }
 
-                    if (!resetAll)
+                    if (!resetAll && !deviceCheck.PortIsOpen)
                     {
-                        if (!deviceCheck.PortIsOpen)
+                        if (deviceCheck is not RelayVip || !mainRelay.PortIsOpen)
                         {
                             SetPriorityStatusStand(4, $"порт закрыт, переподключение...", clearAll: true);
 
@@ -2107,8 +2129,8 @@ public class Stand1 : Notify
                                 return deviceReceived;
                             }
 
-                            await Task.Delay(TimeSpan.FromMilliseconds(50)); //TODO 100 ms
                             SetPriorityStatusStand(4, $"переподключение удачно, порт открыт");
+                            await Task.Delay(TimeSpan.FromMilliseconds(50));
                         }
                     }
 
@@ -2272,7 +2294,6 @@ public class Stand1 : Notify
         string cmd = null, string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 600,
         TempChecks t = null, bool isReceiveVal = false)
     {
-        
         deviceChecks.RemoveAll(i => i.Name.Contains("SL"));
         var deviceReceived = new Dictionary<BaseDevice, List<string>>();
 
@@ -4591,7 +4612,6 @@ public class Stand1 : Notify
 
     #region Общие
 
-    
     async Task<bool> ResetAllVips(int countChecked = 3, int loopDelay = 600, TempChecks t = null)
     {
         //сбросы всех статусов перед проверкой
@@ -4601,9 +4621,10 @@ public class Stand1 : Notify
 
             if (t != null)
             {
-                await WriteIdentCommand(relayVip, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
-                await OutputDevice(relayVip, t: t, forcedOff: true, on: false);
+                //await WriteIdentCommand(relayVip, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
+                //await OutputDevice(relayVip, t: t, forcedOff: true, on: false);
             }
+
             relayVip.AllDeviceError = new AllDeviceError();
             relayVip.StatusOnOff = OnOffStatus.None;
             relayVip.StatusTest = StatusDeviceTest.None;
@@ -4629,7 +4650,7 @@ public class Stand1 : Notify
             ? true
             : throw new Exception("Одно или несколько устройств  не ответили или ответили\nс ошибкой.\n");
     }
-    
+
     public void SerializeDevice()
     {
         creatorAllDevicesAndLib.SerializeDevices(allDevices.ToList());

@@ -328,6 +328,10 @@ public class ViewModel : Notify
             try
             {
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
+
+                //TODO удалить послке отлалки
+                await stand.EnableLoads();
+                //TODO удалить послке отлалки
             }
             catch (Exception e) when (e.Message.Contains("номера"))
             {
@@ -352,13 +356,15 @@ public class ViewModel : Notify
 
                 if (result == MessageBoxResult.No)
                 {
-                    await stand.ResetAllTests();
+                    //TODO вернуть после отладки
+                    //await stand.ResetAllTests();
                     SelectTab = 1;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await stand.ResetAllTests();
+                    //TODO вернуть после отладки
+                    //await stand.ResetAllTests();
                     SelectTab = 3;
                 }
             }
@@ -390,9 +396,6 @@ public class ViewModel : Notify
                         // if (heat)
                         // {
                         ////--cycle--cucle
-                        //TODO удалить послке отлалки
-                        await stand.EnableLoads();
-                        //TODO удалить послке отлалки
                         stand.StartMeasurementCycle();
                         // }
                     }
