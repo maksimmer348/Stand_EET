@@ -23,7 +23,7 @@ public class ViewModel : Notify
 
     #region --Стенд
 
-    private Stand1 stand = new();
+    public Stand1 stand = new();
 
     private BaseLibCmd libCmd = BaseLibCmd.getInstance();
 
@@ -56,7 +56,6 @@ public class ViewModel : Notify
     /// Список Випов
     /// </summary>
     public ObservableCollection<TypeVip> TypeVips => cfgTypeVips.TypeVips;
-
 
     #endregion
 
@@ -330,20 +329,20 @@ public class ViewModel : Notify
             {
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
-            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные Випы"))
+            catch (Exception e) when (e.Message.Contains("номера"))
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
 
                 var result = MessageBox.Show(e.Message, caption,
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (Exception e) when(e.Message.ToLower().Contains("отчет"))
+            catch (Exception e) when (e.Message.ToLower().Contains("отчет"))
             {
                 const string caption = "Ошибка создания отчета";
 
                 var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            
+
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
@@ -391,7 +390,9 @@ public class ViewModel : Notify
                         // if (heat)
                         // {
                         ////--cycle--cucle
+                        //TODO удалить послке отлалки
                         await stand.EnableLoads();
+                        //TODO удалить послке отлалки
                         stand.StartMeasurementCycle();
                         // }
                     }
@@ -1343,15 +1344,13 @@ public class ViewModel : Notify
                 // AllTabsDisable();
                 // CheckVipsTab = true;
             }
-            
+
             //    else if (stand.TestRun == TypeOfTestRun.CycleWait)
             //    {
             //        TextCurrentTest = " Ожидание замер";
             //        AllTabsDisable();
             //        CheckVipsTab = true;
             //    }
-
-          
 
             //-
 
@@ -1917,8 +1916,9 @@ public class ViewModel : Notify
 
     public string TypeVipName { get; set; }
     private readonly CollectionViewSource selectedTypeVips = new();
-    
+
     private string reportNum;
+
     public string ReportNum
     {
         get => reportNum;
@@ -2012,7 +2012,7 @@ public class ViewModel : Notify
     }
 
     private bool voltageOuе2Using;
-    
+
     private string percentAccuracyVoltages;
 
     public string PercentAccuracyVoltages
@@ -2302,7 +2302,7 @@ public class ViewModel : Notify
         get => outputOffVoltmeter;
         set => Set(ref outputOffVoltmeter, value);
     }
-    
+
     public string TimeTestStart => stand.TimeTestStart;
     public string TimeTestNext => stand.TimeTestNext;
     public string TimeTestStop => stand.TimeTestStop;

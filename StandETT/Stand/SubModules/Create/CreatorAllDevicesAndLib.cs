@@ -79,7 +79,7 @@ class CreatorAllDevicesAndLib
             bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
 
             temp.Add(bigLoad);
-            
+
             BaseDevice heat = new Heat("???") { RowIndex = 1, ColumnIndex = 0 };
             heat.SetConfigDevice(TypePort.SerialInput, "COM99", 9600, 1, 0, 8);
             temp.Add(heat);
@@ -163,26 +163,32 @@ class CreatorAllDevicesAndLib
 
             temp.Add(relay11);
 
-            BaseDevice smallLoad0 = new RelayVip(0, "SL-0") { RowIndex = 1, ColumnIndex =2, IsHiddenOutputOnOff = Visibility.Collapsed };
+            BaseDevice smallLoad1 = new RelayVip(1, "SL-1")
+                { RowIndex = 1, ColumnIndex = 2, IsHiddenOutputOnOff = Visibility.Collapsed };
+            smallLoad1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
+            smallLoad1.Prefix = "1";
+
+            temp.Add(smallLoad1);
+
+            BaseDevice smallLoad2 = new RelayVip(2, "SL-2")
+                { RowIndex = 1, ColumnIndex = 3, IsHiddenOutputOnOff = Visibility.Collapsed };
+            smallLoad2.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
+            smallLoad2.Prefix = "2";
+
+            temp.Add(smallLoad2);
+
+            BaseDevice smallLoad0 = new RelayVip(3, "SL-3")
+            {
+                RowIndex = 1, ColumnIndex = 4,
+                IsHiddenOutputOnOff = Visibility.Collapsed
+            };
             smallLoad0.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            smallLoad0.Prefix = "";
+            smallLoad0.Prefix = "3";
 
             temp.Add(smallLoad0);
-            
+
             //TODO вернуть
-            // BaseDevice smallLoad1 = new RelayVip(1, "SL-1") { RowIndex = 1, ColumnIndex = 3 };
-            // smallLoad1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // smallLoad1.Prefix = "";
-            //
-            // temp.Add(smallLoad1);
-            //
-            // BaseDevice smallLoad2 = new RelayVip(2, "SL-2") { RowIndex = 1, ColumnIndex = 4 };
-            // smallLoad2.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // smallLoad2.Prefix = "";
-            //
-            // temp.Add(smallLoad2);
-            //TODO вернуть
-            
+
             serializer.SerializeDevices(temp);
         }
         else
@@ -259,7 +265,7 @@ class CreatorAllDevicesAndLib
             ColumnIndex = 3
         });
 
-        
+
         mainRelayVip.Relays = new(relays);
         return temp;
     }

@@ -154,7 +154,6 @@ public class BaseDevice : Notify
     }
 
     private Visibility isHidden = Visibility.Visible;
-
     public Visibility IsHiddenOutputOnOff
     {
         get => isHidden;

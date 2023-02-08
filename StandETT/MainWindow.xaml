@@ -6,10 +6,11 @@
         xmlns:local="clr-namespace:StandETT"
         mc:Ignorable="d"
         Title="Стенд ЕТТ" MinHeight="760" MinWidth="1200" Height="768" Width="1000"
-        IsEnabled="{Binding WindowDisabled}">
-    <Window.DataContext>
-        <local:ViewModel />
-    </Window.DataContext>
+        IsEnabled="{Binding WindowDisabled}"
+        Closing="MainWindow_Closing"  >
+    <!-- <Window.DataContext> -->
+    <!--     <local:ViewModel /> -->
+    <!-- </Window.DataContext> -->
 
     <!--Стили-->
     <Window.Resources>

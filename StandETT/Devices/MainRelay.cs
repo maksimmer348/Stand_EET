@@ -12,6 +12,8 @@ public class MainRelay : BaseDevice
     private static MainRelay instance;
     private static object syncRoot = new();
     private RelayVip currentRelayVip;
+    private string[] signalInterferences = {  "00", };
+
     [JsonIgnore] public ObservableCollection<RelayVip> Relays { get; set; } = new();
 
     /// <summary>
@@ -87,31 +89,25 @@ public class MainRelay : BaseDevice
 
     private void Relay_Receive(BaseDevice device, string receive, DeviceCmd cmd)
     {
+        
         try
         {
+            Debug.WriteLine($"ROW receive - {receive}");
+            //clear receive
+            receive = signalInterferences.Aggregate(receive, (r, s) => r.TrimStart(s).TrimEnd(s));
+            //init prefix
             string prefix = null;
-
             prefix = receive.Contains("6f") ? receive.Substring(3, 1) : receive.Substring(2, 2);
-
             var currentRelayVipPrefix = Relays.FirstOrDefault(x => x.Prefix.ToLower() == prefix);
-            string[] trimByte = { "00" };
-
-            // var test = receive.Substring(receive.Length - 2, 2);
-            //
-            
-            if (receive.Substring(0, 2) == "00" || receive.Substring(receive.Length - 2, 2) == "00")
-            {
-                Debug.WriteLine($"namecmd - {NameCurrentCmd}/{receive.Length}");
-                var temp =  receive.Replace("00", "");
-                receive = temp;
-            }
 
             if (currentRelayVipPrefix != null)
             {
+                Debug.WriteLine($"CLEAR receive - {receive}/cmd - {currentRelayVipPrefix.NameCurrentCmd}/name prefix - {currentRelayVipPrefix.Name}");
                 currentRelayVipPrefix.Device_Receiving(currentRelayVipPrefix, receive, cmd);
             }
             else
             {
+                Debug.WriteLine($"CLEAR receive - {receive}/cmd -{currentRelayVip.NameCurrentCmd}/name NO prefix - {currentRelayVip.Name}");
                 currentRelayVip.Device_Receiving(currentRelayVip, receive, cmd);
             }
         }

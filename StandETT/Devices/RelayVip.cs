@@ -11,6 +11,7 @@ public class RelayVip : BaseDevice
 {
     public int Id { get; set; }
 
+    [JsonIgnore]
     public CancellationTokenSource CtsRelayReceive = new();
 
     MainRelay MainRelay = MainRelay.GetInstance();
