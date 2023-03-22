@@ -155,13 +155,12 @@
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                                <Grid ShowGridLines="True" VerticalAlignment="Center" HorizontalAlignment="Stretch">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                         <ColumnDefinition />
@@ -342,7 +341,6 @@
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
                                             <ColumnDefinition />
                                             <ColumnDefinition />
                                             <ColumnDefinition />

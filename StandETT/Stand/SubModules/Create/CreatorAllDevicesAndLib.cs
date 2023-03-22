@@ -56,23 +56,27 @@ class CreatorAllDevicesAndLib
 
         if (deserializeDevices == null || !deserializeDevices.Any())
         {
-            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 3 };
+            BaseDevice supply = new Supply("PSW7-800-2.88") { RowIndex = 0, ColumnIndex = 2 };
             supply.SetConfigDevice(TypePort.SerialInput, "COM11", 115200, 1, 0, 8);
+            
             temp.Add(supply);
 
             BaseDevice voltMeter = new VoltMeter("GDM-78255A")
                 { RowIndex = 0, ColumnIndex = 0, IsHiddenOutputOnOff = Visibility.Collapsed };
             voltMeter.SetConfigDevice(TypePort.SerialInput, "COM8", 115200, 1, 0, 8);
+            
             temp.Add(voltMeter);
 
             BaseDevice voltCurrentMeter = new VoltCurrentMeter("GDM-78255A")
                 { RowIndex = 0, ColumnIndex = 1, IsHiddenOutputOnOff = Visibility.Collapsed };
             voltCurrentMeter.SetConfigDevice(TypePort.SerialInput, "COM7", 115200, 1, 0, 8);
+            
             temp.Add(voltCurrentMeter);
 
-            BaseDevice thermometer = new Thermometer("???") { RowIndex = 0, ColumnIndex = 2 };
-            thermometer.SetConfigDevice(TypePort.SerialInput, "COM88", 115200, 1, 0, 8);
-            temp.Add(thermometer);
+            // BaseDevice thermometer = new Thermometer("???") { RowIndex = 0, ColumnIndex = 2 };
+            // thermometer.SetConfigDevice(TypePort.SerialInput, "COM88", 115200, 1, 0, 8);
+            //
+            // temp.Add(thermometer);
 
 
             BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 4 };
@@ -80,9 +84,10 @@ class CreatorAllDevicesAndLib
 
             temp.Add(bigLoad);
 
-            BaseDevice heat = new Heat("???") { RowIndex = 1, ColumnIndex = 0 };
-            heat.SetConfigDevice(TypePort.SerialInput, "COM99", 9600, 1, 0, 8);
-            temp.Add(heat);
+            // BaseDevice heat = new Heat("???") { RowIndex = 1, ColumnIndex = 0 };
+            // heat.SetConfigDevice(TypePort.SerialInput, "COM99", 9600, 1, 0, 8);
+            //
+            // temp.Add(heat);
 
 
             BaseDevice relayMeter = new RelayMeter("MRS")

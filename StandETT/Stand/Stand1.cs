@@ -786,19 +786,6 @@ public class Stand1 : Notify
         PercentCurrentTest = 30;
         SetPriorityStatusStand(0, clearAll: true);
         //
-        TempChecks t = TempChecks.Start();
-        await ResetAllVips(innerCountCheck, innerDelay, t);
-
-        //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
-        vipsTested = GetIsTestedVips();
-
-        //проверки полей ввода випов
-        if (!vipsTested.Any())
-        {
-            TestRun = TypeOfTestRun.Stop;
-            PercentCurrentTest = 0;
-            throw new Exception("Отсутвуют номера Випов!");
-        }
 
         //предварительное создание класса отчета
         report = new ReportCreator();
@@ -811,6 +798,26 @@ public class Stand1 : Notify
         if (report.CheckHeadersReport(new HeaderReport(ReportNum, vips[0].Type)))
         {
             throw new Exception("Отчет с таким номером уже сущетвует");
+        }
+
+        TempChecks t = TempChecks.Start();
+        await ResetAllVips(innerCountCheck, innerDelay);
+        //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
+        vipsTested = GetIsTestedVips();
+
+        //проверки полей ввода випов
+        if (!vipsTested.Any())
+        {
+            TestRun = TypeOfTestRun.Stop;
+            PercentCurrentTest = 0;
+            throw new Exception("Отсутвуют номера Випов!");
+        }
+
+        if (vipsTested.GroupBy(x => x.Name).Any(g => g.Count() > 1))
+        {
+            TestRun = TypeOfTestRun.Stop;
+            PercentCurrentTest = 0;
+            throw new Exception("Номера Випов не должны дублироватся!");
         }
 
         relayVipsTested.Clear();
@@ -845,7 +852,7 @@ public class Stand1 : Notify
                 // }
                 //TODO удалить после отладки
             }
-
+            
             if (t.IsOk)
             {
                 //
@@ -874,11 +881,11 @@ public class Stand1 : Notify
     public async Task<bool> AvailabilityCheckVip(int innerCountCheck = 3, int innerDelay = 200)
     {
         TimeTestStart = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+        
         if (!vipsTested.Any())
         {
             throw new Exception("Отсутвуют инициализировнные Випы!");
         }
-
         //задаем репортер тут тк будет исолпьзоватся ерроррепортер
         try
         {
@@ -888,8 +895,7 @@ public class Stand1 : Notify
         {
             throw new Exception($"Ошибка {e.Message} - Файл отчета не был создан!");
         }
-
-
+        
         //
         TestRun = TypeOfTestRun.AvailabilityCheckVip;
         ProgressColor = Brushes.Green;
@@ -927,18 +933,9 @@ public class Stand1 : Notify
         foreach (var vipTested in vipsTested)
         {
             if (t.IsOk) await TestVip(vipTested, TypeOfTestRun.AvailabilityCheckVip, t: t);
-
-            // //
-            // Debug.WriteLine(s0.ElapsedMilliseconds + $"ms/AvailabilityCheckVip/{vipTested.Name}");
-            // s1.Restart();
-            // //
         }
 
         testVipPlay = false;
-        // //
-        // Debug.WriteLine($"Проверка наличия/{s0.ElapsedMilliseconds} mc");
-        // //
-        // s0.Restart();
 
         if (resetAll) return false;
 
@@ -1657,7 +1654,7 @@ public class Stand1 : Notify
         }
 
         RelayVip sl = null;
-        
+
         if (vip.Id is 0 or 1 or 2 or 3)
         {
             sl = supplyLoads.FirstOrDefault(x => x.Prefix == "1");
@@ -1673,14 +1670,6 @@ public class Stand1 : Notify
             sl = supplyLoads.FirstOrDefault(x => x.Prefix == "3");
             await OutputDevice(sl, vip.Id - 7, t: tp, on: on);
         }
-
-        // if (vip.Id is 0 or 4 or 8)
-        //     await OutputDevice(ss, 1, t: tp, on: on);
-        // else if (vip.Id is 1 or 5 or 9)
-        //     await OutputDevice(ss, 2, t: tp, on: on);
-        // else if (vip.Id is 2 or 6 or 10)
-        //     await OutputDevice(ss, 3, t: tp, on: on);
-        // else if (vip.Id is 3 or 7 or 11) await OutputDevice(ss, 4, t: tp, on: on);
 
         if (tp.IsOk)
         {
@@ -1716,10 +1705,6 @@ public class Stand1 : Notify
 
         vip.StatusSmallLoad = OnOffStatus.None;
         if (sl != null) sl.StatusOnOff = OnOffStatus.None;
-        t?.Add(false);
-        return false;
-
-
         t?.Add(false);
         return false;
     }
@@ -3196,7 +3181,7 @@ public class Stand1 : Notify
             //TODO уточнить нужно ли выводить на тексбокс
             //интервал для времени устаканивания напряжений 
 
-            double delay = typeTest switch
+            var delay = typeTest switch
             {
                 //TODO уточнить про эти значение задержки 
                 TypeOfTestRun.AvailabilityCheckVip => 1000,
@@ -4621,8 +4606,8 @@ public class Stand1 : Notify
 
             if (t != null)
             {
-                //await WriteIdentCommand(relayVip, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
-                //await OutputDevice(relayVip, t: t, forcedOff: true, on: false);
+                await WriteIdentCommand(relayVip, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
+                await OutputDevice(relayVip, t: t, forcedOff: true, on: false);
             }
 
             relayVip.AllDeviceError = new AllDeviceError();
@@ -4646,9 +4631,9 @@ public class Stand1 : Notify
         if (t == null) return true;
         if (resetAll) return false;
 
-        return t.IsOk
-            ? true
-            : throw new Exception("Одно или несколько устройств  не ответили или ответили\nс ошибкой.\n");
+        return t.IsOk;
+        // ? true
+        // : throw new Exception("Одно или несколько устройств  не ответили или ответили\nс ошибкой.\n");
     }
 
     public void SerializeDevice()

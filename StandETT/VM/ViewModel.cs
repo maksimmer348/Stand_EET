@@ -308,14 +308,16 @@ public class ViewModel : Notify
 
                 if (result == MessageBoxResult.No)
                 {
-                    await stand.ResetAllTests();
+                    //TODO вернуть после отладки
+                    //await stand.ResetAllTests();
                     goToSelectTab = 0;
                     // SelectTab = 0;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await stand.ResetAllTests();
+                    //TODO вернуть после отладки
+                    //await stand.ResetAllTests();
 
                     goToSelectTab = 3;
                     // SelectTab = 3;
@@ -330,10 +332,10 @@ public class ViewModel : Notify
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
 
                 //TODO удалить послке отлалки
-                await stand.EnableLoads();
+                // await stand.EnableLoads();
                 //TODO удалить послке отлалки
             }
-            catch (Exception e) when (e.Message.Contains("номера"))
+            catch (Exception e) when (e.Message.ToLower().Contains("номера"))
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
 
@@ -413,7 +415,9 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
+                        
                     }
 
                     SelectTab = 4;
@@ -460,7 +464,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 1;
@@ -470,7 +475,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 4;
@@ -488,7 +494,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 1;
@@ -498,7 +505,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 4;
@@ -522,7 +530,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 1;
@@ -532,7 +541,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 4;
@@ -555,7 +565,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 0;
@@ -565,7 +576,8 @@ public class ViewModel : Notify
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        //TODO вернуть после отладки
+                        //await stand.ResetAllTests();
                     }
 
                     SelectTab = 3;
