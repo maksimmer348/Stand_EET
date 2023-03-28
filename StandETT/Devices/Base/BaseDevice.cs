@@ -322,7 +322,18 @@ public class BaseDevice : Notify
         Config.DataBits = dataBits;
         Config.Dtr = dtr;
     }
-
+    
+    // public void SetConfigDevice(ConfigDeviceParams cfg)
+    // {
+    //     Config.TypePort = cfg.TypePort;
+    //     Config.PortName = cfg.PortName;
+    //     Config.Baud = cfg.Baud;
+    //     Config.StopBits = cfg.StopBits;
+    //     Config.Parity = cfg.Parity;
+    //     Config.DataBits = cfg.DataBits;
+    //     Config.Dtr = cfg.Dtr;
+    // }
+    
     /// <summary>
     /// Открыть компорт устройства
     /// </summary>
@@ -403,6 +414,18 @@ public class BaseDevice : Notify
     /// <returns>Данные порта устройства</returns>
     /// <exception cref="DeviceException">Данные получить невзожноно</exception>
     public virtual ConfigDeviceParams GetConfigDevice()
+    {
+        try
+        {
+            return Config;
+        }
+        catch (Exception)
+        {
+            throw new Exception("Файл конфига отсутствует");
+        }
+    }
+    
+    public virtual ConfigDeviceParams GetConfigRelayVip()
     {
         try
         {
@@ -585,4 +608,6 @@ public class BaseDevice : Notify
     }
 
     #endregion
+
+  
 }

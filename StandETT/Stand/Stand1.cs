@@ -746,9 +746,9 @@ public class Stand1 : Notify
 
         //вычленяем нагрузки из общего списка приборов тк они висят на одной шине и
         //обычные методы проверки порта и команд не подходят
-        supplyLoads = new(devices.Where(d => d.Name.Contains("SL")));
+      
         //проверка порта первой нагрузки тк они все висят на одном порту
-        await CheckConnectPort(supplyLoads[0], t: t);
+        //await CheckConnectPort(supplyLoads[0], t: t);
 
         if (t.IsOk)
         {
@@ -942,7 +942,8 @@ public class Stand1 : Notify
                 innerCountCheck, innerDelay, t, "Get curr");
         //вкл бп
         await OutputDevice(currentDevice, t: t);
-
+        //
+        
         //волтьтметр
         currentDevice = devices.GetTypeDevice<VoltMeter>();
         //вытаскиваем конфиги вольтметра
@@ -951,7 +952,8 @@ public class Stand1 : Notify
         if (t.IsOk)
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
                 innerCountCheck, innerDelay, t, "Get func", "Get volt meter");
-
+        //
+        
         //переключение волтьтамеперметра в режим вольтметра
         currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
         //вытаскиваем конфиги вольтамперметра
@@ -960,6 +962,7 @@ public class Stand1 : Notify
         if (t.IsOk)
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
                 innerCountCheck, innerDelay, t, "Get func", "Get volt meter");
+        //
 
         //цикл замеров 
         foreach (var vipTested in vipsTested)
@@ -968,10 +971,9 @@ public class Stand1 : Notify
         }
 
         testVipPlay = false;
-
         if (resetAll) return false;
-
         string stopString;
+        
         if (vipsStopped.Any())
         {
             //
@@ -3249,13 +3251,11 @@ public class Stand1 : Notify
         TempChecks tpr = TempChecks.Start();
 
         var isError = false;
-
+        
         decimal voltage1 = vip.VoltageOut1;
         decimal voltage2 = vip.VoltageOut2;
         decimal current = vip.CurrentIn;
         decimal temperature = vip.Temperature;
-
-        //TODO сделать потом - елси от какогото прибора нет ответа проверить его наличие 
 
         // Debug.WriteLine($"Установка приборов/{s.ElapsedMilliseconds} mc /{typeTest}/Вип - {vip.Id}");
         // s.Restart();
@@ -3536,7 +3536,6 @@ public class Stand1 : Notify
             // //
 
             //TODO вернуть когда или если появится термометр, если нет то удалить
-
             //задание чекера для температуры
             TempChecks tpt = TempChecks.Start();
 
@@ -3550,10 +3549,17 @@ public class Stand1 : Notify
             // }
             //TODO вернуть когда или если появится термометр
 
+            //
+            SetPriorityStatusStand(2, $"Тест Випа", percentSubTest: 100,
+                colorSubTest: Brushes.Violet,
+                currentVipSubTest: vip, clearAll: true);
+            //
+            
             //если какойто из чекеров false
             if (!tpv1.IsOk || !tpv2.IsOk || !tpc.IsOk || !tpt.IsOk)
             {
-                //вычлючиь вип со сбоем
+                
+                //выключить вип со сбоем
                 await OutputDevice(vip.Relay, t: tpr, on: false);
 
                 if (tpr.IsOk)

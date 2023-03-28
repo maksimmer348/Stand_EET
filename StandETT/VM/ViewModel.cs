@@ -679,12 +679,16 @@ public class ViewModel : Notify
 
             NameDevice = selectDevice.Name;
             Prefix = selectDevice.Prefix;
-            PortName = selectDevice.GetConfigDevice().PortName;
-            Parity = selectDevice.GetConfigDevice().Baud;
-            StopBits = selectDevice.GetConfigDevice().StopBits;
-            Parity = selectDevice.GetConfigDevice().Parity;
-            DataBits = selectDevice.GetConfigDevice().DataBits;
-            Dtr = selectDevice.GetConfigDevice().Dtr;
+            
+            if (AllDevices[index] is not RelayVip)
+            {
+                PortName = selectDevice.GetConfigDevice().PortName;
+                Parity = selectDevice.GetConfigDevice().Baud;
+                StopBits = selectDevice.GetConfigDevice().StopBits;
+                Parity = selectDevice.GetConfigDevice().Parity;
+                DataBits = selectDevice.GetConfigDevice().DataBits;
+                Dtr = selectDevice.GetConfigDevice().Dtr;
+            }
 
             AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Baud, StopBits, Parity,
                 DataBits, Dtr);
@@ -693,11 +697,11 @@ public class ViewModel : Notify
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
             OnPropertyChanged(nameof(SelectedDeviceCmd));
-
-
+            
             // stand.timeMachine.CountChecked = CountChecked;
             // stand.timeMachine.AllTimeChecked = AllTimeChecked;
 
+            
             stand.SerializeDevice();
             // stand.SerializeTime();
         }
