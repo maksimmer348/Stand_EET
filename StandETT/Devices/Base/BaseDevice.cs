@@ -408,7 +408,7 @@ public class BaseDevice : Notify
         {
             return Config;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             throw new Exception("Файл конфига отсутствует");
         }

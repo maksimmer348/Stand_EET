@@ -470,7 +470,7 @@ class CreatorAllDevicesAndLib
                 BigLoadValues = new BigLoadValues("300", "4", "2", "40", "1", "0"),
                 HeatValues = new HeatValues("1", "0"),
                 SupplyValues = new SupplyValues("2", "1", "3", "0.5", "1", "0"),
-                VoltCurrentValues = new VoltCurrentMeterValues("100", "100", "k", "1", "0"),
+                VoltCurrentValues = new VoltCurrentMeterValues("100", "100", "k", "75","1", "0"),
                 VoltValues = new VoltMeterValues("100", "1", "0")
             });
             typeVip70.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);
@@ -503,7 +503,7 @@ class CreatorAllDevicesAndLib
                 BigLoadValues = new BigLoadValues("200", "3.3", "1.65", "20", "1", "0"),
                 HeatValues = new HeatValues("1", "0"),
                 SupplyValues = new SupplyValues("3", "2", "1", "4", "0.5", "0"),
-                VoltCurrentValues = new VoltCurrentMeterValues("10", "100", "k", "1", "0"),
+                VoltCurrentValues = new VoltCurrentMeterValues("10", "100", "k","75", "1", "0"),
                 VoltValues = new VoltMeterValues("100", "1", "0")
             });
             typeVip71.BaseDeviceValues.Add(typeVip70.GetDeviceParameters().BigLoadValues);

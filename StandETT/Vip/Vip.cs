@@ -204,35 +204,53 @@ public class Vip : Notify
     public StatusChannelVipTest StatusChannelVipTest
     {
         get => statusChannelVipTest;
-        set => Set(ref statusChannelVipTest, value, nameof(StatusColorChannel1), nameof(StatusColorChannel2));
+        set => Set(ref statusChannelVipTest, value, nameof(StatusColorChannelV1), nameof(StatusColorChannelV2), nameof(StatusColorChannelA));
     }
 
 
     [JsonIgnore]
-    public Brush StatusColorChannel1
+    public Brush StatusColorChannelV1
     {
         get
         {
             return StatusChannelVipTest switch
             {
-                StatusChannelVipTest.One => Brushes.Green,
-                StatusChannelVipTest.Two => Brushes.Gold,
-                StatusChannelVipTest.OneError => Brushes.Red,
+                StatusChannelVipTest.ChannelV1Ok => Brushes.Green,
+                StatusChannelVipTest.ChannelV2Ok => Brushes.Gold,
+                StatusChannelVipTest.ChannelAOk => Brushes.Gold,
+                StatusChannelVipTest.ChannelV1Error => Brushes.Red,
                 _ => Brushes.DarkGray
             };
         }
     }
 
     [JsonIgnore]
-    public Brush StatusColorChannel2
+    public Brush StatusColorChannelV2
     {
         get
         {
             return StatusChannelVipTest switch
             {
-                StatusChannelVipTest.One => Brushes.Gold,
-                StatusChannelVipTest.Two => Brushes.Green,
-                StatusChannelVipTest.TwoError => Brushes.Red,
+                StatusChannelVipTest.ChannelV1Ok => Brushes.Gold,
+                StatusChannelVipTest.ChannelV2Ok => Brushes.Green,
+                StatusChannelVipTest.ChannelAOk => Brushes.Gold,
+                StatusChannelVipTest.ChannelV2Error => Brushes.Red,
+                _ => Brushes.DarkGray
+            };
+        }
+    }
+    
+    [JsonIgnore]
+    public Brush StatusColorChannelA
+    {
+        get
+        {
+            return StatusChannelVipTest switch
+            {
+                StatusChannelVipTest.ChannelV1Ok => Brushes.Gold,
+                StatusChannelVipTest.ChannelAOk => Brushes.Green,
+                StatusChannelVipTest.ChannelV2Ok => Brushes.Gold,
+                StatusChannelVipTest.ChannelAError => Brushes.Red,
                 _ => Brushes.DarkGray
             };
         }

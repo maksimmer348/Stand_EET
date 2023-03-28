@@ -290,7 +290,7 @@ public class VoltCurrentMeterValues : BaseDeviceValues
 
     public string VoltMaxLimit
     {
-        get { return voltMaxLimit; }
+        get => voltMaxLimit;
         set
         {
             SetFuncGDM();
@@ -298,7 +298,6 @@ public class VoltCurrentMeterValues : BaseDeviceValues
         }
     }
     
-
     private string termocoupleType;
 
     public string TermocoupleType
@@ -307,13 +306,15 @@ public class VoltCurrentMeterValues : BaseDeviceValues
         set { termocoupleType = value; }
     }
     //
+    public string ShuntResistance { get; set; }
 
-    public VoltCurrentMeterValues(string currMaxLimit, string voltMaxLimit, string termocoupleType, string outputOn,
+    public VoltCurrentMeterValues(string currMaxLimit, string voltMaxLimit, string termocoupleType,string shuntResistance, string outputOn,
         string outputOff) : base(outputOn, outputOff)
     {
         CurrMaxLimit = currMaxLimit;
         VoltMaxLimit = voltMaxLimit;
         TermocoupleType = termocoupleType;
+        ShuntResistance = shuntResistance;
         SetFuncGDM();
     }
     

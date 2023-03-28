@@ -330,12 +330,8 @@ public class ViewModel : Notify
             try
             {
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
-
-                //TODO удалить послке отлалки
-                // await stand.EnableLoads();
-                //TODO удалить послке отлалки
             }
-            catch (Exception e) when (e.Message.ToLower().Contains("номера"))
+            catch (Exception e) when (e.Message.ToLower().Contains("номера") || e.Message.ToLower().Contains("тип"))
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
 
@@ -376,36 +372,46 @@ public class ViewModel : Notify
             try
             {
                 //--available
+                
                 available = await stand.AvailabilityCheckVip();
-
-                // //TODO удалить
+                
+                //TODO вернуть
                 // if (available)
                 // {
-                //     stand.StartMeasurementCycle();
-                // }
-                //
-                // //TODO удалить
-                // return;
+                // //--zero
 
-                if (available)
+                //TODO удалить после отладки
+                return;
+                
+                bool mesZero = await stand.MeasurementZero();
+
+                if (mesZero)
                 {
-                    // //--zero
-                    bool mesZero = await stand.MeasurementZero();
-
-                    if (mesZero)
-                    {
-                        // var heat = await stand.PrepareMeasurementCycle();
-                        // if (heat)
+                    // TODO вернуть
+                    // var heat = await stand.PrepareMeasurementCycle();
+                    //
+                    // if (heat)
+                    // {
+                    // TODO вернуть 
+                    //loads = await stand.EnableLoads();
+                        
+                        // if (loads)
                         // {
-                        ////--cycle--cucle
-                        stand.StartMeasurementCycle();
+                            //TODO вернуть
+                            ////--cycle--cucle
+                            stand.StartMeasurementCycle();
                         // }
-                    }
+                        // TODO вернуть    
+                    //}
                 }
+
+                //TODO вернуть
+                //}
 
                 //stand.StartMeasurementCycle();
             }
-            catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
+            catch
+                (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
                 const string caption = "Ошибка настройки парамтеров";
                 var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
@@ -417,7 +423,6 @@ public class ViewModel : Notify
                     {
                         //TODO вернуть после отладки
                         //await stand.ResetAllTests();
-                        
                     }
 
                     SelectTab = 4;
@@ -619,7 +624,6 @@ public class ViewModel : Notify
     }
 
     public ICommand CloseActionWindowCmd { get; }
-
     public bool StopAll { get; set; }
 
     Task OnCloseActionWindowCmdExecuted(object p)
@@ -637,19 +641,19 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+//--
 
     #region Команды --Подключение устройств --0 tab
 
     #endregion
 
-    //--
+//--
 
     #region Команды --Подключение Випов --1 tab
 
     #endregion
 
-    //--
+//--
 
     #region Команды --Настройки устройств --2 tab
 
@@ -795,7 +799,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //-
+//-
 
     #region Команды --Настройки Типа Випов --3 tab
 
@@ -834,7 +838,7 @@ public class ViewModel : Notify
             SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
                 CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
             VoltCurrentValues =
-                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType,
+                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType, ShuntResistance,
                     OutputOnThermoCurrent,
                     OutputOffThermoCurrent),
             VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
@@ -919,11 +923,13 @@ public class ViewModel : Notify
             TermocoupleType = null;
             OutputOnThermoCurrent = null;
             OutputOffThermoCurrent = null;
-
+            ShuntResistance = null;
 
             VoltMeterVoltMax = null;
             OutputOffVoltmeter = null;
+
             OutputOnVoltMeter = null;
+
 
             CurrentTypeVipSettings = 0;
         }
@@ -940,15 +946,15 @@ public class ViewModel : Notify
 
     #endregion
 
-    //---
+//---
 
     #region --Поля
 
-    //--
+//--
 
     #region Поля --Общие
 
-    //--
+//--
 
     #region Управление окнами
 
@@ -978,7 +984,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+//--
 
     #region Управление --вкладками
 
@@ -1028,7 +1034,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+//--
 
     #region --Статусы стенда общие
 
@@ -1042,12 +1048,10 @@ public class ViewModel : Notify
     /// </summary>
     public double PercentCurrentSubTest => stand.PercentCurrentSubTest;
 
-
     /// <summary>
     /// Уведомляет сколько процентов текущего теста прошло
     /// </summary>
     public double PercentCurrentReset => stand.PercentCurrentReset;
-
 
     /// <summary>
     /// Уведомляет текстом какое устройство проходит тест
@@ -1092,7 +1096,6 @@ public class ViewModel : Notify
 
     public string SubTestText => stand.SubTestText;
     public string CurrentCountChecked => stand.CurrentCountChecked;
-
     private string countTimes = "3";
 
     public string CountChecked
@@ -1109,7 +1112,7 @@ public class ViewModel : Notify
         set => Set(ref allTimeChecked, value);
     }
 
-    //
+//
     private double selectTypeVipIndex;
 
     /// <summary>
@@ -1130,8 +1133,8 @@ public class ViewModel : Notify
     {
         get => testRun;
 
-        //TODO Вернуть убранно чтобы разлоичить вкладки
-        // set { testRun = value; }
+//TODO Вернуть убранно чтобы разлоичить вкладки
+// set { testRun = value; }
         set
         {
             if (!Set(ref testRun, value)) return;
@@ -1381,7 +1384,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+//--
 
     #region Управление --кнопками
 
@@ -1419,7 +1422,7 @@ public class ViewModel : Notify
 
     #endregion
 
-    //--
+//--
 
     #endregion
 
@@ -1828,16 +1831,12 @@ public class ViewModel : Notify
     }
 
     public Brush ProgressColor => stand.ProgressColor;
-
-
     public Brush ProgressSubColor => stand.ProgressSubColor;
-
-
     public Brush ProgressResetColor => stand.ProgressResetColor;
 
     #endregion
 
-    //--
+//--
 
     #endregion
 
@@ -1912,11 +1911,11 @@ public class ViewModel : Notify
                 TermocoupleType = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.TermocoupleType;
                 OutputOnThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOn;
                 OutputOffThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOff;
+                ShuntResistance = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.ShuntResistance;
 
                 VoltMeterVoltMax = selectTypeVipSettings.GetDeviceParameters().VoltValues.VoltMaxLimit;
                 OutputOnVoltMeter = selectTypeVipSettings.GetDeviceParameters().VoltValues.OutputOn;
                 OutputOffVoltmeter = selectTypeVipSettings.GetDeviceParameters().VoltValues.OutputOff;
-
 
                 //обновление типа випа выбранного
                 selectedTypeVips.Source = SelectTypeVipSettings?.Name;
@@ -1931,7 +1930,6 @@ public class ViewModel : Notify
 
     public string TypeVipName { get; set; }
     private readonly CollectionViewSource selectedTypeVips = new();
-
     private string reportNum;
 
     public string ReportNum
@@ -1981,7 +1979,6 @@ public class ViewModel : Notify
         set => Set(ref availabilityMaxCurrentIn, value);
     }
 
-
     private string maxCurrentIn;
 
     public string MaxCurrentIn
@@ -2027,7 +2024,6 @@ public class ViewModel : Notify
     }
 
     private bool voltageOuе2Using;
-
     private string percentAccuracyVoltages;
 
     public string PercentAccuracyVoltages
@@ -2043,7 +2039,6 @@ public class ViewModel : Notify
         get => percentAccuracyTemperature;
         set => Set(ref percentAccuracyTemperature, value);
     }
-
 
     private string temperature;
 
@@ -2068,7 +2063,6 @@ public class ViewModel : Notify
         get => testAllTime;
         set => Set(ref testAllTime, value);
     }
-
 
     private TimeSpan testIntervalTime;
 
@@ -2284,7 +2278,6 @@ public class ViewModel : Notify
         set => Set(ref currentMeterCurrentMax, value);
     }
 
-
     private string termocoupleType;
 
     /// <summary>
@@ -2318,6 +2311,17 @@ public class ViewModel : Notify
         set => Set(ref outputOffVoltmeter, value);
     }
 
+    private string shuntResistance;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string ShuntResistance
+    {
+        get => shuntResistance;
+        set => Set(ref shuntResistance, value);
+    }
+
     public string TimeTestStart => stand.TimeTestStart;
     public string TimeTestNext => stand.TimeTestNext;
     public string TimeTestStop => stand.TimeTestStop;
@@ -2326,5 +2330,5 @@ public class ViewModel : Notify
 
     #endregion
 
-    //---
+//---
 }

@@ -9,4 +9,12 @@ public class RelayMeter : BaseDevice
     {
         IsDeviceType = $"Набор реле измерений";
     }
+    
 }
+
+public enum SetTestChannel
+{
+    ChannelV1,
+    ChannelV2,
+    ChannelA
+} 

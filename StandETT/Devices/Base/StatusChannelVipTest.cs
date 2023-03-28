@@ -3,8 +3,10 @@
 public enum StatusChannelVipTest
 {
     None = 0,
-    One,
-    OneError,
-    Two,
-    TwoError
+    ChannelV1Ok,
+    ChannelV1Error,
+    ChannelV2Ok,
+    ChannelV2Error,
+    ChannelAOk,
+    ChannelAError
 }
