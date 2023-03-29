@@ -20,23 +20,12 @@ public class RelayVip : BaseDevice
         bool dtr = true)
     {
         MainRelay.Config.TypePort = typePort;
-        MainRelay.Config.PortName = $"{portName}";
+        MainRelay.Config.PortName = $"COM{portName}";
         MainRelay.Config.Baud = baud;
         MainRelay.Config.StopBits = stopBits;
         MainRelay.Config.Parity = parity;
         MainRelay.Config.DataBits = dataBits;
         MainRelay.Config.Dtr = dtr;
-    }
-    
-    public virtual void SetConfigDevice(ConfigDeviceParams cfg)
-    {
-        MainRelay.Config.TypePort = cfg.TypePort;
-        MainRelay.Config.PortName = cfg.PortName;
-        MainRelay.Config.Baud = cfg.Baud;
-        MainRelay.Config.StopBits = cfg.StopBits;
-        MainRelay.Config.Parity = cfg.Parity;
-        MainRelay.Config.DataBits = cfg.DataBits;
-        MainRelay.Config.Dtr = cfg.Dtr;
     }
 
     public override void Close()

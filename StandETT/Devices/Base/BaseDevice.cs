@@ -315,7 +315,7 @@ public class BaseDevice : Notify
         bool dtr = true)
     {
         Config.TypePort = typePort;
-        Config.PortName = $"{portName}";
+        Config.PortName = $"COM{portName}";
         Config.Baud = baud;
         Config.StopBits = stopBits;
         Config.Parity = parity;
@@ -396,6 +396,7 @@ public class BaseDevice : Notify
         }
 
         SetInvoke();
+        
         port.SetPort(Config.PortName, Config.Baud, Config.StopBits, Config.Parity, Config.DataBits);
         port.Dtr = true;
     }
@@ -414,18 +415,6 @@ public class BaseDevice : Notify
     /// <returns>Данные порта устройства</returns>
     /// <exception cref="DeviceException">Данные получить невзожноно</exception>
     public virtual ConfigDeviceParams GetConfigDevice()
-    {
-        try
-        {
-            return Config;
-        }
-        catch (Exception)
-        {
-            throw new Exception("Файл конфига отсутствует");
-        }
-    }
-    
-    public virtual ConfigDeviceParams GetConfigRelayVip()
     {
         try
         {

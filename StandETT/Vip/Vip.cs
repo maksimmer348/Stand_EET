@@ -77,6 +77,8 @@ public class Vip : Notify
 
             bool extraError = false;
 
+            ErrorStatusVip = " внутр. ошибка - ";
+                
             if (ErrorVip.CurrentInHigh)
             {
                 ErrorStatusVip += "Iвх.↑";

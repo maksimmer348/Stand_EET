@@ -1493,7 +1493,8 @@ public class ViewModel : Notify
 
             try
             {
-                PortName = selectDevice.GetConfigDevice().PortName;
+                PortName = selectDevice.GetConfigDevice().PortName.Replace("COM", "");
+                //PortName = selectDevice.GetConfigDevice().PortName;
                 Baud = selectDevice.GetConfigDevice().Baud;
                 StopBits = selectDevice.GetConfigDevice().StopBits;
                 Parity = selectDevice.GetConfigDevice().Parity;

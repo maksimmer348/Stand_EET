@@ -746,7 +746,7 @@ public class Stand1 : Notify
 
         //вычленяем нагрузки из общего списка приборов тк они висят на одной шине и
         //обычные методы проверки порта и команд не подходят
-      
+
         //проверка порта первой нагрузки тк они все висят на одном порту
         //await CheckConnectPort(supplyLoads[0], t: t);
 
@@ -791,15 +791,15 @@ public class Stand1 : Notify
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
         //TODO удалить после отладки
-        int vn = 4;
-        foreach (var vip in vips)
-        {
-            // if (vip.Id is > 3 and < 8)
-            // {
-            vip.Name = vn.ToString();
-            vn++;
-            // }
-        }
+        // int vn = 4;
+        // foreach (var vip in vips)
+        // {
+        //     // if (vip.Id is > 3 and < 8)
+        //     // {
+        //     vip.Name = vn.ToString();
+        //     vn++;
+        //     // }
+        // }
 
         ReportNum = "отчет Тест";
         //TODO удалить после отладки
@@ -943,7 +943,7 @@ public class Stand1 : Notify
         //вкл бп
         await OutputDevice(currentDevice, t: t);
         //
-        
+
         //волтьтметр
         currentDevice = devices.GetTypeDevice<VoltMeter>();
         //вытаскиваем конфиги вольтметра
@@ -953,7 +953,7 @@ public class Stand1 : Notify
             await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
                 innerCountCheck, innerDelay, t, "Get func", "Get volt meter");
         //
-        
+
         //переключение волтьтамеперметра в режим вольтметра
         currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
         //вытаскиваем конфиги вольтамперметра
@@ -973,7 +973,7 @@ public class Stand1 : Notify
         testVipPlay = false;
         if (resetAll) return false;
         string stopString;
-        
+
         if (vipsStopped.Any())
         {
             //
@@ -3251,7 +3251,7 @@ public class Stand1 : Notify
         TempChecks tpr = TempChecks.Start();
 
         var isError = false;
-        
+
         decimal voltage1 = vip.VoltageOut1;
         decimal voltage2 = vip.VoltageOut2;
         decimal current = vip.CurrentIn;
@@ -3276,9 +3276,9 @@ public class Stand1 : Notify
         // TempChecks tpe = TempChecks.Start();
         // //алгоритм проверки текущего випа на внутренние ошибки
         // if (tp.IsOk)
-        //   await GetErrorInVip(vip, t: tp, te: tpe);
+        //     await GetErrorInVip(vip, t: tp, te: tpe);
         //
-        // if (!tpe.IsOk && tp.IsOk tpr.ISOK)
+        // if (!tpe.IsOk && tp.IsOk && tpr.IsOk)
         // {
         //     try
         //     {
@@ -3554,11 +3554,10 @@ public class Stand1 : Notify
                 colorSubTest: Brushes.Violet,
                 currentVipSubTest: vip, clearAll: true);
             //
-            
+
             //если какойто из чекеров false
             if (!tpv1.IsOk || !tpv2.IsOk || !tpc.IsOk || !tpt.IsOk)
             {
-                
                 //выключить вип со сбоем
                 await OutputDevice(vip.Relay, t: tpr, on: false);
 

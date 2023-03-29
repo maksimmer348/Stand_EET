@@ -196,19 +196,16 @@ class CreatorAllDevicesAndLib
 
             serializer.SerializeDevices(temp);
         }
-        // else
-        // {
-        //     // var relayVip = deserializeDevices.FirstOrDefault(x => x is RelayVip);
-        //     // if (relayVip != null)
-        //     // {
-        //     //     mainRelayVip.SetConfigDevice(relayVip.Config.TypePort, relayVip.Config.PortName, relayVip.Config.Baud, relayVip.Config.StopBits,  relayVip.Config.Parity,  relayVip.Config.DataBits, relayVip.Config.Dtr);
-        //     // }
-        //     //
-        //     // temp = deserializeDevices;
-        // }
-        //
-
-        mainRelayVip.SetConfigDevice(TypePort.SerialInput, "COM130", 9600, 1, 0, 8);
+        else
+        {
+            var relayVip = deserializeDevices.FirstOrDefault(x => x is RelayVip);
+            if (relayVip != null)
+            {
+                mainRelayVip.SetConfigDevice(TypePort.SerialInput, relayVip.Config.PortName, relayVip.Config.Baud, relayVip.Config.StopBits,  relayVip.Config.Parity,  relayVip.Config.DataBits, relayVip.Config.Dtr);
+            }
+            
+            temp = deserializeDevices;
+        }
 
         InvokeDevices(temp);
         return temp;
