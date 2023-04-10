@@ -6,5 +6,6 @@ namespace StandETT;
 public enum TypeCmd
 {
     Text,
-    Hex
+    Hex,
+    None
 }

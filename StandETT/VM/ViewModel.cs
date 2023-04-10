@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -13,7 +16,7 @@ using System.Windows.Media;
 
 namespace StandETT;
 
-public class ViewModel : Notify
+public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 {
     //---
 
@@ -123,16 +126,48 @@ public class ViewModel : Notify
         {
             TestRun = stand.TestRun;
         }
+
+        if (e.PropertyName == nameof(RelaySwitch))
+        {
+            RelaySwitch = stand.RelaySwitch;
+        }
     }
 
     private double selectTab;
 
+    //--selecttab--tab
     /// <summary>
     /// Какая сейчас выбрана вкладка
     /// </summary>
     public double SelectTab
     {
-        get => selectTab;
+        get
+        {
+            NextBtnEnabled = true;
+
+            if (selectTab == 0)
+            {
+            }
+            else if (selectTab == 1)
+            {
+            }
+            else if (selectTab == 2)
+            {
+            }
+            else if (selectTab == 3)
+            {
+            }
+            else if (selectTab == 4)
+            {
+            }
+            else if (selectTab == 5)
+            {
+                BackButtonText = "Назад";
+                NextBtnEnabled = false;
+            }
+
+            return selectTab;
+        }
         set => Set(ref selectTab, value);
     }
 
@@ -173,9 +208,9 @@ public class ViewModel : Notify
     /// </summary>
     void AllBtnsEnable()
     {
-        NextBtnEnabled = true;
         DeviceConfigBtnEnabled = true;
         StartTestDevicesBtnEnabled = true;
+        CloseActionWindowBtnEnabled = true;
         CancelAllTestBtnEnabled = true;
     }
 
@@ -184,9 +219,9 @@ public class ViewModel : Notify
     /// </summary>
     void AllBtnsDisable()
     {
-        NextBtnEnabled = false;
         DeviceConfigBtnEnabled = false;
         StartTestDevicesBtnEnabled = false;
+        CloseActionWindowBtnEnabled = false;
         CancelAllTestBtnEnabled = false;
     }
 
@@ -221,8 +256,6 @@ public class ViewModel : Notify
 
     bool CanNextCmdExecuted(object p)
     {
-        // return TestRun == TypeOfTestRun.PrimaryCheckDevicesReady ||
-        //        TestRun == TypeOfTestRun.PrimaryCheckVipsReady;
         return true;
     }
 
@@ -235,7 +268,9 @@ public class ViewModel : Notify
     async Task OnCancelAllTestCmdExecuted(object p)
     {
         CancelAllTestBtnEnabled = false;
+
         await stand.ResetAllTests();
+
         CancelAllTestBtnEnabled = true;
     }
 
@@ -259,8 +294,9 @@ public class ViewModel : Notify
         Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
         {
             await stand.ResetAllTests();
+
             const string caption = "Тесты завершены с ошибкой замеров!";
-            var result = MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
         }));
     }
 
@@ -269,6 +305,7 @@ public class ViewModel : Notify
         Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
         {
             await stand.ResetAllTests();
+
             const string caption = "Тесты завершены с ошибкой устройств!";
             var result = MessageBox.Show(message + "Перейти в настройки устройств?", caption, MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -280,8 +317,9 @@ public class ViewModel : Notify
         Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
         {
             await stand.ResetAllTests();
+
             const string caption = "Тесты завершены без ошибок!";
-            var result = MessageBox.Show(message, caption, MessageBoxButton.OK);
+            MessageBox.Show(message, caption, MessageBoxButton.OK);
         }));
     }
 
@@ -293,34 +331,30 @@ public class ViewModel : Notify
     async Task OnStartTestDevicesCmdExecuted(object p)
     {
         bool available = false;
+
         if (SelectTab == 0)
         {
             try
             {
+                //--device
                 await stand.PrimaryCheckDevices(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
             catch (Exception e)
             {
                 string caption = "Ошибка предварительной проверки устройств";
-
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
                 {
-                    //TODO вернуть после отладки
-                    //await stand.ResetAllTests();
+                    await stand.ResetAllTests(true);
                     goToSelectTab = 0;
-                    // SelectTab = 0;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    //TODO вернуть после отладки
-                    //await stand.ResetAllTests();
-
+                    await stand.ResetAllTests(true);
                     goToSelectTab = 3;
-                    // SelectTab = 3;
                 }
             }
         }
@@ -329,41 +363,35 @@ public class ViewModel : Notify
         {
             try
             {
+                //--vips
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
             catch (Exception e) when (e.Message.ToLower().Contains("номера") || e.Message.ToLower().Contains("тип"))
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
-
-                var result = MessageBox.Show(e.Message, caption,
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception e) when (e.Message.ToLower().Contains("отчет"))
             {
                 const string caption = "Ошибка создания отчета";
-
-                var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
-
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
-
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
                 {
-                    //TODO вернуть после отладки
-                    //await stand.ResetAllTests();
-                    SelectTab = 1;
+                    await stand.ResetAllTests(true);
+                    goToSelectTab = 1;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    //TODO вернуть после отладки
-                    //await stand.ResetAllTests();
-                    SelectTab = 3;
+                    await stand.ResetAllTests(true);
+                    goToSelectTab = 3;
                 }
             }
         }
@@ -372,46 +400,23 @@ public class ViewModel : Notify
             try
             {
                 //--available
-                
                 available = await stand.AvailabilityCheckVip();
-                
-                //TODO вернуть
-                // if (available)
-                // {
-                // //--zero
 
-                //TODO удалить после отладки
-                return;
-                
-                bool mesZero = await stand.MeasurementZero();
-
-                if (mesZero)
+                if (available)
                 {
-                    // TODO вернуть
-                    // var heat = await stand.PrepareMeasurementCycle();
-                    //
-                    // if (heat)
+                    //--zero
+                    bool mesZero = await stand.MeasurementZero();
+
+                    //TODO вернуть после отладки
+                    // if (mesZero)
                     // {
-                    // TODO вернуть 
-                    //loads = await stand.EnableLoads();
-                        
-                        // if (loads)
-                        // {
-                            //TODO вернуть
-                            ////--cycle--cucle
-                            stand.StartMeasurementCycle();
-                        // }
-                        // TODO вернуть    
-                    //}
+                    //     //--mesaure--cycle
+                    //     stand.StartMeasurementCycle();
+                    // }
+                    //TODO вернуть после отладки
                 }
-
-                //TODO вернуть
-                //}
-
-                //stand.StartMeasurementCycle();
             }
-            catch
-                (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
+            catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
             {
                 const string caption = "Ошибка настройки парамтеров";
                 var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
@@ -436,18 +441,18 @@ public class ViewModel : Notify
                     caption = "Ошибка проерки наличия";
                 }
 
-                var result = MessageBox.Show(e.Message, caption,
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.OK)
                 {
+                    //TODO вернуть после отладки
                     // if (!stand.IsResetAll)
                     // {
                     //     await stand.ResetAllTests();
                     // }
-                    SelectTab = 1;
+                    //TODO вернуть после отладки
                 }
-
+                //TODO вернуть после отладки
                 // if (result == MessageBoxResult.No)
                 // {
                 //     // if (!stand.IsResetAll)
@@ -456,6 +461,7 @@ public class ViewModel : Notify
                 //     // }
                 //     SelectTab = 0;
                 // }
+                //TODO вернуть после отладки
             }
 
             catch (Exception e) when (e.Message.Contains("несколько випов"))
@@ -488,8 +494,7 @@ public class ViewModel : Notify
                 }
             }
 
-            catch (Exception e) when (e.Message.Contains("Текущий ток") ||
-                                      e.Message.Contains("Текущее напряжение"))
+            catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
             {
                 const string caption = "Ошибка 0 замера";
                 var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
@@ -527,8 +532,7 @@ public class ViewModel : Notify
                 }
 
                 var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption,
-                    MessageBoxButton.YesNo,
+                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
@@ -563,9 +567,9 @@ public class ViewModel : Notify
                 }
 
                 var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption,
-                    MessageBoxButton.YesNo,
+                var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
+
                 if (result == MessageBoxResult.No)
                 {
                     if (!stand.IsResetAll)
@@ -603,33 +607,52 @@ public class ViewModel : Notify
 
     Task OnDeviceConfigCmdExecuted(object p)
     {
-        //обработчик команды
-        //TODO отправить отсюда в настройки
+        // //обработчик команды
+        // if (SelectTab == 0)
+        // {
+        //     SelectTab = 3;
+        //     // BackButtonText = "Назад";
+        // }
+        // else if (SelectTab == 3)
+        // {
+        //     SelectTab = 0;
+        //     // BackButtonText = "Откыть конфиг";
+        // }
+        // //
+        // else if (SelectTab == 1)
+        // {
+        //     SelectTab = 4;
+        //     // BackButtonText = "Назад";
+        // }
+        // else if (SelectTab == 4)
+        // {
+        //     SelectTab = 1;
+        //     // BackButtonText = "Откыть конфиг";
+        // }
+
+        if (stand.TestRun == TypeOfTestRun.Stop)
+        {
+            SelectTab = 0;
+        }
+
         return Task.CompletedTask;
     }
 
     bool CanDeviceConfigCmdExecuted(object p)
     {
-        // return TestRun switch
-        // {
-        //     TypeOfTestRun.PrimaryCheckDevices => false,
-        //     TypeOfTestRun.PrimaryCheckVips => false,
-        //     TypeOfTestRun.DeviceOperation => false,
-        //     TypeOfTestRun.MeasurementZero => false,
-        //     TypeOfTestRun.Stoped => false,
-        //     _ => true
-        // };
-
         return true;
     }
 
+    bool StopAll { get; set; }
+
+    /// <summary>
+    /// Команда закрыть окно
+    /// </summary>
     public ICommand CloseActionWindowCmd { get; }
-    public bool StopAll { get; set; }
 
     Task OnCloseActionWindowCmdExecuted(object p)
     {
         StopAll = true;
-        //aw.Close();
         SelectTab = goToSelectTab;
         return Task.CompletedTask;
     }
@@ -641,19 +664,19 @@ public class ViewModel : Notify
 
     #endregion
 
-//--
+    //--
 
     #region Команды --Подключение устройств --0 tab
 
     #endregion
 
-//--
+    //--
 
     #region Команды --Подключение Випов --1 tab
 
     #endregion
 
-//--
+    //--
 
     #region Команды --Настройки устройств --2 tab
 
@@ -670,58 +693,64 @@ public class ViewModel : Notify
             AllDevices[index].Name = NameDevice;
             AllDevices[index].Prefix = Prefix;
             AllDevices[index].Config.PortName = PortName;
-            AllDevices[index].Config.Baud = Baud;
-            AllDevices[index].Config.StopBits = StopBits;
+            AllDevices[index].Config.Baud = Convert.ToInt32(Baud);
+            AllDevices[index].Config.StopBits = Convert.ToInt32(StopBit);
             AllDevices[index].Config.Parity = Parity;
-            AllDevices[index].Config.DataBits = DataBits;
+            AllDevices[index].Config.DataBits = Convert.ToInt32(DataBit);
             AllDevices[index].Config.Dtr = Dtr;
-
 
             NameDevice = selectDevice.Name;
             Prefix = selectDevice.Prefix;
-            
+
             if (AllDevices[index] is not RelayVip)
             {
                 PortName = selectDevice.GetConfigDevice().PortName;
-                Parity = selectDevice.GetConfigDevice().Baud;
-                StopBits = selectDevice.GetConfigDevice().StopBits;
+                Baud = selectDevice.GetConfigDevice().Baud.ToString();
+                StopBit = selectDevice.GetConfigDevice().StopBits.ToString();
                 Parity = selectDevice.GetConfigDevice().Parity;
-                DataBits = selectDevice.GetConfigDevice().DataBits;
+                DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
             }
 
-            AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Baud, StopBits, Parity,
-                DataBits, Dtr);
+            AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Convert.ToInt32(Baud),
+                Convert.ToInt32(StopBit), Parity,
+                Convert.ToInt32(DataBit), Dtr);
 
             selectedDeviceCmd.Source =
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
             OnPropertyChanged(nameof(SelectedDeviceCmd));
-            
+
+            stand.SerializeDevice();
+
+
+            //TODO добавит когда повяться время
             // stand.timeMachine.CountChecked = CountChecked;
             // stand.timeMachine.AllTimeChecked = AllTimeChecked;
-
-            
-            stand.SerializeDevice();
             // stand.SerializeTime();
+            //TODO добавит когда повяться время
         }
         catch (Exception e)
         {
             MessageBox.Show(e.Message);
         }
 
+        IsSaveDeviceMessage = "Изменения сохранены";
         return Task.CompletedTask;
     }
 
+    
     bool CanSaveSettingsCmdExecuted(object p)
     {
-        return true;
+        return Error == null; //|| !Error.Contains("устройств");
     }
 
     /// <summary>
     /// Команда добавить команду к устройству
     /// </summary>
     public ICommand AddCmdFromDeviceCmd { get; }
+
+    private TypeCmd typeCmd = TypeCmd.None;
 
     Task OnAddCmdFromDeviceCmdExecuted(object p)
     {
@@ -730,18 +759,18 @@ public class ViewModel : Notify
             //получение текущего индекса
             var index = IndexSelectCmd;
 
+            ConvertTypeCmdToEnum(TypeMessageCmdLib);
 
-            libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, DelayCmdLib,
+            libCmd.AddCommand(NameCmdLib, SelectDevice.Name, TransmitCmdLib, Convert.ToInt32(DelayCmdLib),
                 ReceiveCmdLib, IsTransmitParam,
                 terminator: SelectTerminatorTransmit.Type, receiveTerminator: SelectTerminatorReceive.Type,
-                type: TypeMessageCmdLib, isXor: IsXor, length: LengthCmdLib);
+                type: typeCmd, isXor: IsXor, length: LengthCmdLib);
 
             //обновление датагрида
             selectedDeviceCmd.Source =
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
             OnPropertyChanged(nameof(SelectedDeviceCmd));
-
 
             IndexSelectCmd = index + 1;
 
@@ -752,12 +781,44 @@ public class ViewModel : Notify
             MessageBox.Show(e.Message);
         }
 
+        RemoveCmdFromDeviceBtnEnabled = true;
+
         return Task.CompletedTask;
+    }
+
+    private void ConvertTypeCmdToEnum(string typeCmd)
+    {
+        this.typeCmd = typeCmd switch
+        {
+            "None" => TypeCmd.None,
+            "Text" => TypeCmd.Text,
+            "Hex" => TypeCmd.Hex,
+            _ => this.typeCmd
+        };
+    }
+
+    private void ConvertTypeCmdToString(TypeCmd typeCmd)
+    {
+        if (typeCmd == TypeCmd.None)
+        {
+            TypeMessageCmdLib = "None";
+        }
+
+        if (typeCmd == TypeCmd.Text)
+        {
+            TypeMessageCmdLib = "Text";
+        }
+
+        if (typeCmd == TypeCmd.Hex)
+        {
+            TypeMessageCmdLib = "Hex";
+        }
     }
 
     bool CanAddCmdFromDeviceCmdExecuted(object p)
     {
-        return true;
+        return Error == null; //|| !Error.Contains("команд");
+        // return true;
     }
 
     /// <summary>
@@ -776,7 +837,6 @@ public class ViewModel : Notify
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
 
-
             OnPropertyChanged(nameof(SelectedDeviceCmd));
 
             if (index > 0)
@@ -791,7 +851,6 @@ public class ViewModel : Notify
             MessageBox.Show(e.Message);
         }
 
-
         return Task.CompletedTask;
     }
 
@@ -803,7 +862,7 @@ public class ViewModel : Notify
 
     #endregion
 
-//-
+    //-
 
     #region Команды --Настройки Типа Випов --3 tab
 
@@ -817,17 +876,20 @@ public class ViewModel : Notify
         var typeConfig = new TypeVip();
 
         typeConfig.Name = TypeVipNameSettings;
-        typeConfig.PrepareMaxCurrentIn = Convert.ToDecimal(PrepareMaxCurrentIn);
-        typeConfig.AvailabilityMaxCurrentIn = Convert.ToDecimal(AvailabilityMaxCurrentIn);
 
-        typeConfig.MaxCurrentIn = Convert.ToDecimal(MaxCurrentIn);
-        typeConfig.PercentAccuracyCurrent = Convert.ToDecimal(PercentAccuracyCurrent);
-        typeConfig.MaxVoltageOut1 = Convert.ToDecimal(MaxVoltageOut1);
-        typeConfig.MaxVoltageOut2 = Convert.ToDecimal(MaxVoltageOut2);
-        typeConfig.PercentAccuracyVoltages = Convert.ToDecimal(PercentAccuracyVoltages);
-        typeConfig.PercentAccuracyTemperature = Convert.ToDecimal(PercentAccuracyTemperature);
 
-        typeConfig.MaxTemperature = Convert.ToDecimal(Temperature);
+        typeConfig.PrepareMaxCurrentIn = ConvertValToVip(PrepareMaxCurrentIn);
+
+        typeConfig.AvailabilityMaxCurrentIn = ConvertValToVip(AvailabilityMaxCurrentIn);
+
+        typeConfig.MaxCurrentIn = ConvertValToVip(MaxCurrentIn);
+        typeConfig.PercentAccuracyCurrent = ConvertValToVip(PercentAccuracyCurrent);
+        typeConfig.MaxVoltageOut1 = ConvertValToVip(MaxVoltageOut1);
+        typeConfig.MaxVoltageOut2 = ConvertValToVip(MaxVoltageOut2);
+        typeConfig.PercentAccuracyVoltages = ConvertValToVip(PercentAccuracyVoltages);
+        typeConfig.PercentAccuracyTemperature = ConvertValToVip(PercentAccuracyTemperature);
+
+        typeConfig.MaxTemperature = ConvertValToVip(Temperature);
 
         typeConfig.ZeroTestInterval = ZeroTestInterval;
 
@@ -835,16 +897,19 @@ public class ViewModel : Notify
         typeConfig.TestIntervalTime = TestIntervalTime;
 
         typeConfig.VoltageOut2Using = voltageOuе2Using;
+
         typeConfig.SetDeviceParameters(new DeviceParameters()
         {
             BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
+
             HeatValues = new HeatValues(OutputOnHeat, OutputOffHeat),
+
             SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
                 CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
-            VoltCurrentValues =
-                new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltMeterVoltMax, TermocoupleType, ShuntResistance,
-                    OutputOnThermoCurrent,
-                    OutputOffThermoCurrent),
+
+            VoltCurrentValues = new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltCurrentMeterVoltMax,
+                TermocoupleType, ShuntResistance, OutputOnThermoCurrent, OutputOffThermoCurrent),
+
             VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
         });
 
@@ -855,13 +920,20 @@ public class ViewModel : Notify
 
         stand.SerializeTypeVips();
         CurrentTypeVipSettings = cfgTypeVips.TypeVips.IndexOf(typeConfig);
+
         return Task.CompletedTask;
     }
 
     bool CanSaveTypeVipSettingsCmdExecuted(object p)
     {
-        return true;
+        return Error == null || !Error.Contains("параметров") && !Error.Contains("Випа") && !Error.Contains("документации");
     }
+
+    private decimal ConvertValToVip(string s)
+    {
+        return string.IsNullOrWhiteSpace(s) ? 0m : Convert.ToDecimal(PrepareMaxCurrentIn.Replace(',', '.'));
+    }
+
 
     /// <summary>
     /// Команда УДАЛИТЬ тип випа
@@ -873,7 +945,7 @@ public class ViewModel : Notify
         var index = cfgTypeVips.TypeVips.IndexOf(SelectTypeVipSettings);
 
         stand.RemoveTypeVips(SelectTypeVipSettings);
-        //AllTypeVips = standTest.ConfigVip.TypeVips;
+
         stand.SerializeTypeVips();
 
         if (index > 0)
@@ -930,6 +1002,8 @@ public class ViewModel : Notify
             ShuntResistance = null;
 
             VoltMeterVoltMax = null;
+            VoltCurrentMeterVoltMax = null;
+
             OutputOffVoltmeter = null;
 
             OutputOnVoltMeter = null;
@@ -950,15 +1024,15 @@ public class ViewModel : Notify
 
     #endregion
 
-//---
+    //---
 
     #region --Поля
 
-//--
+    //--
 
     #region Поля --Общие
 
-//--
+    //--
 
     #region Управление окнами
 
@@ -978,17 +1052,33 @@ public class ViewModel : Notify
         set => Set(ref windowVipDisabled, value);
     }
 
+    private string backButtonText = "Открыть\nконфиг";
+
+    public string BackButtonText
+    {
+        get => backButtonText;
+        set => Set(ref backButtonText, value);
+    }
+
+
     /// <summary>
     ///
     /// </summary>
     public string CaptionAction => stand.CaptionAction;
 
+    /// <summary>
+    /// Текст ошибки
+    /// </summary>
     public string ErrorMessage => stand.ErrorMessage;
+
+    /// <summary>
+    /// Текст ошибки выхода устрокйства
+    /// </summary>
     public string ErrorOutput => stand.ErrorOutput;
 
     #endregion
 
-//--
+    //--
 
     #region Управление --вкладками
 
@@ -1028,7 +1118,7 @@ public class ViewModel : Notify
     private bool settingsTab;
 
     /// <summary>
-    /// Включатель влкадки  настроек 3
+    /// Включатель влкадки настроек 3
     /// </summary>
     public bool SettingsTab
     {
@@ -1038,27 +1128,27 @@ public class ViewModel : Notify
 
     #endregion
 
-//--
+    //--
 
     #region --Статусы стенда общие
 
     /// <summary>
-    /// Уведомляет сколько процентов текущего теста прошло
+    /// Текст сколько процентов текущего теста прошло
     /// </summary>
     public double PercentCurrentTest => stand.PercentCurrentTest;
 
     /// <summary>
-    /// Уведомляет сколько процентов текущего сабтеста прошло
+    /// Текст сколько процентов текущего сабтеста прошло
     /// </summary>
     public double PercentCurrentSubTest => stand.PercentCurrentSubTest;
 
     /// <summary>
-    /// Уведомляет сколько процентов текущего теста прошло
+    /// Текст сколько процентов текущего теста прошло
     /// </summary>
     public double PercentCurrentReset => stand.PercentCurrentReset;
 
     /// <summary>
-    /// Уведомляет текстом какое устройство проходит тест
+    /// Текст текстом какое устройство проходит тест
     /// </summary>
     public string TestCurrentDevice
     {
@@ -1090,7 +1180,7 @@ public class ViewModel : Notify
     private string textCurrentTest;
 
     /// <summary>
-    /// Уведомляет текстом этап тестов
+    /// Текст этап тестов
     /// </summary>
     public string TextCurrentTest
     {
@@ -1098,10 +1188,21 @@ public class ViewModel : Notify
         set => Set(ref textCurrentTest, value);
     }
 
+    /// <summary>
+    /// Текст субтест
+    /// </summary>
     public string SubTestText => stand.SubTestText;
+
+    /// <summary>
+    /// Текст текущее количество проверок
+    /// </summary>
     public string CurrentCountChecked => stand.CurrentCountChecked;
+
     private string countTimes = "3";
 
+    /// <summary>
+    /// Текст количество перепроверок
+    /// </summary>
     public string CountChecked
     {
         get => countTimes;
@@ -1110,13 +1211,17 @@ public class ViewModel : Notify
 
     private string allTimeChecked = "3000";
 
+    /// <summary>
+    /// Текстбокс времени проверки 
+    /// </summary>
     public string AllTimeChecked
     {
         get => allTimeChecked;
         set => Set(ref allTimeChecked, value);
     }
 
-//
+    //
+
     private double selectTypeVipIndex;
 
     /// <summary>
@@ -1128,17 +1233,39 @@ public class ViewModel : Notify
         set => Set(ref selectTypeVipIndex, value);
     }
 
+    private bool relaySwitch;
+
+    public bool RelaySwitch
+    {
+        get => relaySwitch;
+        set
+        {
+            if (!Set(ref relaySwitch, value)) return;
+            {
+                if (stand.RelaySwitch)
+                {
+                    CancelAllTestBtnEnabled = false;
+                }
+                else
+                {
+                    CancelAllTestBtnEnabled = true;
+                }
+            }
+        }
+    }
+
+    //--run--tr--testrun--
     private TypeOfTestRun testRun = TypeOfTestRun.Stop;
 
     /// <summary>
-    /// Уведомляет о просодимом тесте прееключает вкладки
+    /// Уведомляет о проводимом тесте прееключает вкладки, выключает кнопки
     /// </summary>
     public TypeOfTestRun TestRun
     {
         get => testRun;
 
-//TODO Вернуть убранно чтобы разлоичить вкладки
-// set { testRun = value; }
+        //TODO Вернуть убранно чтобы разлоичить вкладки
+        // set { testRun = value; }
         set
         {
             if (!Set(ref testRun, value)) return;
@@ -1146,13 +1273,14 @@ public class ViewModel : Notify
 
             if (stand.TestRun == TypeOfTestRun.Stop)
             {
-                TextCurrentTest = "Стенд остановлен, Ок!";
-                // //
-                // AllTabsDisable();
-                // AllBtnsEnable();
-                // //
-                // CancelAllTestBtnEnabled = false;
-                // PrimaryCheckDevicesTab = true;
+                TextCurrentTest = "Стенд остановлен";
+                BackButtonText = "Назад";
+
+                //AllTabsDisable();
+                PrimaryCheckDevicesTab = true;
+
+                AllBtnsEnable();
+                CancelAllTestBtnEnabled = false;
             }
 
             else if (stand.TestRun == TypeOfTestRun.Stopped)
@@ -1161,11 +1289,12 @@ public class ViewModel : Notify
 
                 StopAll = false;
                 SelectTab = 5;
-                // //
+
+
                 // AllTabsDisable();
-                // AllBtnsDisable();
-                // //
                 // PrimaryCheckDevicesTab = true;
+
+                AllBtnsDisable();
             }
 
             //    else if (stand.TestRun == TypeOfTestRun.None)
@@ -1388,7 +1517,7 @@ public class ViewModel : Notify
 
     #endregion
 
-//--
+    //--
 
     #region Управление --кнопками
 
@@ -1416,6 +1545,16 @@ public class ViewModel : Notify
         set => Set(ref cancelAllTestEnabled, value);
     }
 
+
+    private bool closeActionWindowBtnEnabled;
+
+    public bool CloseActionWindowBtnEnabled
+    {
+        get => closeActionWindowBtnEnabled;
+        set => Set(ref closeActionWindowBtnEnabled, value);
+    }
+
+
     private bool nextEnabled = true;
 
     public bool NextBtnEnabled
@@ -1424,9 +1563,18 @@ public class ViewModel : Notify
         set => Set(ref nextEnabled, value);
     }
 
+
+    private bool removeCmdFromDeviceBtnEnabled;
+
+    public bool RemoveCmdFromDeviceBtnEnabled
+    {
+        get => removeCmdFromDeviceBtnEnabled;
+        set => Set(ref removeCmdFromDeviceBtnEnabled, value);
+    }
+
     #endregion
 
-//--
+    //--
 
     #endregion
 
@@ -1486,29 +1634,39 @@ public class ViewModel : Notify
         {
             if (!Set(ref selectDevice, value)) return;
 
+            IsPrefix = selectDevice is RelayVip;
             NameDevice = selectDevice.Name;
             Prefix = selectDevice.Prefix;
 
-            IsPrefix = selectDevice is RelayVip;
+            IsSaveDeviceMessage = "";
 
             try
             {
                 PortName = selectDevice.GetConfigDevice().PortName.Replace("COM", "");
-                //PortName = selectDevice.GetConfigDevice().PortName;
-                Baud = selectDevice.GetConfigDevice().Baud;
-                StopBits = selectDevice.GetConfigDevice().StopBits;
+                Baud = selectDevice.GetConfigDevice().Baud.ToString();
+                StopBit = selectDevice.GetConfigDevice().StopBits.ToString();
                 Parity = selectDevice.GetConfigDevice().Parity;
-                DataBits = selectDevice.GetConfigDevice().DataBits;
+                DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
 
-
-                //обновление команд выбранного устройства
-                selectedDeviceCmd.Source = value?.LibCmd.DeviceCommands.Where(x =>
+                var cmds = value?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
+                //обновление команд выбранного устройства
+                selectedDeviceCmd.Source = cmds;
+
+                if (cmds == null || !cmds.ToList().Any())
+                {
+                    RemoveCmdFromDeviceBtnEnabled = false;
+                }
+                else
+                {
+                    RemoveCmdFromDeviceBtnEnabled = true;
+                }
+
+
                 OnPropertyChanged(nameof(SelectedDeviceCmd));
                 OnPropertyChanged(nameof(IndexTerminatorReceive));
                 OnPropertyChanged(nameof(IndexTerminatorTransmit));
-
 
                 // CountChecked = stand.timeMachine.CountChecked;
                 // AllTimeChecked = stand.timeMachine.AllTimeChecked;
@@ -1520,7 +1678,7 @@ public class ViewModel : Notify
         }
     }
 
-    private string nameDevice;
+    public string nameDevice;
 
     /// <summary>
     /// Имя устройства в текстбоксе
@@ -1558,26 +1716,26 @@ public class ViewModel : Notify
         set => Set(ref portName, value);
     }
 
-    private int baud;
+    private string baud;
 
     /// <summary>
     /// Baud rate порта в текстбоксе 
     /// </summary>
-    public int Baud
+    public string Baud
     {
         get => baud;
         set => Set(ref baud, value);
     }
 
-    private int stopBits;
+    private string stopBit;
 
     /// <summary>
     /// Стоповые биты порта в текстбоксе
     /// </summary>
-    public int StopBits
+    public string StopBit
     {
-        get => stopBits;
-        set => Set(ref stopBits, value);
+        get => stopBit;
+        set => Set(ref stopBit, value);
     }
 
     private int parity;
@@ -1591,15 +1749,15 @@ public class ViewModel : Notify
         set => Set(ref parity, value);
     }
 
-    private int dataBits;
+    private string dataBit;
 
     /// <summary>
     /// Бит данных в команде в текстбоксе
     /// </summary>
-    public int DataBits
+    public string DataBit
     {
-        get => dataBits;
-        set => Set(ref dataBits, value);
+        get => dataBit;
+        set => Set(ref dataBit, value);
     }
 
     private bool dtr;
@@ -1611,6 +1769,17 @@ public class ViewModel : Notify
     {
         get => dtr;
         set => Set(ref dtr, value);
+    }
+
+    private string isSaveDevice;
+
+    /// <summary>
+    ///  Уведомление о сохранениии настроек
+    /// </summary>
+    public string IsSaveDeviceMessage
+    {
+        get => isSaveDevice;
+        set => Set(ref isSaveDevice, value);
     }
 
     #endregion
@@ -1656,9 +1825,12 @@ public class ViewModel : Notify
         {
             try
             {
-                var item = Terminators.FirstOrDefault(x =>
-                    x.Type == SelectTerminatorTransmit.Type && x.TypeEncod == SelectTerminatorTransmit.TypeEncod);
-                indexTerminatorTransmit = Terminators.IndexOf(item);
+                if (SelectTerminatorTransmit != null)
+                {
+                    var item = Terminators.First(x =>
+                        x.Type == SelectTerminatorTransmit.Type && x.TypeEncod == SelectTerminatorTransmit.TypeEncod);
+                    indexTerminatorTransmit = Terminators.IndexOf(item);
+                }
             }
             catch (Exception e)
             {
@@ -1735,9 +1907,12 @@ public class ViewModel : Notify
         {
             try
             {
-                var item = Terminators.FirstOrDefault(x =>
-                    x.Type == SelectTerminatorReceive.Type && x.TypeEncod == SelectTerminatorReceive.TypeEncod);
-                indexTerminatorReceive = Terminators.IndexOf(item);
+                if (SelectTerminatorReceive != null)
+                {
+                    var item = Terminators.FirstOrDefault(x =>
+                        x.Type == SelectTerminatorReceive.Type && x.TypeEncod == SelectTerminatorReceive.TypeEncod);
+                    indexTerminatorReceive = Terminators.IndexOf(item);
+                }
             }
             catch (Exception e)
             {
@@ -1749,23 +1924,23 @@ public class ViewModel : Notify
         set => Set(ref indexTerminatorReceive, value);
     }
 
-    private TypeCmd typeMessageCmdLib;
+    private string typeMessageCmdLib = "None";
 
     /// <summary>
     /// Тип отправялемемой и принимаемой команды из библиотеки
     /// </summary>
-    public TypeCmd TypeMessageCmdLib
+    public string TypeMessageCmdLib
     {
         get => typeMessageCmdLib;
         set => Set(ref typeMessageCmdLib, value);
     }
 
-    private int delayCmdLib;
+    private string delayCmdLib;
 
     /// <summary>
     /// ЗАдержка на после отправки команды до ее приема из библиотеки
     /// </summary>
-    public int DelayCmdLib
+    public string DelayCmdLib
     {
         get => delayCmdLib;
         set => Set(ref delayCmdLib, value);
@@ -1790,14 +1965,17 @@ public class ViewModel : Notify
         set
         {
             selectedCmdLib = value;
+
             NameCmdLib = SelectedCmdLib.Key.NameCmd;
             TransmitCmdLib = SelectedCmdLib.Value.Transmit;
             SelectTerminatorTransmit = SelectedCmdLib.Value.Terminator;
             IsXor = SelectedCmdLib.Value.IsXor;
             ReceiveCmdLib = SelectedCmdLib.Value.Receive;
             SelectTerminatorReceive = SelectedCmdLib.Value.ReceiveTerminator;
-            TypeMessageCmdLib = SelectedCmdLib.Value.MessageType;
-            DelayCmdLib = SelectedCmdLib.Value.Delay;
+
+            ConvertTypeCmdToString(SelectedCmdLib.Value.MessageType);
+
+            DelayCmdLib = SelectedCmdLib.Value.Delay.ToString();
             LengthCmdLib = SelectedCmdLib.Value.Length;
 
             //
@@ -1818,7 +1996,7 @@ public class ViewModel : Notify
             }
 
             //
-            XorIsHex = TypeMessageCmdLib == TypeCmd.Hex;
+            XorIsHex = TypeMessageCmdLib == "Hex";
             //
 
             OnPropertyChanged(nameof(SelectedCmdLib));
@@ -1827,7 +2005,7 @@ public class ViewModel : Notify
         }
     }
 
-    private int indexSelectCmd;
+    private int indexSelectCmd = 1;
 
     public int IndexSelectCmd
     {
@@ -1841,7 +2019,7 @@ public class ViewModel : Notify
 
     #endregion
 
-//--
+    //--
 
     #endregion
 
@@ -1917,6 +2095,7 @@ public class ViewModel : Notify
                 OutputOnThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOn;
                 OutputOffThermoCurrent = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.OutputOff;
                 ShuntResistance = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.ShuntResistance;
+                VoltCurrentMeterVoltMax = selectTypeVipSettings.GetDeviceParameters().VoltCurrentValues.VoltMaxLimit;
 
                 VoltMeterVoltMax = selectTypeVipSettings.GetDeviceParameters().VoltValues.VoltMaxLimit;
                 OutputOnVoltMeter = selectTypeVipSettings.GetDeviceParameters().VoltValues.OutputOn;
@@ -2084,6 +2263,15 @@ public class ViewModel : Notify
         get => currentTypeVipSettings;
         set => Set(ref currentTypeVipSettings, value);
     }
+
+    private int selectIndexDevice = 0;
+
+    public int SelectIndexDevice
+    {
+        get => selectIndexDevice;
+        set => Set(ref selectIndexDevice, value);
+    }
+
 
     private string freqLoad;
 
@@ -2272,6 +2460,17 @@ public class ViewModel : Notify
         set => Set(ref voltMeterVoltMax, value);
     }
 
+    private string voltCurrentMeterVoltMax;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string VoltCurrentMeterVoltMax
+    {
+        get => voltCurrentMeterVoltMax;
+        set => Set(ref voltCurrentMeterVoltMax, value);
+    }
+
     private string currentMeterCurrentMax;
 
     /// <summary>
@@ -2333,7 +2532,306 @@ public class ViewModel : Notify
 
     #endregion
 
+    #region Валидация полей
+
+    #region IDataErrorInfo
+
+    // private List<int> comports = new List<int>();
+
+    private List<int> bauds = new List<int>()
+    {
+        2400,
+        4800,
+        9600,
+        19200,
+        28800,
+        38400,
+        57600,
+        76800,
+        115200
+    };
+
+    private List<int> stopBits = new List<int>() { 0, 1, 2, 3 };
+
+    private List<int> dataBits = new List<int>() { 5, 6, 7, 8 };
+
+
+    //--Error--ошибка--
+    public string this[string columnName]
+    {
+        get
+        {
+            string error = null;
+            var strValue = GetType().GetProperty(columnName)?.GetValue(this)?.ToString();
+
+            switch (columnName)
+            {
+                case nameof(NameDevice):
+                    if (string.IsNullOrWhiteSpace(NameDevice))
+                        error = "Введите имя устройства";
+                    break;
+                case nameof(Prefix):
+                    if (string.IsNullOrWhiteSpace(Prefix) && IsPrefix)
+                        error = "Введите префикс устройства";
+                    break;
+                case nameof(PortName):
+                    if (string.IsNullOrWhiteSpace(PortName))
+                        error = "Введите comport устройства";
+                    //TODO возмонж сделать проверку на совпадение com ports !IsStingNumericNoMatch(PortName, comports) ||
+                    else if (!IsStingNumericMaxMin(PortName, 1, 100))
+                        error = "Введите корректный номер com port устройства от 1 до 100";
+                    break;
+                case nameof(Baud):
+                    if (!IsStingNumericMatch(Baud, bauds))
+                        error = "Введите один из стандартных baud rate устройства";
+                    break;
+                case nameof(StopBit):
+                    if (!IsStingNumericMatch(StopBit, stopBits))
+                        error = "Введите один из стандартных stop bit устройства";
+                    break;
+                case nameof(DataBit):
+                    if (!IsStingNumericMatch(DataBit, dataBits))
+                        error = "Введите один из стандартных data bit устройства";
+                    break;
+                case nameof(AllTimeChecked):
+                    if (string.IsNullOrWhiteSpace(AllTimeChecked))
+                        error = "Введите время проверки устройства";
+                    if (!IsStingNumericMaxMin(AllTimeChecked, 200, 10000))
+                        error = "Введите корректное время проверки устройства от 200 мс до 10000 мс";
+                    break;
+                case nameof(CountChecked):
+                    if (string.IsNullOrWhiteSpace(CountChecked))
+                        error = "Введите количество проверок устройства";
+                    if (!IsStingNumericMaxMin(CountChecked, 1, 5))
+                        error = "Введите корректное количество проверок устройства от 1 до 5";
+                    break;
+                //
+                case nameof(NameCmdLib):
+                    if (string.IsNullOrWhiteSpace(NameCmdLib))
+                        error = "Введите имя команды";
+                    break;
+                case nameof(TransmitCmdLib):
+                    if (string.IsNullOrWhiteSpace(TransmitCmdLib))
+                        error = "Введите команду";
+                    break;
+                case nameof(TypeMessageCmdLib):
+                    if (!IsTypeMessageCmdLib(TypeMessageCmdLib))
+                        error = "Введите тип команды Hex/Text";
+                    break;
+                case nameof(DelayCmdLib):
+                    if (string.IsNullOrWhiteSpace(DelayCmdLib))
+                        error = "Введите корректное время задержки команды от 200 мс до 10000 мс";
+                    else if (!IsStingNumericMaxMin(DelayCmdLib, 200, 10000))
+                        error = "Введите корректное время задержки команды от 200 мс до 10000 мс";
+                    break;
+                case nameof(LengthCmdLib):
+                    if (!string.IsNullOrWhiteSpace(LengthCmdLib) && !IsStingNumericMaxMin(LengthCmdLib, 1, 100))
+                        error = "Введите корректую длину команды от 1 до 100";
+                    break;
+                //
+                case nameof(TypeVipNameSettings):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле имя типа Випа не должно быть пустым";
+
+                    break;
+                case nameof(MaxVoltageOut1):
+                case nameof(MaxVoltageOut2):
+                    if (string.IsNullOrWhiteSpace(MaxVoltageOut1) && string.IsNullOrWhiteSpace(MaxVoltageOut2))
+                        error = $"Оба канала Uвых. типа Випа не могут быть пустыми";
+                    break;
+                case nameof(AvailabilityMaxCurrentIn):
+                case nameof(PrepareMaxCurrentIn):
+                case nameof(MaxCurrentIn):
+                case nameof(Temperature):
+                case nameof(ZeroTestInterval):
+                case nameof(TestAllTime):
+                case nameof(TestIntervalTime):
+                case nameof(PercentAccuracyCurrent):
+                case nameof(PercentAccuracyVoltages):
+                case nameof(PercentAccuracyTemperature):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле {columnName} типа Випа не должно быть пустым";
+                    break;
+                case nameof(OutputOnLoad):
+                case nameof(OutputOffLoad):
+                case nameof(OutputOnSupply):
+                case nameof(OutputOffSupply):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле {columnName} параметров не должно быть пустым";
+                    break;
+                case nameof(FreqLoad):
+                case nameof(AmplLoad):
+                case nameof(DcoLoad):
+                case nameof(SquLoad):
+                case nameof(VoltageSupply):
+                case nameof(CurrentSupply):
+                case nameof(VoltageAvailabilitySupply):
+                case nameof(CurrentAvailabilitySupply):
+                case nameof(VoltCurrentMeterVoltMax):
+                case nameof(CurrentMeterCurrentMax):
+                case nameof(ShuntResistance):
+                case nameof(VoltMeterVoltMax):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле {columnName} параметров не должно быть пустым";
+                    if (!IsStingDecimal(strValue))
+                        error = $"В поле {columnName} введите цисловое значение согласно документации";
+                    break;
+                case nameof(TermocoupleType):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле {columnName} параметров не должно быть пустым";
+                    break;
+            }
+
+            return error;
+        }
+    }
+
+
+    public string Error =>
+        //
+        this[nameof(TypeVipNameSettings)] ??
+        this[nameof(AvailabilityMaxCurrentIn)] ??
+        this[nameof(PrepareMaxCurrentIn)] ??
+        this[nameof(MaxCurrentIn)] ??
+        this[nameof(MaxVoltageOut1)] ??
+        this[nameof(MaxVoltageOut2)] ??
+        this[nameof(Temperature)] ??
+        this[nameof(ZeroTestInterval)] ??
+        this[nameof(TestAllTime)] ??
+        this[nameof(TestIntervalTime)] ??
+        this[nameof(PercentAccuracyCurrent)] ??
+        this[nameof(PercentAccuracyCurrent)] ??
+        this[nameof(PercentAccuracyCurrent)] ??
+        this[nameof(PercentAccuracyVoltages)] ??
+        this[nameof(PercentAccuracyVoltages)] ??
+        this[nameof(PercentAccuracyTemperature)] ??
+        this[nameof(FreqLoad)] ??
+        this[nameof(AmplLoad)] ??
+        this[nameof(DcoLoad)] ??
+        this[nameof(SquLoad)] ??
+        this[nameof(OutputOnLoad)] ??
+        this[nameof(OutputOffLoad)] ??
+        this[nameof(VoltageSupply)] ??
+        this[nameof(CurrentSupply)] ??
+        this[nameof(VoltageAvailabilitySupply)] ??
+        this[nameof(CurrentAvailabilitySupply)] ??
+        this[nameof(OutputOnSupply)] ??
+        this[nameof(OutputOffSupply)] ??
+        this[nameof(VoltCurrentMeterVoltMax)] ??
+        this[nameof(CurrentMeterCurrentMax)] ??
+        this[nameof(TermocoupleType)] ??
+        this[nameof(ShuntResistance)] ??
+        this[nameof(VoltMeterVoltMax)]??
+        //
+        this[nameof(NameDevice)] ??
+        this[nameof(PortName)] ??
+        this[nameof(Baud)] ??
+        this[nameof(StopBit)] ??
+        this[nameof(DataBit)] ??
+        //
+        this[nameof(AllTimeChecked)] ??
+        this[nameof(CountChecked)] ??
+        //
+        this[nameof(NameCmdLib)] ??
+        this[nameof(TransmitCmdLib)] ??
+        this[nameof(ReceiveCmdLib)] ??
+        this[nameof(TypeMessageCmdLib)] ??
+        this[nameof(DelayCmdLib)] ??
+        this[nameof(LengthCmdLib)] ??
+        this[nameof(Prefix)];
+
+    public bool prefixValidate = false;
+
+    /// <summary>
+    /// Имя устройства в текстбоксе
+    /// </summary>
+    public bool PrefixValidate
+    {
+        get => prefixValidate;
+        set { Set(ref prefixValidate, value); }
+    }
+
+
+    private bool IsStingInt(string str)
+    {
+        if (!int.TryParse(str, out var num)) return false;
+        return num > 0;
+    }
+
+    private bool IsStingDecimal(string str)
+    {
+        if (!decimal.TryParse(str, out var num)) return false;
+        return num > 0;
+    }
+
+    private bool IsStingNumericMaxMin(string str, int minVal, int maxVal)
+    {
+        if (!int.TryParse(str, out var num)) return false;
+        return num >= minVal && num <= maxVal;
+    }
+
+    /// <summary>
+    /// Если такое число уже существует в списке выведет фелс
+    /// </summary>
+    private bool IsStingNumericNoMatch(string str, List<int> matches)
+    {
+        if (!int.TryParse(str, out var num)) return false;
+        return !matches.Contains(num);
+    }
+
+    /// <summary>
+    /// Если такое число не существует в списке выведет фелс
+    /// </summary>
+    private bool IsStingNumericMatch(string str, List<int> matches)
+    {
+        if (!int.TryParse(str, out var num)) return false;
+        return matches.Contains(num);
+    }
+
+    private bool IsNumericContains(int num, List<int> matches)
+    {
+        var s = matches.Contains(num);
+        return s;
+    }
+
+    private bool IsTypeMessageCmdLib(string typeCmd)
+    {
+        return typeCmd is "Hex" or "Text";
+    }
+
     #endregion
 
-//---
+    #endregion
+
+    #endregion
+
+    //---
+    public IEnumerable GetErrors(string propertyName)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool HasErrors { get; }
+    public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+}
+
+public class ValidationErrorsConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        var errors = values[0] as ReadOnlyCollection<ValidationError>;
+        var errorType = parameter as string;
+
+        if (errors != null && errors.Any(e => e.ErrorContent.ToString() == errorType))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
 }

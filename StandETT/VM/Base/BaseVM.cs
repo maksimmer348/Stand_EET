@@ -7,7 +7,7 @@ namespace StandETT;
 /// при этом интерфейсная часть View подключится к этому интерфейсу будет слеждить за свойсвтом к кторму подключеня
 /// и если это свойство изменилось View его перечитает. и обновит визуальную свою часть.
 /// </summary>
-public abstract class Notify : INotifyPropertyChanged
+public abstract class Notify : INotifyPropertyChanged 
     {
         /// <summary>
         /// Событие возникает при изменении значениея свойсва (например в Model)

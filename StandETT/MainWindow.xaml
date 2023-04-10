@@ -7,10 +7,10 @@
         mc:Ignorable="d"
         Title="Стенд ЕТТ" MinHeight="760" MinWidth="1200" Height="768" Width="1000"
         IsEnabled="{Binding WindowDisabled}"
-        Closing="MainWindow_Closing"  >
-    <!-- <Window.DataContext> -->
-    <!--     <local:ViewModel /> -->
-    <!-- </Window.DataContext> -->
+        Closing="MainWindow_Closing">
+    <Window.DataContext>
+        <local:ViewModel />
+    </Window.DataContext>
 
     <!--Стили-->
     <Window.Resources>
@@ -120,6 +120,81 @@
 
         <!--///-->
 
+        <Style x:Key="TextBoxStyle"
+               TargetType="{x:Type TextBox}">
+            <Setter Property="Margin"
+                    Value="10,5,10,0" />
+            <Setter Property="MinWidth"
+                    Value="100" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch" />
+            <Setter Property="BorderThickness"
+                    Value="1" />
+            <Setter Property="BorderBrush"
+                    Value="Green" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Focusable="false"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled"
+                                     Value="False">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="LightGray" />
+                                <Setter TargetName="border"
+                                        Property="BorderBrush"
+                                        Value="Gray" />
+                                <Setter Property="Foreground"
+                                        Value="Gray" />
+                            </Trigger>
+                            <Trigger Property="IsReadOnly"
+                                     Value="True">
+                                <Setter TargetName="border"
+                                        Property="Background"
+                                        Value="WhiteSmoke" />
+                                <Setter TargetName="border"
+                                        Property="BorderBrush"
+                                        Value="Gray" />
+                                <Setter Property="Foreground"
+                                        Value="DarkGray" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError"
+                                     Value="True">
+                                <Setter TargetName="border"
+                                        Property="BorderBrush"
+                                        Value="Red" />
+                                <Setter Property="ToolTip"
+                                        Value="{Binding RelativeSource={RelativeSource Self}, 
+                                    Path=(Validation.Errors)[0].ErrorContent}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="ValidationFailed">
+            <StackPanel Orientation="Horizontal">
+                <Border BorderBrush="Violet" BorderThickness="2">
+                    <AdornedElementPlaceholder />
+                </Border>
+                <TextBlock Foreground="Red" FontSize="26" FontWeight="Bold">!</TextBlock>
+            </StackPanel>
+        </ControlTemplate>
+
+        <!--///-->
+
     </Window.Resources>
     <!--/Стили-->
 
@@ -145,13 +220,14 @@
 
                 <Grid Background="LightGray">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="28*"/>
-                        <ColumnDefinition Width="569*"/>
+                        <ColumnDefinition Width="28*" />
+                        <ColumnDefinition Width="569*" />
                     </Grid.ColumnDefinitions>
 
                     <!--Устройства грид-->
 
-                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Devices}" Grid.IsSharedSizeScope="True" Grid.ColumnSpan="2">
+                    <ItemsControl Grid.Row="0" ItemsSource="{Binding Devices}" Grid.IsSharedSizeScope="True"
+                                  Grid.ColumnSpan="2">
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -188,8 +264,9 @@
                                         <Rectangle Margin="5" MinHeight="30" MinWidth="30"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center" Fill="{Binding StatusColor}" />
-                                        <TextBlock 
-                                                   Text="Стат"  HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" />
+                                        <TextBlock
+                                            Text="Стат" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            FontSize="12" />
                                     </Grid>
                                     <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                TextWrapping="Wrap" Text="{Binding IsDeviceType}" />
@@ -226,7 +303,7 @@
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0" Grid.ColumnSpan="3" MinWidth="300" VerticalAlignment="Center"
-                               HorizontalAlignment="Stretch">
+                          HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="3*"></ColumnDefinition>
                             <ColumnDefinition></ColumnDefinition>
@@ -288,7 +365,7 @@
                                                    VerticalAlignment="Center" DataContext="{Binding Path=Relay}"
                                                    Fill="{Binding StatusColor}" />
                                         <TextBlock HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" Text="Стат" FontSize="12"/>
+                                                   VerticalAlignment="Center" Text="Стат" FontSize="12" />
                                     </Grid>
 
                                     <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -335,7 +412,8 @@
 
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <Grid ShowGridLines="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                    <Grid ShowGridLines="True" VerticalAlignment="Stretch"
+                                          HorizontalAlignment="Stretch">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition />
                                             <ColumnDefinition />
@@ -365,20 +443,26 @@
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
 
-                                        <Grid  ShowGridLines="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Grid ShowGridLines="True" HorizontalAlignment="Center"
+                                              VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition></ColumnDefinition>
                                                 <ColumnDefinition></ColumnDefinition>
                                             </Grid.ColumnDefinitions>
-                                            <Ellipse Grid.Column="0" MinHeight="20" MinWidth="20" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                     Fill="{Binding OnOffColor}" Visibility="{Binding IsHiddenOutputOnOff}" Margin="10,0" />
+                                            <Ellipse Grid.Column="0" MinHeight="20" MinWidth="20"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                     Fill="{Binding OnOffColor}"
+                                                     Visibility="{Binding IsHiddenOutputOnOff}" Margin="10,0" />
                                             <TextBlock Grid.Column="0" Visibility="{Binding IsHiddenOutputOnOff}"
-                                                       Text="Вкл"  HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" />
-                                            <Rectangle Grid.Column="1"  MinHeight="20" MinWidth="20" HorizontalAlignment="Center"
+                                                       Text="Вкл" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" FontSize="10" />
+                                            <Rectangle Grid.Column="1" MinHeight="20" MinWidth="20"
+                                                       HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
                                                        Fill="{Binding StatusColor}" Margin="10,0" />
-                                            <TextBlock Grid.Column="1" 
-                                                       Text="Стат"  HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="Стат" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" FontSize="10" />
                                         </Grid>
 
                                         <TextBlock Grid.Row="1" Margin="5" HorizontalAlignment="Center"
@@ -389,10 +473,14 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <StackPanel Margin="10" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestStart, UpdateSourceTrigger=PropertyChanged, StringFormat=Начало испытаний: {0}}" />
-                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Следующий замер через: {0}}" />
-                            <TextBlock HorizontalAlignment="Left"  Text="{Binding TimeTestStop, UpdateSourceTrigger=PropertyChanged, StringFormat=До конца испытаний: {0}}" />
+                        <StackPanel Margin="10" Grid.Column="1" VerticalAlignment="Center"
+                                    HorizontalAlignment="Stretch">
+                            <TextBlock HorizontalAlignment="Left"
+                                       Text="{Binding TimeTestStart, UpdateSourceTrigger=PropertyChanged, StringFormat=Начало испытаний: {0}}" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Text="{Binding TimeTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Следующий замер через: {0}}" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Text="{Binding TimeTestStop, UpdateSourceTrigger=PropertyChanged, StringFormat=До конца испытаний: {0}}" />
                         </StackPanel>
 
                     </Grid>
@@ -401,7 +489,7 @@
                                   ItemsSource="{Binding Vips}" Grid.IsSharedSizeScope="True">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid Margin="0"  ShowGridLines="True">
+                                <Grid Margin="0" ShowGridLines="True">
 
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="1*" />
@@ -430,8 +518,10 @@
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Grid Grid.Row="1" Grid.Column="0" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                                    <Grid Margin="0" ShowGridLines="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                <Grid Grid.Row="1" Grid.Column="0" Margin="0" HorizontalAlignment="Center"
+                                      VerticalAlignment="Stretch">
+                                    <Grid Margin="0" ShowGridLines="True" VerticalAlignment="Stretch"
+                                          HorizontalAlignment="Stretch">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="0.4*"></RowDefinition>
                                             <RowDefinition></RowDefinition>
@@ -441,74 +531,105 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition></ColumnDefinition>
                                                 <ColumnDefinition></ColumnDefinition>
-                                                <ColumnDefinition ></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
                                                 <ColumnDefinition Width="1.5*"></ColumnDefinition>
                                             </Grid.ColumnDefinitions>
-                                            
-                                            <Rectangle Grid.Column="0" DockPanel.Dock="Right" MinHeight="30" MinWidth="30" HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"
-                                                        Fill="{Binding Relay.StatusColor}" Margin="10,0" />
-                                            <TextBlock Grid.Column="0" 
-                                                       Text="Стат" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            
-                                            <Ellipse Grid.Column="1" Margin="10" DockPanel.Dock="Left" MinHeight="25" MinWidth="25"
+
+                                            <Rectangle Grid.Column="0" DockPanel.Dock="Right" MinHeight="30"
+                                                       MinWidth="30" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Fill="{Binding Relay.StatusColor}" Margin="10,0" />
+                                            <TextBlock Grid.Column="0"
+                                                       Text="Стат" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+
+                                            <Ellipse Grid.Column="1" Margin="10" DockPanel.Dock="Left" MinHeight="25"
+                                                     MinWidth="25"
                                                      Fill="{Binding Relay.OnOffColor}"
                                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" 
-                                                       Text="Вкл"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            
-                                            <Rectangle  Grid.Column="2" Margin="10" DockPanel.Dock="Left" MinHeight="25" MinWidth="25" 
-                                                        Fill="{Binding StatusColor}" 
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" >
+                                            <TextBlock Grid.Column="1"
+                                                       Text="Вкл" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+
+                                            <Rectangle Grid.Column="2" Margin="10" DockPanel.Dock="Left" MinHeight="25"
+                                                       MinWidth="25"
+                                                       Fill="{Binding StatusColor}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       RenderTransformOrigin="0.5,0.5">
                                                 <Rectangle.RenderTransform>
                                                     <TransformGroup>
-                                                        <ScaleTransform/>
-                                                        <SkewTransform/>
-                                                        <RotateTransform Angle="45"/>
-                                                        <TranslateTransform/>
+                                                        <ScaleTransform />
+                                                        <SkewTransform />
+                                                        <RotateTransform Angle="45" />
+                                                        <TranslateTransform />
                                                     </TransformGroup>
                                                 </Rectangle.RenderTransform>
                                             </Rectangle>
-                                            <TextBlock Grid.Column="2" 
-                                                       Text="Тест"  HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            
+                                            <TextBlock Grid.Column="2"
+                                                       Text="Тест" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+
                                             <Grid Grid.Column="3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition></ColumnDefinition>
                                                     <ColumnDefinition></ColumnDefinition>
                                                     <ColumnDefinition></ColumnDefinition>
                                                 </Grid.ColumnDefinitions>
-                                                
-                                                <Rectangle Grid.Column="0"  MinHeight="30" MinWidth="30"
-                                                            VerticalAlignment="Center"
-                                                            Fill="{Binding StatusColorChannelV1}"  />
-                                                <TextBlock Grid.Column="0" Text="КнV1" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                               
-                                                <Rectangle  Grid.Column="1" MinHeight="30" MinWidth="30"
-                                                            VerticalAlignment="Center"
-                                                            Fill="{Binding StatusColorChannelV2}" Margin="2,0,0,0" />
-                                                <TextBlock Grid.Column="1"  Text="КнV2"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0"/>
 
-                                                <Rectangle  Grid.Column="2" MinHeight="30" MinWidth="30"
-                                                            VerticalAlignment="Center"
-                                                            Fill="{Binding StatusColorChannelA}" Margin="2,0,0,0" />
-                                                <TextBlock Grid.Column="2" Text="КнA" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                                                <Rectangle Grid.Column="0" MinHeight="30" MinWidth="30"
+                                                           VerticalAlignment="Center"
+                                                           Fill="{Binding StatusColorChannelV1}" />
+                                                <TextBlock Grid.Column="0" Text="КнV1" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" />
+
+                                                <Rectangle Grid.Column="1" MinHeight="30" MinWidth="30"
+                                                           VerticalAlignment="Center"
+                                                           Fill="{Binding StatusColorChannelV2}" Margin="2,0,0,0" />
+                                                <TextBlock Grid.Column="1" Text="КнV2" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" Margin="2,0,0,0" />
+
+                                                <Rectangle Grid.Column="2" MinHeight="30" MinWidth="30"
+                                                           VerticalAlignment="Center"
+                                                           Fill="{Binding StatusColorChannelA}" Margin="2,0,0,0" />
+                                                <TextBlock Grid.Column="2" Text="КнA" HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center" Margin="2,0,0,0" />
                                             </Grid>
                                         </Grid>
 
-                                        <DockPanel MinWidth="280" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                        <DockPanel MinWidth="280" Grid.Row="1" HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch">
                                             <TextBlock DockPanel.Dock="Top"
                                                        Text="{Binding Name, UpdateSourceTrigger=PropertyChanged, StringFormat=Имя: \{0\}}" />
                                             <TextBlock DockPanel.Dock="Top"
                                                        Text="{Binding Temperature,UpdateSourceTrigger=PropertyChanged, StringFormat=Температура: \{0\} ℃}" />
+                                            <TextBlock DockPanel.Dock="Top">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}Uₒᵤₜ₁: {0} V {1}">
+                                                        <Binding Path="VoltageOut1" />
+                                                        <Binding Path="Channel1Revers" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock DockPanel.Dock="Top">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}Uₒᵤₜ₂: {0} V {1}">
+                                                        <Binding Path="VoltageOut2" />
+                                                        <Binding Path="Channel2Revers" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock DockPanel.Dock="Top">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}Iᵢₙ: {0} A {1}">
+                                                        <Binding Path="CurrentIn" />
+                                                        <Binding Path="ChannelARevers" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
                                             <TextBlock DockPanel.Dock="Top"
-                                                       Text="{Binding VoltageOut1,UpdateSourceTrigger=PropertyChanged, StringFormat=Uₒᵤₜ₁: \{0\} V}" />
-                                            <TextBlock DockPanel.Dock="Top"
-                                                       Text="{Binding VoltageOut2, StringFormat=Uₒᵤₜ₂: \{0\} V}" />
-                                            <TextBlock DockPanel.Dock="Top"
-                                                       Text="{Binding CurrentIn, StringFormat=Iᵢₙ: \{0\} A}" />
-                                            <TextBlock DockPanel.Dock="Top"
-                                                      TextWrapping="WrapWithOverflow" Text="{Binding ErrorStatusVip, StringFormat=Статус: \{0\}}" Foreground="{Binding StatusColor}" />
+                                                       TextWrapping="WrapWithOverflow"
+                                                       Text="{Binding ErrorStatusVip, StringFormat=Статус: \{0\}}"
+                                                       Foreground="{Binding StatusColor}" />
                                         </DockPanel>
 
                                     </Grid>
@@ -559,7 +680,8 @@
                             <StackPanel>
                                 <ComboBox
                                     ItemsSource="{Binding AllDevices, UpdateSourceTrigger=PropertyChanged}"
-                                    SelectedItem="{Binding SelectDevice, UpdateSourceTrigger=PropertyChanged}">
+                                    SelectedItem="{Binding SelectDevice, UpdateSourceTrigger=PropertyChanged}"
+                                    SelectedIndex="{Binding SelectIndexDevice}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <Grid>
@@ -582,43 +704,48 @@
                                     <ColumnDefinition Width="0.5*" />
                                 </Grid.ColumnDefinitions>
 
-
                                 <TextBlock Text="Имя Устройства" />
-                                <TextBox Grid.Row="1" Grid.Column="0"
-                                         Text="{Binding NameDevice , UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Grid.Row="1" Grid.Column="0" Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding NameDevice,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
-                                <TextBlock Grid.Column="1" Text="Префикс" />
-                                <TextBox Grid.Row="1" Grid.Column="1"
-                                         MinWidth="40" Text="{Binding Prefix , UpdateSourceTrigger=PropertyChanged}"
-                                         IsEnabled="{Binding IsPrefix}" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Префикс" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource TextBoxStyle}"
+                                         MinWidth="50" IsEnabled="{Binding IsPrefix}"
+                                         Text="{Binding Prefix, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </Grid>
 
                             <TextBlock Text="Имя компорта" />
-                            <TextBox Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding PortName, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                             <TextBlock Text="Бауд компорта" />
-                            <TextBox Text="{Binding Baud}" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding Baud, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                             <TextBlock Text="Стоповый бит компорта" />
-                            <TextBox Text="{Binding StopBits}" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding StopBit, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                             <TextBlock Text="Дата бит компорта" />
-                            <TextBox Text="{Binding DataBits}" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding DataBit, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                             <TextBlock Text="DTR" />
                             <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
 
-                            <TextBlock Text="" />
+                            <TextBlock Text="{Binding IsSaveDeviceMessage}" />
                             <Button Command="{Binding SaveSettingsCmd}" DockPanel.Dock="Right"
                                     Content="Сохранить устройство" />
                         </StackPanel>
 
                         <StackPanel Grid.Row="2">
-                            <TextBlock Text="Время на перепроверку (мс)" />
-                            <TextBox Text="{Binding AllTimeChecked  }" />
+                            <TextBlock Text="Таймаут перероверки в мс (default)" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding AllTimeChecked, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
-                            <TextBlock Text="Количество перепроверок (раз)" />
-                            <TextBox Text="{Binding CountChecked}" />
+                            <TextBlock Text="Кол-во перепроверок (default)" />
+                            <TextBox Style="{StaticResource TextBoxStyle}"
+                                     Text="{Binding CountChecked, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                         </StackPanel>
 
                     </Grid>
@@ -630,15 +757,17 @@
                             <RowDefinition Height="0.20*"></RowDefinition>
                         </Grid.RowDefinitions>
 
+                        <!-- TODO было - SelectedIndex="{Binding IndexSelectCmd}" -->
                         <DataGrid Grid.Row="0" DockPanel.Dock="Top" IsReadOnly="True"
                                   ItemsSource="{Binding SelectedDeviceCmd, UpdateSourceTrigger=PropertyChanged}"
                                   SelectedItem="{Binding SelectedCmdLib}"
-                                  SelectedIndex="{Binding IndexSelectCmd, Mode=TwoWay}"
+                                  SelectedIndex="{Binding IndexSelectCmd}"
                                   AutoGenerateColumns="False"
                                   CanUserDeleteRows="False" CanUserAddRows="False"
                                   GridLinesVisibility="Vertical"
                                   VerticalGridLinesBrush="Blue"
                                   AlternatingRowBackground="LightBlue">
+
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Имя" Binding="{Binding Key.NameCmd}" Width="Auto" />
                                 <DataGridTextColumn Header="Передача (TX)" Binding="{Binding Value.Transmit}" Width="*" />
@@ -672,14 +801,16 @@
 
                             <StackPanel>
                                 <TextBlock Text="Имя" />
-                                <TextBox Text="{Binding NameCmdLib}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding NameCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
 
                             <Grid Grid.Row="0" Grid.Column="1">
 
                                 <StackPanel>
                                     <TextBlock Text="Передача (TX)" />
-                                    <TextBox Text="{Binding TransmitCmdLib}" />
+                                    <TextBox Style="{StaticResource TextBoxStyle}"
+                                             Text="{Binding TransmitCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                                 </StackPanel>
 
                                 <StackPanel MinWidth="50" HorizontalAlignment="Right" VerticalAlignment="Bottom"
@@ -720,7 +851,8 @@
 
                                 <StackPanel>
                                     <TextBlock Text="Прием (RX)" />
-                                    <TextBox Text="{Binding ReceiveCmdLib}" />
+                                    <TextBox Style="{StaticResource TextBoxStyle}"
+                                             Text="{Binding ReceiveCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                                 </StackPanel>
                                 <StackPanel HorizontalAlignment="Right" Margin="0, 0,5,0">
                                     <TextBlock Text="Парам." />
@@ -750,15 +882,18 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock VerticalAlignment="Center" Text="Тип сообщения(RX,TX)" />
-                                <TextBox Text="{Binding TypeMessageCmdLib}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TypeMessageCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="2">
                                 <TextBlock VerticalAlignment="Center" Text="Задержка мс" />
-                                <TextBox Text="{Binding DelayCmdLib}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding DelayCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="3">
                                 <TextBlock VerticalAlignment="Center" Text="Длина" />
-                                <TextBox Text="{Binding LengthCmdLib}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding LengthCmdLib,  UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
 
                         </Grid>
@@ -770,7 +905,9 @@
                                         Command="{Binding AddCmdFromDeviceCmd}" VerticalAlignment="Center"
                                         HorizontalAlignment="Center" />
                                 <Button MinWidth="218" MinHeight="22" Content="Удалить"
-                                        Command="{Binding RemoveCmdFromDeviceCmd}" HorizontalAlignment="Center"
+                                        Command="{Binding RemoveCmdFromDeviceCmd}"
+                                        IsEnabled="{Binding RemoveCmdFromDeviceBtnEnabled}"
+                                        HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
                             </StackPanel>
                         </Grid>
@@ -796,7 +933,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.4*" />
                     </Grid.RowDefinitions>
-
 
                     <Grid ShowGridLines="True" Grid.Column="0" VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch">
@@ -834,38 +970,50 @@
 
                             <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="0" Margin="0,0,0,10">
                                 <TextBlock Text="Имя" />
-                                <TextBox Text="{Binding TypeVipNameSettings }" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TypeVipNameSettings, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="0">
 
 
                                 <TextBlock Text="Iвх. Max наличия" />
-                                <TextBox Text="{Binding AvailabilityMaxCurrentIn}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding AvailabilityMaxCurrentIn, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="Iвх. Max 0 замера" />
-                                <TextBox Text="{Binding PrepareMaxCurrentIn}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PrepareMaxCurrentIn, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="Iвх. Max цикла" />
-                                <TextBox Text="{Binding MaxCurrentIn}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding MaxCurrentIn, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="Uвых. 1кан. Max" />
-                                <TextBox Text="{Binding MaxVoltageOut1}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding MaxVoltageOut1, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="Uвых. 2кан. Max" />
-                                <TextBox Text="{Binding MaxVoltageOut2}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding MaxVoltageOut2, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="TMax" />
-                                <TextBox Text="{Binding Temperature}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding Temperature, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock DockPanel.Dock="Left" Text="Время стаб. 0 замера" />
-                                <TextBox Text="{Binding ZeroTestInterval}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding ZeroTestInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock DockPanel.Dock="Left" Text="t общ. цикла" IsEnabled="False" />
-                                <TextBox Text="{Binding TestAllTime}" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
 
                                 <TextBlock Text="t интерв. цикла" IsEnabled="False" />
-                                <TextBox Text="{Binding TestIntervalTime}" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TestIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
 
 
                                 <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
@@ -874,21 +1022,27 @@
 
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyCurrent}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyCurrent, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyCurrent}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyCurrent, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyCurrent}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyCurrent, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyVoltages}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyVoltages, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyVoltages}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyVoltages, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock Text="% погрешности" />
-                                <TextBox Text="{Binding PercentAccuracyTemperature}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding PercentAccuracyTemperature, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                         </Grid>
 
@@ -925,27 +1079,33 @@
                             <StackPanel Grid.Row="1" Grid.Column="0">
 
                                 <TextBlock Text="Частота (Freq)" />
-                                <TextBox Text="{Binding FreqLoad}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding FreqLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="Амплитуда (Ampl)" />
-                                <TextBox Text="{Binding AmplLoad }" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding AmplLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2">
                                 <TextBlock Text="DC компенсация (Dco)" />
-                                <TextBox Text="{Binding DcoLoad}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding DcoLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1">
                                 <TextBlock Text="Меандр (Squ)" />
-                                <TextBox Text="{Binding SquLoad}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding SquLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3">
                                 <TextBlock Text="Выход вкл. (Output On)" />
-                                <TextBox Text="{Binding OutputOnLoad}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding OutputOnLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="1">
                                 <TextBlock Text="Выход выкл. (Output Off)" />
-                                <TextBox Text="{Binding OutputOffLoad}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding OutputOffLoad, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
 
                         </Grid>
@@ -966,27 +1126,33 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
                                 <TextBlock Text="U" />
-                                <TextBox Text="{Binding VoltageSupply}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding VoltageSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="I" />
-                                <TextBox Text="{Binding CurrentSupply }" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding CurrentSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock Text="U наличия" />
-                                <TextBox Text="{Binding VoltageAvailabilitySupply }" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding VoltageAvailabilitySupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1">
                                 <TextBlock Text="I наличия" />
-                                <TextBox Text="{Binding CurrentAvailabilitySupply }" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding CurrentAvailabilitySupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="0">
                                 <TextBlock Text="Output On" />
-                                <TextBox Text="{Binding OutputOnSupply}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding OutputOnSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="1">
                                 <TextBlock Text="Output Off" />
-                                <TextBox Text="{Binding OutputOffSupply}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding OutputOffSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="0"></StackPanel>
                             <StackPanel Grid.Row="3" Grid.Column="1"></StackPanel>
@@ -1009,19 +1175,24 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
                                 <TextBlock Text="U" />
-                                <TextBox Text="{Binding VoltMeterVoltMax}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding VoltCurrentMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="I" />
-                                <TextBox Text="{Binding CurrentMeterCurrentMax}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding CurrentMeterCurrentMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock Text="Тип терпомары" />
-                                <TextBox Text="{Binding TermocoupleType}" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TermocoupleType, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
                             </StackPanel>
                             <StackPanel Grid.Row="2" Grid.Column="1">
                                 <TextBlock Text="R шунта" />
-                                <TextBox Text="{Binding ShuntResistance}"/>
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding ShuntResistance, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                         </Grid>
 
@@ -1041,7 +1212,8 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="0">
                                 <TextBlock Text="U" />
-                                <TextBox Text="{Binding VoltMeterVoltMax}" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding VoltMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -1051,36 +1223,48 @@
             </TabItem>
             <!--/Настройки типов Випов таб-->
 
-            <TabItem  Header="StopAll">
+            <TabItem Header="StopAll">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="0.2*"/>
+                        <RowDefinition />
+                        <RowDefinition Height="0.2*" />
                     </Grid.RowDefinitions>
                     <StackPanel Margin="20">
 
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition Height="0.2*"/>
+                                <RowDefinition />
+                                <RowDefinition Height="0.2*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Margin="0,10,0,5" TextWrapping="Wrap" Text="{Binding ErrorMessage,NotifyOnSourceUpdated=True}" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                            <TextBlock Margin="0,10,0,5" TextWrapping="Wrap"
+                                       Text="{Binding ErrorMessage,NotifyOnSourceUpdated=True}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                            </TextBlock>
 
-                            <ProgressBar Grid.Row="1" Grid.Column="0" Value="{Binding PercentCurrentReset, Mode=OneWay}" Maximum="100"
+                            <ProgressBar Grid.Row="1" Grid.Column="0"
+                                         Value="{Binding PercentCurrentReset, Mode=OneWay}" Maximum="100"
                                          MinWidth="500"
-                                         MinHeight="20" Width="165" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         MinHeight="20" Width="165" HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
                                          Foreground="{Binding ProgressResetColor}" />
-                            <TextBlock  Grid.Row="1"  Grid.Column="0"
-                                        Text="{Binding StringFormat={}{0}%,Path=PercentCurrentReset, UpdateSourceTrigger=Explicit}"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0"
+                                       Text="{Binding StringFormat={}{0}%,Path=PercentCurrentReset, UpdateSourceTrigger=Explicit}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
                         </Grid>
 
-                        <TextBlock Margin="0,5,0,5" TextWrapping="Wrap" Text="{Binding ErrorOutput,NotifyOnSourceUpdated=True}" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                        <TextBlock Margin="0,5,0,5" TextWrapping="Wrap"
+                                   Text="{Binding ErrorOutput,NotifyOnSourceUpdated=True}" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center">
+                        </TextBlock>
                     </StackPanel>
 
-                    <DockPanel Margin="0,0,10,10" LastChildFill="False" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button MinHeight="20"  MinWidth="80" Command="{Binding CloseActionWindowCmd}" IsEnabled="{Binding CancelAllTestBtnEnabled}">Ок</Button>
+                    <DockPanel Margin="0,0,10,10" LastChildFill="False" Grid.Row="1" HorizontalAlignment="Right"
+                               VerticalAlignment="Center">
+                        <Button MinHeight="20" MinWidth="80" Command="{Binding CloseActionWindowCmd}"
+                                IsEnabled="{Binding CloseActionWindowBtnEnabled}">
+                            Ок
+                        </Button>
                     </DockPanel>
 
                 </Grid>
@@ -1154,13 +1338,19 @@
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
                             Command="{Binding CancelAllTestCmd}" Content="Остановить"
                             IsEnabled="{Binding CancelAllTestBtnEnabled}" />
-                    <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
-                            Content="Начать/повторить тест"
-                            Command="{Binding StartTestDevicesCmd}" IsEnabled="{Binding StartTestDevicesBtnEnabled}" />
+                    <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="110" Margin="10,20"
+                            Command="{Binding StartTestDevicesCmd}" IsEnabled="{Binding StartTestDevicesBtnEnabled}">
+                        <Button.Content>
+                            <TextBlock TextAlignment="Center"> Начать/повторить <LineBreak /> тест </TextBlock>
+                        </Button.Content>
+                    </Button>
 
                     <Button DockPanel.Dock="Right" MinHeight="10" MinWidth="80" Margin="10,20"
-                            Content="Открыть конфиг"
-                            Command="{Binding DeviceConfigCmd}" IsEnabled="{Binding DeviceConfigBtnEnabled}" />
+                            Command="{Binding DeviceConfigCmd}" IsEnabled="{Binding DeviceConfigBtnEnabled}">
+                        <Button.Content>
+                            <TextBlock TextAlignment="Center" Text="{Binding BackButtonText}" />
+                        </Button.Content>
+                    </Button>
                 </DockPanel>
 
                 <!--//-->

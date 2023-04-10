@@ -57,6 +57,34 @@ public class Vip : Notify
         set => Set(ref errorStatusRelay, value);
     }
 
+    private string channel2Revers;
+
+    [JsonIgnore]
+    public string Channel2Revers
+    {
+        get => channel2Revers;
+        set => Set(ref channel2Revers, value);
+    }
+
+    private string channelARevers;
+
+    [JsonIgnore]
+    public string ChannelARevers
+    {
+        get => channelARevers;
+        set => Set(ref channelARevers, value);
+    }
+
+    private string channel1Revers = "";
+
+    [JsonIgnore]
+    public string Channel1Revers
+    {
+        get => channel1Revers;
+        set => Set(ref channel1Revers, value);
+    }
+
+
     private string errorStatusVip;
 
     public string ErrorStatusVip
@@ -149,7 +177,7 @@ public class Vip : Notify
                 {
                     ErrorStatusVip = $"{Relay.ErrorStatus}";
                 }
-                else
+                else   //TODO возможно веруть назад с добавлением увлоия на vip.StatusTest == StatusDeviceTest.Warning
                 {
                     ErrorStatusVip = null;
                 }
@@ -164,6 +192,7 @@ public class Vip : Notify
         {
             StatusDeviceTest.Error => Brushes.Red,
             StatusDeviceTest.Ok => Brushes.Green,
+            StatusDeviceTest.Warning => Brushes.DarkOrange,
             _ => Brushes.DarkGray
         };
 
@@ -320,7 +349,7 @@ public class Vip : Notify
         set => Set(ref voltageOut2, value);
     }
 
-    private decimal currentIn;
+    private decimal currentIn = 0;
 
     public decimal CurrentIn
     {

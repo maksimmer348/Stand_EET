@@ -6,5 +6,6 @@ public enum StatusDeviceTest
 {
     None = 0,
     Error,
-    Ok
+    Ok,
+    Warning
 }

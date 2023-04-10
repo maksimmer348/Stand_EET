@@ -20,6 +20,9 @@ public enum TypeOfTestRun
     PrimaryCheckVips,
     PrimaryCheckVipsReady,
     
+    RelaySwitch,
+    RelaySwitchReady,
+    
     DeviceOperation,
     DeviceOperationReady,
     
