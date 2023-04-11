@@ -10,14 +10,14 @@ public class IntervalChecker
     private long last;
     
     private bool autoReset;
-    public float Interval { get; set; }
+    public double Interval { get; set; }
     public int Count { get; private set; }
     public float IntervalRange { get; set; } = 1;
 
     public double Elapsed { get; private set; }
 
     //TODO autoReset = false
-    public IntervalChecker(float interval, bool autoReset = false)
+    public IntervalChecker(double interval, bool autoReset = false)
     {
         watch = new Stopwatch();
         Interval = interval;

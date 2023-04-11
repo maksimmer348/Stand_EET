@@ -323,6 +323,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         }));
     }
 
+
     /// <summary>
     /// Команда ЗАПУСТИТЬ исптания
     /// </summary>
@@ -358,7 +359,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 }
             }
         }
-
         else if (SelectTab == 1)
         {
             try
@@ -366,16 +366,19 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 //--vips
                 await stand.PrimaryCheckVips(Convert.ToInt32(CountChecked), Convert.ToInt32(AllTimeChecked));
             }
+            //Exception отсуствутют или дублируются номера Випов
             catch (Exception e) when (e.Message.ToLower().Contains("номера") || e.Message.ToLower().Contains("тип"))
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
                 MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            //Exception создания отчета
             catch (Exception e) when (e.Message.ToLower().Contains("отчет"))
             {
                 const string caption = "Ошибка создания отчета";
                 MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
+            //Exception оюбщий сбой прдвартиелдьной проверки
             catch (Exception e)
             {
                 const string caption = "Ошибка предварительной проверки реле Випов";
@@ -399,6 +402,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             try
             {
+                
+                //TODO удалить после отладки
+                //--available
+                available = await stand.AvailabilityCheckVip();
+                stand.StartMeasurementCycle();
+                return;
+                //TODO удалить после отладки
+                
                 //--available
                 available = await stand.AvailabilityCheckVip();
 
@@ -408,187 +419,208 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     bool mesZero = await stand.MeasurementZero();
 
                     //TODO вернуть после отладки
-                    // if (mesZero)
-                    // {
-                    //     //--mesaure--cycle
-                    //     stand.StartMeasurementCycle();
-                    // }
+                    if (mesZero)
+                    {
+                        //--mesaure--cycle
+                        stand.StartMeasurementCycle();
+                    }
                     //TODO вернуть после отладки
                 }
             }
-            catch (Exception e) when (e.Message.Contains("Ошибка настройки парамтеров"))
+            //Exception неверные значения преварительной проверки Випов
+            catch (Exception e) when (e.Message.Contains("Значения следующих Випов ошибочны"))
             {
-                const string caption = "Ошибка настройки парамтеров";
-                var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
-                    MessageBoxButton.YesNo, MessageBoxImage.Information);
+                const string caption = "Ошибка предварительной проверки реле Випов";
+                var errorStr = e.Message.Replace("/", "\n ");
+                var result = MessageBox.Show(errorStr + "Перейти в настройки типов Випов?", caption,
+                    MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.Yes)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 4;
-                }
-            }
-            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные"))
-            {
-                string caption = "Ошибка 0 замера";
-                if (!available)
-                {
-                    caption = "Ошибка проерки наличия";
-                }
-
-                var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.OK)
                 {
                     //TODO вернуть после отладки
                     // if (!stand.IsResetAll)
                     // {
-                    //     await stand.ResetAllTests();
+                    // await stand.ResetAllTests(true);
                     // }
+                    // goToSelectTab = 4;
                     //TODO вернуть после отладки
-                }
-                //TODO вернуть после отладки
-                // if (result == MessageBoxResult.No)
-                // {
-                //     // if (!stand.IsResetAll)
-                //     // {
-                //     //     await stand.ResetAllTests();
-                //     // }
-                //     SelectTab = 0;
-                // }
-                //TODO вернуть после отладки
-            }
-
-            catch (Exception e) when (e.Message.Contains("несколько випов"))
-            {
-                const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.No)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 1;
-                }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
 
                     SelectTab = 4;
                 }
-            }
-
-            catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
-            {
-                const string caption = "Ошибка 0 замера";
-                var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
-                    MessageBoxButton.YesNo, MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.No)
                 {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
+                    //TODO вернуть после отладки
+                    // if (!stand.IsResetAll)
+                    // {
+                    // await stand.ResetAllTests(true);
+                    // }
+                    // goToSelectTab = 1;
+                    //TODO вернуть после отладки
 
                     SelectTab = 1;
                 }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 4;
-                }
             }
-
-            catch (Exception e) when (e.Message.Contains("Следующие випы не функционируют"))
+            //Exception отстувуют инициализированые випы тк все они отсеялись во время преварительной проверки Випов
+            catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные"))
             {
-                string caption = "Ошибка 0 замера";
-                if (!available)
+                string caption = "Инициализируйте Випы!";
+                var result = MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
+
+                if (result is MessageBoxResult.OK)
                 {
-                    caption = "Ошибка проерки наличия";
-                }
-
-                var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
-                    MessageBoxImage.Error);
-
-                if (result == MessageBoxResult.No)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
+                    //TODO вернуть после отладки
+                    // if (!stand.IsResetAll)
+                    // {
+                    // await stand.ResetAllTests();
+                    // }
+                    // goToSelectTab = 1;
+                    //TODO вернуть после отладки
+                    
                     SelectTab = 1;
                 }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 4;
-                }
             }
-
-            catch (Exception e)
+            // catch (Exception e) when (e.Message.Contains("Следующие випы не функционируют"))
+            // {
+            //     string caption = "Ошибка 0 замера";
+            //     if (!available)
+            //     {
+            //         caption = "Ошибка проерки наличия";
+            //     }
+            //
+            //     var errorStr = e.Message.Replace("/", "\n ");
+            //     var result = MessageBox.Show(errorStr + " Перейти в настройки Випов?", caption, MessageBoxButton.YesNo,
+            //         MessageBoxImage.Error);
+            //
+            //     if (result == MessageBoxResult.No)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 1;
+            //     }
+            //
+            //     if (result == MessageBoxResult.Yes)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 4;
+            //     }
+            // }
+            // catch (Exception e) when (e.Message.Contains("Ошибка настройки параметров"))
+            // {
+            //     const string caption = "Ошибка настройки парамтеров";
+            //     var result = MessageBox.Show(e.Message + "Перейти в настройки парамтеров?", caption,
+            //         MessageBoxButton.YesNo, MessageBoxImage.Information);
+            //
+            //     if (result == MessageBoxResult.Yes)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //         SelectTab = 4;
+            //     }
+            // }
+            // catch (Exception e) when (e.Message.Contains("несколько випов"))
+            // {
+            //     const string caption = "Ошибка 0 замера";
+            //     var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
+            //         MessageBoxButton.YesNo,
+            //         MessageBoxImage.Information);
+            //
+            //     if (result == MessageBoxResult.No)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 1;
+            //     }
+            //
+            //     if (result == MessageBoxResult.Yes)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 4;
+            //     }
+            // }
+            // catch (Exception e) when (e.Message.Contains("Текущий ток") || e.Message.Contains("Текущее напряжение"))
+            // {
+            //     const string caption = "Ошибка 0 замера";
+            //     var result = MessageBox.Show(e.Message + " Перейти в настройки Випов?", caption,
+            //         MessageBoxButton.YesNo, MessageBoxImage.Information);
+            //
+            //     if (result == MessageBoxResult.No)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 1;
+            //     }
+            //
+            //     if (result == MessageBoxResult.Yes)
+            //     {
+            //         if (!stand.IsResetAll)
+            //         {
+            //             //TODO вернуть после отладки
+            //             //await stand.ResetAllTests();
+            //         }
+            //
+            //         SelectTab = 4;
+            //     }
+            // }
+            //Exception оббщий сбой прдвартиелдьной проверки или 0 замера 
+            catch (Exception e) 
             {
-                string caption = "Ошибка 0 замера";
-                if (!available)
-                {
-                    caption = "Ошибка проерки наличия";
-                }
-
+                string caption = "Ошибка!";
                 var errorStr = e.Message.Replace("/", "\n ");
                 var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
 
                 if (result == MessageBoxResult.No)
                 {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
-                    SelectTab = 0;
+                    //TODO вернуть после отладки
+                    // if (!stand.IsResetAll)
+                    // {
+                    //     await stand.ResetAllTests();
+                    // }
+                    // if(errorStr.Contains("Реле Випа"))
+                        // goToSelectTab = 1;
+                    // else
+                    // goToSelectTab = 0;
+                   
+                    //TODO вернуть после отладки
+                    SelectTab = errorStr.Contains("Реле Випа") ? 1 : 0;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (!stand.IsResetAll)
-                    {
-                        //TODO вернуть после отладки
-                        //await stand.ResetAllTests();
-                    }
-
+                    //TODO вернуть после отладки
+                    // if (!stand.IsResetAll)
+                    // {
+                    //     await stand.ResetAllTests();
+                    // }
+                    // goToSelectTab = 3;
+                    //TODO вернуть после отладки
+                    
                     SelectTab = 3;
                 }
             }
@@ -727,7 +759,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             //TODO добавит когда повяться время
             // stand.timeMachine.CountChecked = CountChecked;
             // stand.timeMachine.AllTimeChecked = AllTimeChecked;
-            // stand.SerializeTime();
+            //stand.SerializeTime();
             //TODO добавит когда повяться время
         }
         catch (Exception e)
@@ -739,7 +771,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         return Task.CompletedTask;
     }
 
-    
+
     bool CanSaveSettingsCmdExecuted(object p)
     {
         return Error == null; //|| !Error.Contains("устройств");
@@ -892,12 +924,18 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         typeConfig.MaxTemperature = ConvertValToVip(Temperature);
 
         typeConfig.ZeroTestInterval = ZeroTestInterval;
-
-        typeConfig.TestAllTime = TestAllTime;
+        
+        typeConfig.TestFirstIntervalTime = TestFirstIntervalTime; 
         typeConfig.TestIntervalTime = TestIntervalTime;
-
+        typeConfig.TestAllTime = TestAllTime;
+        
         typeConfig.VoltageOut2Using = voltageOuе2Using;
 
+        // typeConfig.SetTestAllTime = voltageOuе2Using;
+        // typeConfig.VoltageOut2Using = voltageOuе2Using;
+        // typeConfig.VoltageOut2Using = voltageOuе2Using;
+        
+        
         typeConfig.SetDeviceParameters(new DeviceParameters()
         {
             BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
@@ -926,12 +964,13 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     bool CanSaveTypeVipSettingsCmdExecuted(object p)
     {
-        return Error == null || !Error.Contains("параметров") && !Error.Contains("Випа") && !Error.Contains("документации");
+        return Error == null ||
+               !Error.Contains("параметров") && !Error.Contains("Випа") && !Error.Contains("документации");
     }
 
     private decimal ConvertValToVip(string s)
     {
-        return string.IsNullOrWhiteSpace(s) ? 0m : Convert.ToDecimal(PrepareMaxCurrentIn.Replace(',', '.'));
+        return string.IsNullOrWhiteSpace(s) ? 0m : Convert.ToDecimal(s.Replace(',', '.'));
     }
 
 
@@ -969,10 +1008,11 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             Temperature = null;
 
             ZeroTestInterval = 0;
-
-            TestAllTime = TimeSpan.Zero;
+            
+            TestFirstIntervalTime = TimeSpan.Zero;
             TestIntervalTime = TimeSpan.Zero;
-
+            TestAllTime = TimeSpan.Zero;
+            
             voltageOuе2Using = false;
 
             FreqLoad = null;
@@ -2065,9 +2105,10 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     selectTypeVipSettings.MaxTemperature.ToString(CultureInfo.InvariantCulture);
 
                 ZeroTestInterval = selectTypeVipSettings.ZeroTestInterval;
-
-                TestAllTime = selectTypeVipSettings.TestAllTime;
+                
+                TestFirstIntervalTime = selectTypeVipSettings.TestFirstIntervalTime;
                 TestIntervalTime = selectTypeVipSettings.TestIntervalTime;
+                TestAllTime = selectTypeVipSettings.TestAllTime;
 
                 FreqLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Freq;
                 AmplLoad = selectTypeVipSettings.GetDeviceParameters().BigLoadValues.Ampl;
@@ -2240,14 +2281,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref zeroTestInterval, value);
     }
 
-    private TimeSpan testAllTime;
+    private TimeSpan testFirstIntervalTime;
 
-    public TimeSpan TestAllTime
+    public TimeSpan TestFirstIntervalTime
     {
-        get => testAllTime;
-        set => Set(ref testAllTime, value);
+        get => testFirstIntervalTime;
+        set => Set(ref testFirstIntervalTime, value);
     }
-
+    
     private TimeSpan testIntervalTime;
 
     public TimeSpan TestIntervalTime
@@ -2256,6 +2297,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref testIntervalTime, value);
     }
 
+    private TimeSpan testAllTime;
+
+    public TimeSpan TestAllTime
+    {
+        get => testAllTime;
+        set => Set(ref testAllTime, value);
+    }
+    
     private int currentTypeVipSettings;
 
     public int CurrentTypeVipSettings
@@ -2527,7 +2576,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     }
 
     public string TimeTestStart => stand.TimeTestStart;
-    public string TimeTestNext => stand.TimeTestNext;
+    public string TimeObservableTestNext => stand.TimeObservableTestNext;
+    public string TimeControlTestNext => stand.TimeControlTestNext;
     public string TimeTestStop => stand.TimeTestStop;
 
     #endregion
@@ -2644,13 +2694,19 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 case nameof(MaxCurrentIn):
                 case nameof(Temperature):
                 case nameof(ZeroTestInterval):
-                case nameof(TestAllTime):
-                case nameof(TestIntervalTime):
                 case nameof(PercentAccuracyCurrent):
                 case nameof(PercentAccuracyVoltages):
                 case nameof(PercentAccuracyTemperature):
                     if (string.IsNullOrWhiteSpace(strValue))
                         error = $"Поле {columnName} типа Випа не должно быть пустым";
+                    break;
+                case nameof(TestFirstIntervalTime):
+                case nameof(TestIntervalTime):
+                case nameof(TestAllTime):
+                    if (string.IsNullOrWhiteSpace(strValue))
+                        error = $"Поле {columnName} типа Випа не должно быть пустым";
+                    if (!TimeSpan.TryParseExact(strValue, "hh\\:mm\\:ss", null ,out _))
+                        error = $"Поле {columnName} типа Випа должно иметь вид 00:00:00";
                     break;
                 case nameof(OutputOnLoad):
                 case nameof(OutputOffLoad):
@@ -2697,8 +2753,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         this[nameof(MaxVoltageOut2)] ??
         this[nameof(Temperature)] ??
         this[nameof(ZeroTestInterval)] ??
-        this[nameof(TestAllTime)] ??
+        this[nameof(TestFirstIntervalTime)] ??
         this[nameof(TestIntervalTime)] ??
+        this[nameof(TestAllTime)] ??
         this[nameof(PercentAccuracyCurrent)] ??
         this[nameof(PercentAccuracyCurrent)] ??
         this[nameof(PercentAccuracyCurrent)] ??
@@ -2721,7 +2778,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         this[nameof(CurrentMeterCurrentMax)] ??
         this[nameof(TermocoupleType)] ??
         this[nameof(ShuntResistance)] ??
-        this[nameof(VoltMeterVoltMax)]??
+        this[nameof(VoltMeterVoltMax)] ??
         //
         this[nameof(NameDevice)] ??
         this[nameof(PortName)] ??

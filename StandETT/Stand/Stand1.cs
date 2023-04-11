@@ -270,6 +270,11 @@ public class Stand1 : Notify
 
     private System.Timers.Timer timerTest;
 
+    // private Stopwatch testTickStopwatch;
+    // private Stopwatch testFirstIntervalStopwatch;
+    // private Stopwatch testIntervalStopwatch;
+    // private Stopwatch testLastMeasurementStopwatch;
+
     private string timeTestStart;
 
     public string TimeTestStart
@@ -278,12 +283,20 @@ public class Stand1 : Notify
         set => Set(ref timeTestStart, value);
     }
 
-    private string timeTestNext;
+    private string timeObservableTestNext;
 
-    public string TimeTestNext
+    public string TimeObservableTestNext
     {
-        get => timeTestNext;
-        set => Set(ref timeTestNext, value);
+        get => timeObservableTestNext;
+        set => Set(ref timeObservableTestNext, value);
+    }
+
+    private string timeControlTestNext;
+
+    public string TimeControlTestNext
+    {
+        get => timeControlTestNext;
+        set => Set(ref timeControlTestNext, value);
     }
 
     private string timeTestStop;
@@ -307,6 +320,11 @@ public class Stand1 : Notify
 
     public Stand1()
     {
+        // testTickStopwatch = new Stopwatch();
+        // testFirstIntervalStopwatch = new Stopwatch();
+        // testIntervalStopwatch = new Stopwatch();
+        // testLastMeasurementStopwatch = new Stopwatch();
+
         creatorAllDevicesAndLib = new();
 
         //-
@@ -529,8 +547,7 @@ public class Stand1 : Notify
         resetAll = true;
 
         ResetMeasurementCycle();
-
-
+        
         ctsAllCancel?.Cancel();
         ctsConnectDevice?.Cancel();
         ctsReceiveDevice?.Cancel();
@@ -730,12 +747,23 @@ public class Stand1 : Notify
         intervalMeasurementCycle?.Stop();
         lastIntervalMeasurementStop?.Stop();
 
+        TimeObservableTestNext = String.Empty;
+        TimeControlTestNext = String.Empty;
+        TimeTestStop = String.Empty;
+        TimeTestStart = String.Empty;
+
+        if (tickTimer != null)
+        {
+            tickTimer.Stop();
+            tickTimer.Elapsed -= CycleTimer_Tick;
+        }
+
         if (timerTest != null)
         {
             timerTest.Elapsed -= TimerOnElapsed;
             timerTest.Stop();
         }
-
+        
         //
         SetPriorityStatusStand(1, $"Сброс таймера испытаний, ок!", percentSubTest: 100,
             colorSubTest: Brushes.Green, clearAll: true);
@@ -816,20 +844,19 @@ public class Stand1 : Notify
         ProgressColor = Brushes.Red;
         TestRun = TypeOfTestRun.Error;
         //
-        throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой.\n");
+        throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
     }
 
     //--випы--vips--relay--check--проверка--
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
         //TODO удалить после отладки
-        // int vn = 0;
         foreach (var vip in vips)
         {
-            if (vip.Id is > 1 or 5 and < 9)
+            // if (vip.Id is 1 or 6 or 11)
+            if (vip.Id is 1)
             {
                 vip.Name = vip.Id.ToString();
-                // vn++;
             }
         }
 
@@ -839,6 +866,7 @@ public class Stand1 : Notify
         //
         // s.Restart();
         //
+
         TestRun = TypeOfTestRun.PrimaryCheckVips;
         ProgressColor = Brushes.Green;
         PercentCurrentTest = 30;
@@ -862,6 +890,7 @@ public class Stand1 : Notify
 
         TempChecks t = TempChecks.Start();
         await ResetAllVips(innerCountCheck, innerDelay);
+
         //предварительная настройка тестрировать ли вип => если у Випа есть имя то тестировать
         vipsTested = GetIsTestedVips();
 
@@ -935,7 +964,7 @@ public class Stand1 : Notify
     {
         ResetCheckVips();
 
-        TimeTestStart = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+        // TimeTestStart = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
         if (!vipsTested.Any())
         {
@@ -1195,26 +1224,26 @@ public class Stand1 : Notify
                 throw new Exception("Отсутвуют инициализировнные реле випов!");
             }
 
-            //TODO уточнить добавлять ли сюда тк он конфигурится в методе выше AvailabilityCheckVip
-            //волтьтметра
-            // currentDevice = devices.GetTypeDevice<VoltMeter>();
-            // var getVoltValues = GetParameterForDevice().VoltValues;
-            // if (tp.IsOk)
-            //     await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
-            //         innerCountCheck, innerDelay, tp, "Get func", "Get volt meter");
-            //TODO уточнить добавлять ли сюда тк он конфигурится в методе выше AvailabilityCheckVip
-
             try
             {
+                //
                 // s1.Restart();
+                //
+
                 foreach (var vipTested in vipsTested)
                 {
                     if (t.IsOk) await TestVip(vipTested, TypeOfTestRun.MeasurementZero, t: t);
+
+                    //
                     //Debug.WriteLine(s1.ElapsedMilliseconds + $"ms/Zero/{vipTested.Name}");
+                    //
                 }
 
                 testVipPlay = false;
+
+                //
                 //Debug.WriteLine(s1.ElapsedMilliseconds + $"ms/Zero");
+                //
 
                 if (vipsStopped.Any())
                 {
@@ -1228,6 +1257,7 @@ public class Stand1 : Notify
                     PercentCurrentTest = 100;
                     ProgressColor = Brushes.Red;
                     //
+
                     var stopString = StoppedDeviceMessage(t);
                     throw new Exception(stopString);
                 }
@@ -1260,7 +1290,7 @@ public class Stand1 : Notify
         PercentCurrentTest = 100;
         ProgressColor = Brushes.Red;
         //
-        throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой.\n");
+        throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
     }
 
 
@@ -1408,7 +1438,7 @@ public class Stand1 : Notify
     //     PercentCurrentTest = 100;
     //     ProgressColor = Brushes.Red;
     //     //
-    //     throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой.\n");
+    //     throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
     // }
     //TODO уточнить будет ли вообще в стенде
 
@@ -1453,9 +1483,37 @@ public class Stand1 : Notify
     //     PercentCurrentTest = 100;
     //     ProgressColor = Brushes.Red;
     //     //
-    //     throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой.\n");
+    //     throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
     // }
     //TODO уточнить будет ли вообще в стенде
+
+
+    // TimeSpan tickIntervalTime;
+    // TimeSpan firstIntervalTime;
+    // TimeSpan intervalMeasurementTime;
+    // TimeSpan lastMeasurementTime;
+
+
+    //private DispatcherTimer tickTimer;
+
+    private System.Timers.Timer tickTimer;
+    // private DispatcherTimer cycleTimer;
+    // private DispatcherTimer stopTimer;
+
+
+    //TODO сделать тик таймера 120000 милисекунд = 120 секунд = 2 минуты (возможно теперь больше)
+    double tickIntervalMs = 30000;
+    double tickTimeSec = 30;
+
+    //TODO сделать первый замер 1800 секунд = 30 минут
+    double firstIntervalSec = 1800;
+    double cycleTime = 1800;
+    //TODO сделать последующие замеры 7200 секунд = 2 часа
+    double intervalMeasurementSec = 7200;
+
+    //TODO сделать последний замер/заверщение замеров 28800 секунд = 8 часов
+    double lastMeasurementSec = 28800;
+    double stopTime = 28800;
 
     //--mesaure--cycle--cucle--start--loop
     public bool StartMeasurementCycle()
@@ -1467,34 +1525,40 @@ public class Stand1 : Notify
         SetPriorityStatusStand(0, clearAll: true);
         //
 
+        if (vipsTested.Any())
+        {
+            firstIntervalSec = vipsTested[0].Type.TestFirstIntervalTime.TotalSeconds;
+            intervalMeasurementSec = vipsTested[0].Type.TestIntervalTime.TotalSeconds;
+            lastMeasurementSec = vipsTested[0].Type.TestAllTime.TotalSeconds;
+        }
+
+        tickTimeSec = tickIntervalMs / 1000;
+        cycleTime = firstIntervalSec;
+        stopTime = lastMeasurementSec;
+        
         try
         {
-            countCheckCycle = 1;
-            countMeasurementCycle = 1;
-
-            //TODO уточнить надо ли выносить в текстбоксы время испытаний и прочее время
-            //тик таймера 120000 милисекунд = 120 секунд = 2 минуты
-            int tickInterval = 10000;
-
-            //первый замер 1800 секунд = 30 минут
-            int firstInterval = 30;
-            //последующие замеры 7200 секунд = 2 часа
-            int intervalMeasurement = 60;
-            //последний замер/заверщение замеров 28800 секунд = 8 часов
-            int lastMeasurement = 240;
-            //TODO уточнить надо ли выносить в текстбоксы время испытаний и прочее время
-
+            // countCheckCycle = 1;
+            // countMeasurementCycle = 1;
+            
             if (timerTest != null)
             {
                 timerTest.Stop();
                 timerTest.Elapsed -= TimerOnElapsed;
             }
 
-            timerTest = new System.Timers.Timer(tickInterval);
-
-            firstIntervalMeasurementCycle = new(firstInterval);
-            intervalMeasurementCycle = new(intervalMeasurement);
-            lastIntervalMeasurementStop = new(lastMeasurement);
+            if (tickTimer != null)
+            {
+                tickTimer.Stop();
+                tickTimer.Elapsed -= CycleTimer_Tick;
+            }
+            
+            timerTest = new System.Timers.Timer(tickIntervalMs);
+            tickTimer = new System.Timers.Timer(1000);
+            
+            firstIntervalMeasurementCycle = new(firstIntervalSec);
+            intervalMeasurementCycle = new(intervalMeasurementSec);
+            lastIntervalMeasurementStop = new(lastMeasurementSec);
 
             //Debug.Write("============================\n");
 
@@ -1503,11 +1567,17 @@ public class Stand1 : Notify
                 colorSubTest: Brushes.Azure, clearAll: true);
             //
 
+            //sTests.Restart();
             TimeTestStart = DateTime.Now.ToString("HH:mm:ss");
-            sTests.Restart();
+            
+            tickTimer.Elapsed += CycleTimer_Tick;
+            tickTimer.Enabled = true;
+            
             timerTest.Elapsed += TimerOnElapsed;
             timerTest.Enabled = true;
+
             timerTest.Start();
+            tickTimer.Start();
         }
 
         catch (Exception e)
@@ -1518,8 +1588,35 @@ public class Stand1 : Notify
         return false;
     }
 
-    int countCheckCycle = 0;
-    int countMeasurementCycle = 0;
+    private void CycleTimer_Tick(object sender, EventArgs e)
+    {
+        tickTimeSec--;
+        cycleTime--;
+        stopTime--;
+        
+        if (tickTimeSec <= 0)
+        {
+            tickTimeSec = tickIntervalMs / 1000;
+        }
+        if (cycleTime <= 0)
+        {
+            cycleTime = intervalMeasurementSec;
+        }
+        if (stopTime == 0)
+        {
+            tickTimeSec = 0;
+            cycleTime = 0;
+            tickTimeSec = 0;
+            tickTimer.Stop();
+        }
+
+        TimeObservableTestNext = TimeSpan.FromSeconds(tickTimeSec).ToString(@"hh\:mm\:ss");
+        TimeControlTestNext = TimeSpan.FromSeconds(cycleTime).ToString(@"hh\:mm\:ss");
+        TimeTestStop = TimeSpan.FromSeconds(stopTime).ToString(@"hh\:mm\:ss");
+    }
+
+    // int countCheckCycle = 0;
+    // int countMeasurementCycle = 0;
 
     private ReportCreator report;
 
@@ -1560,7 +1657,7 @@ public class Stand1 : Notify
 
                     // Debug.WriteLine(sTests.ElapsedMilliseconds + $" mc/FirstCyclicMeasurement END/{countMeasurementCycle}");
 
-                    countMeasurementCycle++;
+                    // countMeasurementCycle++;
 
                     firstIntervalMeasurementCycle.Stop();
                 }
@@ -1596,7 +1693,7 @@ public class Stand1 : Notify
 
                     //Debug.WriteLine(sTests.ElapsedMilliseconds + $" mc/LastCyclicMeasurement END/{countCheckCycle}");
 
-                    countMeasurementCycle++;
+                    // countMeasurementCycle++;
 
                     ResetMeasurementCycle();
 
@@ -1645,7 +1742,7 @@ public class Stand1 : Notify
 
                     // Debug.WriteLine(sTests.ElapsedMilliseconds + $" mc/CyclicMeasurement END/{countMeasurementCycle}");
 
-                    countMeasurementCycle++;
+                    // countMeasurementCycle++;
                 }
                 else
                 {
@@ -1671,7 +1768,7 @@ public class Stand1 : Notify
 
                     // Debug.WriteLine(sTests.ElapsedMilliseconds + $" mc/CycleCheck END/{countCheckCycle}");
 
-                    countCheckCycle++;
+                    // countCheckCycle++;
                 }
 
                 if (resetAll || stopMeasurement) return;
@@ -1686,7 +1783,7 @@ public class Stand1 : Notify
                     ProgressColor = Brushes.Red;
                     //
                     timerErrorDevice?.Invoke(
-                        "Одно или несколько устройств не ответили или ответили\nс ошибкой.\n");
+                        "Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
                 }
             }
 
@@ -1737,6 +1834,7 @@ public class Stand1 : Notify
             timerErrorDevice?.Invoke(ex.Message);
         }
     }
+
 
     //--tick--test--ass
     async Task<(bool result, Vip vip)> MeasurementTick(Vip vip, TypeOfTestRun typeTest, int countChecked = 3,
@@ -2992,6 +3090,15 @@ public class Stand1 : Notify
     }
 
 
+    /// <summary>
+    /// Переключения реле измерений на необзодимы канал
+    /// </summary>
+    /// <param name="vip"></param>
+    /// <param name="channel"></param>
+    /// <param name="innerCountCheck"></param>
+    /// <param name="innerDelay"></param>
+    /// <param name="t"></param>
+    /// <returns></returns>
     private async Task<bool> SetTestChannelVip(Vip vip, SetTestChannel channel, int innerCountCheck = 3,
         int innerDelay = 200,
         TempChecks t = null)
@@ -3276,7 +3383,7 @@ public class Stand1 : Notify
         return false;
     }
 
-    private bool testVipPlay = false;
+    private bool testVipPlay;
 
     //--tv--test
     private async Task<bool> TestVip(Vip vip, TypeOfTestRun typeTest, int innerCountCheck = 3, int innerDelay = 200,
@@ -3357,7 +3464,7 @@ public class Stand1 : Notify
         //задание задержки для переключения каналов измерений напряжений 1 и 2 и канала измерения тока
         var delay = typeTest switch
         {
-            TypeOfTestRun.AvailabilityCheckVip => 5000,
+            TypeOfTestRun.AvailabilityCheckVip => 3000,
             TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
             TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 3000,
             _ => 3000
@@ -3366,6 +3473,8 @@ public class Stand1 : Notify
         // Debug.WriteLine($"Проверка реле випа/{s.ElapsedMilliseconds} mc /{typeTest}/Вип - {vip.Id}");
         // s.Restart();
 
+        SetTestChannel setChannel;
+
         if (tpr.IsOk)
         {
             //задание чекера для 1 канала напряжений
@@ -3373,10 +3482,11 @@ public class Stand1 : Notify
 
             if (vip.Type.PrepareMaxVoltageOut1 > 0)
             {
+                setChannel = SetTestChannel.ChannelV1;
                 if (tp.IsOk)
                 {
                     //переключение канала измерений Випа на 1 канала вольт
-                    await SetTestChannelVip(vip, SetTestChannel.ChannelV1, t: tp);
+                    await SetTestChannelVip(vip, setChannel, t: tp);
 
                     //задержка для переключения каналов измерений напряжения 1 
                     try
@@ -3415,18 +3525,8 @@ public class Stand1 : Notify
                     //проверка замеров 1 канала напряжения 
                     voltage1 = GetValueReceive(devices.GetTypeDevice<VoltMeter>(), receivesDataV1);
 
-                    //сброс состояния 1 канала напряжений
-                    TypeCheckVal typeVolt1 = TypeCheckVal.None;
-                    //1 канала напряжений на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
-                    switch (typeTest)
-                    {
-                        case TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero:
-                            typeVolt1 = TypeCheckVal.PrepareVoltage1;
-                            break;
-                        case TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck:
-                            typeVolt1 = TypeCheckVal.Voltage1;
-                            break;
-                    }
+                    //выбор типа напряжения
+                    var typeVolt1 = SelectTypeTestVoltage(typeTest, setChannel);
 
                     //проверка значение на соотоветтвие с учетом допусков в %
                     var checkValueInVip = CheckValueInVip(vip, voltage1, typeVolt1, tpv1);
@@ -3439,13 +3539,14 @@ public class Stand1 : Notify
             //задание чекера для 2 канала напряжений
             TempChecks tpv2 = TempChecks.Start();
 
-
             if (vip.Type.PrepareMaxVoltageOut2 > 0)
             {
+                setChannel = SetTestChannel.ChannelV2;
+
                 if (tp.IsOk)
                 {
                     //переключение канала измерений Випа на 2 канала вольт
-                    await SetTestChannelVip(vip, SetTestChannel.ChannelV2, t: tp);
+                    await SetTestChannelVip(vip, setChannel, t: tp);
                     //задержка для переключения каналов измерений напряжения 2
                     try
                     {
@@ -3475,25 +3576,15 @@ public class Stand1 : Notify
                     receivesDataV2 = await WriteIdentCommand(currentDevice, "Get all value", t: tp, isReceiveVal: true);
                 }
 
-
                 //проверка напряжений для режима проверки наличия и 0 замера
                 if (tp.IsOk)
                 {
                     //проверка замеров 2 канала напряжения 
                     voltage2 = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receivesDataV2);
 
-                    //сброс состояния 2 канала напряжений
-                    TypeCheckVal typeVolt2 = TypeCheckVal.None;
-                    //2 канала на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
-                    switch (typeTest)
-                    {
-                        case TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero:
-                            typeVolt2 = TypeCheckVal.PrepareVoltage2;
-                            break;
-                        case TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck:
-                            typeVolt2 = TypeCheckVal.Voltage2;
-                            break;
-                    }
+                    //выбор типа напряжения
+                    var typeVolt2 = SelectTypeTestVoltage(typeTest, setChannel);
+
 
                     //проверка значение на соотоветтвие с учетом допусков в %
                     var checkValueInVip = CheckValueInVip(vip, voltage2, typeVolt2, tpv2);
@@ -3509,17 +3600,18 @@ public class Stand1 : Notify
             //задание чекера для канала тока
             TempChecks tpc = TempChecks.Start();
 
+            setChannel = SetTestChannel.ChannelA;
 
             if (tp.IsOk)
             {
                 //переключение на канал тока I = receivesDataA / shuntResistanse
-                await SetTestChannelVip(vip, SetTestChannel.ChannelA, t: tp);
+                await SetTestChannelVip(vip, setChannel, t: tp);
 
                 //задержка для переключения каналов измерений тока
                 try
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(delay),
-                        ctsAllCancel.Token); //TODO 10000 => delay or aDelay
+                        ctsAllCancel.Token);
                 }
                 catch (TaskCanceledException) when (ctsAllCancel.IsCancellationRequested)
                 {
@@ -3552,23 +3644,8 @@ public class Stand1 : Notify
                 //канала тока на на сосответвие, приведение их в удобочитаемый вид и запись значений в соотв Вип
                 var rawVoltage = GetValueReceive(devices.GetTypeDevice<VoltCurrentMeter>(), receiveDataA);
 
-                //сброс состояния канала тока
-                TypeCheckVal typeCurr = TypeCheckVal.None;
-                switch (typeTest)
-                {
-                    //проверка тока для режима проверки наличия
-                    case TypeOfTestRun.AvailabilityCheckVip:
-                        typeCurr = TypeCheckVal.AvailabilityCurrent;
-                        break;
-                    //проверка тока для режима 0 замера
-                    case TypeOfTestRun.MeasurementZero:
-                        typeCurr = TypeCheckVal.PrepareCurrent;
-                        break;
-                    //проверка напряжений для режима цикла испытаний
-                    case TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck:
-                        typeCurr = TypeCheckVal.Current;
-                        break;
-                }
+                //выбор типа тока
+                var typeCurr = SelectTypeTestVoltage(typeTest, setChannel);
 
                 //вытачкивааем значение сопротивления шунта из конфига вольтамперметра
                 var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
@@ -3630,13 +3707,13 @@ public class Stand1 : Notify
             if (voltage2IsNegative && tpv2.IsOk)
             {
                 vip.StatusTest = StatusDeviceTest.Warning;
-                vip.Channel2Revers = "/+⇄-";
+                vip.Channel2Revers += "/+⇄-";
             }
 
             if (current2IsNegative && tpc.IsOk)
             {
                 vip.StatusTest = StatusDeviceTest.Warning;
-                vip.ChannelARevers = "/+⇄-";
+                vip.ChannelARevers += "/+⇄-";
             }
 
             //если какойто из чекеров false
@@ -3677,7 +3754,7 @@ public class Stand1 : Notify
                             typeVipСurrent = vip.Type.MaxCurrentIn;
                             break;
                     }
-                    
+
                     if (extraError)
                     {
                         vip.ErrorStatusVip = "Переполюсовка";
@@ -3898,8 +3975,7 @@ public class Stand1 : Notify
 
         try
         {
-            if (typeTest is TypeOfTestRun.MeasurementZero or TypeOfTestRun.CyclicMeasurement
-                or TypeOfTestRun.CycleCheck)
+            if (typeTest is not TypeOfTestRun.AvailabilityCheckVip)
             {
                 await report.CreateReport(vip, true);
             }
@@ -3933,6 +4009,58 @@ public class Stand1 : Notify
         vip.CurrentIn = 0;
         t.Add(false);
         return false;
+    }
+
+    /// <summary>
+    /// Выбор типа измеряемого значения в зависимотсти от режима проверки (наличия, 0 замера, цикла испытаний)
+    /// </summary>
+    /// <param name="typeTest">Тип редима проверки</param>
+    /// <param name="channel">Канал измериямых значений</param>
+    /// <returns>Тип измеряемого значения</returns>
+    private static TypeCheckVal SelectTypeTestVoltage(TypeOfTestRun typeTest, SetTestChannel channel)
+    {
+        //сброс состояния канала
+        TypeCheckVal typeChannel = TypeCheckVal.None;
+
+        //проверка 1 канала напряжения
+        if (channel == SetTestChannel.ChannelV1)
+        {
+            //для режима проверки наличия и 0 замера
+            if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
+                typeChannel = TypeCheckVal.PrepareVoltage1;
+            //для режима цикла испытаний
+            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+                typeChannel = TypeCheckVal.Voltage1;
+        }
+        //проверка 2 канала напряжения
+        else if (channel == SetTestChannel.ChannelV2)
+        {
+            //для режима проверки наличия и 0 замера
+            if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
+                typeChannel = TypeCheckVal.PrepareVoltage2;
+            //для режима цикла испытаний
+            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+                typeChannel = TypeCheckVal.Voltage2;
+        }
+        //проверка канала тока 
+        else if (channel == SetTestChannel.ChannelA)
+        {
+            //проверка для режима проверки наличия
+            if (typeTest is TypeOfTestRun.AvailabilityCheckVip)
+                typeChannel = TypeCheckVal.AvailabilityCurrent;
+            //проверка для режима 0 замера
+            else if (typeTest is TypeOfTestRun.MeasurementZero)
+                typeChannel = TypeCheckVal.PrepareCurrent;
+            //проверка для режима цикла испытаний
+            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+                typeChannel = TypeCheckVal.Current;
+        }
+        else
+        {
+            typeChannel = TypeCheckVal.None;
+        }
+
+        return typeChannel;
     }
 
     /// <summary>

@@ -360,12 +360,33 @@
                             <DataTemplate>
                                 <StackPanel HorizontalAlignment=" Center" VerticalAlignment="Center">
                                     <Grid Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Rectangle MinHeight="30" MinWidth="30"
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <Rectangle Grid.Column="0" Margin="10" MinHeight="30" MinWidth="30"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center" DataContext="{Binding Path=Relay}"
                                                    Fill="{Binding StatusColor}" />
-                                        <TextBlock HorizontalAlignment="Center"
+                                        <TextBlock Grid.Column="0" Margin="10" HorizontalAlignment="Center"
                                                    VerticalAlignment="Center" Text="Стат" FontSize="12" />
+
+                                        <Rectangle Grid.Column="1" Margin="10" DockPanel.Dock="Left" MinHeight="25"
+                                                   MinWidth="25"
+                                                   Fill="{Binding StatusColor}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                            <Rectangle.RenderTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform />
+                                                    <SkewTransform />
+                                                    <RotateTransform Angle="45" />
+                                                    <TranslateTransform />
+                                                </TransformGroup>
+                                            </Rectangle.RenderTransform>
+                                        </Rectangle>
+                                        <TextBlock Grid.Column="1" Margin="10" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" Text="Тест" FontSize="12" />
                                     </Grid>
 
                                     <TextBlock Margin="2" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -403,7 +424,7 @@
 
                     <Grid Margin="0" ShowGridLines="True">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="4*"></ColumnDefinition>
+                            <ColumnDefinition Width="3*"></ColumnDefinition>
                             <ColumnDefinition></ColumnDefinition>
 
                         </Grid.ColumnDefinitions>
@@ -478,7 +499,9 @@
                             <TextBlock HorizontalAlignment="Left"
                                        Text="{Binding TimeTestStart, UpdateSourceTrigger=PropertyChanged, StringFormat=Начало испытаний: {0}}" />
                             <TextBlock HorizontalAlignment="Left"
-                                       Text="{Binding TimeTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Следующий замер через: {0}}" />
+                                       Text="{Binding TimeObservableTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Контролирущий замер через: {0}}" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       Text="{Binding TimeControlTestNext, UpdateSourceTrigger=PropertyChanged, StringFormat=Контрольный замер через: {0}}" />
                             <TextBlock HorizontalAlignment="Left"
                                        Text="{Binding TimeTestStop, UpdateSourceTrigger=PropertyChanged, StringFormat=До конца испытаний: {0}}" />
                         </StackPanel>
@@ -939,6 +962,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0.15*" />
                             <RowDefinition />
+                            <RowDefinition Height="0.1*" />
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0" DockPanel.Dock="Left">
@@ -1005,20 +1029,7 @@
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding ZeroTestInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
-                                <TextBlock DockPanel.Dock="Left" Text="t общ. цикла" IsEnabled="False" />
-                                <TextBox Style="{StaticResource TextBoxStyle}"
-                                         Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
-                                         IsEnabled="False" />
-
-                                <TextBlock Text="t интерв. цикла" IsEnabled="False" />
-                                <TextBox Style="{StaticResource TextBoxStyle}"
-                                         Text="{Binding TestIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
-                                         IsEnabled="False" />
-
-
-                                <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
-                                <Button Command="{Binding RemoveTypeVipSettingsCmd}" Content="Удалить" />
-                            </StackPanel>
+                                 </StackPanel>
 
                             <StackPanel Grid.Row="1" Grid.Column="1">
                                 <TextBlock Text="% погрешности" />
@@ -1043,8 +1054,33 @@
                                 <TextBlock Text="% погрешности" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding PercentAccuracyTemperature, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                                
+                                <TextBlock Text="t 1 цикла" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TestFirstIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+
+                                <TextBlock Text="t циклов" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TestIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+
+                                <TextBlock DockPanel.Dock="Left" Text="t общ. цикла" IsEnabled="False" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+
+                                
                             </StackPanel>
                         </Grid>
+                        <StackPanel Orientation="Vertical" Grid.Row="2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Button Command="{Binding SaveTypeVipSettingsCmd}" Content="Создать" />
+                                <Button Grid.Column="1" Command="{Binding RemoveTypeVipSettingsCmd}" Content="Удалить" />
+                            </Grid>
+
+                        </StackPanel>
 
                     </Grid>
 

@@ -61,11 +61,13 @@ public class ReportCreator
 
         if (isError)
         {
-            var onlyLetters1 = new String(addr.channel1Addr.Where(Char.IsLetter).ToArray()).ToUpper();
-            string addrErrors1 = $"{addr.channel1Addr}:{onlyLetters1}11";
-            excelWorksheet.Cells[addrErrors1].Value = 0;
-            excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
-
+            if (vip.Type.PrepareMaxVoltageOut1 > 0)
+            {
+                var onlyLetters1 = new String(addr.channel1Addr.Where(Char.IsLetter).ToArray()).ToUpper();
+                string addrErrors1 = $"{addr.channel1Addr}:{onlyLetters1}11";
+                excelWorksheet.Cells[addrErrors1].Value = 0;
+                excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
+            }
             if (vip.Type.PrepareMaxVoltageOut2 > 0)
             {
                 var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();

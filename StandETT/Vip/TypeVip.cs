@@ -116,9 +116,11 @@ public class TypeVip : Notify
 
     public double ZeroTestInterval { get; set; }
     public TimeSpan TestIntervalTime { get; set; }
+    public TimeSpan TestFirstIntervalTime { get; set; }
     public TimeSpan TestAllTime { get; set; }
     
- 
+    
+    public bool SetTestAllTime { get; set; }
 
     #endregion
 
