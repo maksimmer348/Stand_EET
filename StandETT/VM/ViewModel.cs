@@ -405,9 +405,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 
                 //TODO удалить после отладки
                 //--available
-                available = await stand.AvailabilityCheckVip();
-                stand.StartMeasurementCycle();
-                return;
+                // available = await stand.AvailabilityCheckVip();
+                // stand.StartMeasurementCycle();
+                // return;
                 //TODO удалить после отладки
                 
                 //--available

@@ -755,12 +755,12 @@ public class Stand1 : Notify
         if (tickTimer != null)
         {
             tickTimer.Stop();
-            tickTimer.Elapsed -= CycleTimer_Tick;
+            tickTimer.Elapsed -= CycleTime_Tick;
         }
 
         if (timerTest != null)
         {
-            timerTest.Elapsed -= TimerOnElapsed;
+            timerTest.Elapsed -= MeasurementCycle_Tick;
             timerTest.Stop();
         }
         
@@ -851,16 +851,16 @@ public class Stand1 : Notify
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
         //TODO удалить после отладки
-        foreach (var vip in vips)
-        {
-            // if (vip.Id is 1 or 6 or 11)
-            if (vip.Id is 1)
-            {
-                vip.Name = vip.Id.ToString();
-            }
-        }
-
-        ReportNum = "отчет Тест";
+        // foreach (var vip in vips)
+        // {
+        //     // if (vip.Id is 1 or 6 or 11)
+        //     if (vip.Id is 1)
+        //     {
+        //         vip.Name = vip.Id.ToString();
+        //     }
+        // }
+        //
+        // ReportNum = "отчет Тест";
         //TODO удалить после отладки
 
         //
@@ -1130,6 +1130,9 @@ public class Stand1 : Notify
     //--zero--ноль--
     public async Task<bool> MeasurementZero(int innerDelay = 3, int innerCountCheck = 1000)
     {
+        
+        ResetCheckVips();
+        
         //
         TestRun = TypeOfTestRun.MeasurementZero;
         ProgressColor = Brushes.Green;
@@ -1518,6 +1521,9 @@ public class Stand1 : Notify
     //--mesaure--cycle--cucle--start--loop
     public bool StartMeasurementCycle()
     {
+        
+        ResetCheckVips();
+        
         //
         TestRun = TypeOfTestRun.CyclicMeasurement;
         ProgressColor = Brushes.Green;
@@ -1544,13 +1550,13 @@ public class Stand1 : Notify
             if (timerTest != null)
             {
                 timerTest.Stop();
-                timerTest.Elapsed -= TimerOnElapsed;
+                timerTest.Elapsed -= MeasurementCycle_Tick;
             }
 
             if (tickTimer != null)
             {
                 tickTimer.Stop();
-                tickTimer.Elapsed -= CycleTimer_Tick;
+                tickTimer.Elapsed -= CycleTime_Tick;
             }
             
             timerTest = new System.Timers.Timer(tickIntervalMs);
@@ -1570,10 +1576,10 @@ public class Stand1 : Notify
             //sTests.Restart();
             TimeTestStart = DateTime.Now.ToString("HH:mm:ss");
             
-            tickTimer.Elapsed += CycleTimer_Tick;
+            tickTimer.Elapsed += CycleTime_Tick;
             tickTimer.Enabled = true;
             
-            timerTest.Elapsed += TimerOnElapsed;
+            timerTest.Elapsed += MeasurementCycle_Tick;
             timerTest.Enabled = true;
 
             timerTest.Start();
@@ -1588,7 +1594,7 @@ public class Stand1 : Notify
         return false;
     }
 
-    private void CycleTimer_Tick(object sender, EventArgs e)
+    private void CycleTime_Tick(object sender, EventArgs e)
     {
         tickTimeSec--;
         cycleTime--;
@@ -1623,7 +1629,7 @@ public class Stand1 : Notify
     private bool isMeasurementOne;
 
     // --timer
-    private async void TimerOnElapsed(object sender, ElapsedEventArgs e)
+    private async void MeasurementCycle_Tick(object sender, ElapsedEventArgs e)
     {
         try
         {
@@ -1782,8 +1788,9 @@ public class Stand1 : Notify
                     PercentCurrentTest = 100;
                     ProgressColor = Brushes.Red;
                     //
-                    timerErrorDevice?.Invoke(
-                        "Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
+                    
+                    var stopString = StoppedDeviceMessage(t);
+                    timerErrorDevice?.Invoke(stopString);
                 }
             }
 
@@ -3433,8 +3440,8 @@ public class Stand1 : Notify
         //TODO вернуть!
         //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
         // //Проверка на внутренние ошибки плат Випов
-        // TempChecks tpe = TempChecks.Start();
-        // //алгоритм проверки текущего випа на внутренние ошибки
+        TempChecks tpe = TempChecks.Start();
+        //алгоритм проверки текущего випа на внутренние ошибки
         // if (tp.IsOk)
         //     await GetErrorInVip(vip, t: tp, te: tpe);
         //

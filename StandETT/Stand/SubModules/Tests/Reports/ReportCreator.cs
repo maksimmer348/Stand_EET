@@ -199,8 +199,8 @@ public class ReportCreator
         return (nameAddr, channel1Addr, channel2Addr);
     }
 
-    (string nameAddr, string channel1Addr, string channel2Addr, string currentInAddr, string tempAddr, string
-        errConnectAddr) GetChannelAddrErrorReport(Vip vip)
+    (string nameAddr, string channel1Addr, string channel2Addr, string currentInAddr, string tempAddr, string errConnectAddr)
+        GetChannelAddrErrorReport(Vip vip)
     {
         var channel1AddrErrNum = 5;
         if (vip.ErrorVip.VoltageOut1Low)
