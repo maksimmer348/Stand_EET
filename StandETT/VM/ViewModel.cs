@@ -402,6 +402,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             try
             {
+                stand.StartHeatCycle();
                 
                 //TODO удалить после отладки
                 //--available

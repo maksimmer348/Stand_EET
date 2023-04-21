@@ -91,6 +91,8 @@ public class Stand1 : Notify
     private IntervalChecker intervalMeasurementCycle;
     private IntervalChecker lastIntervalMeasurementStop;
 
+    private IntervalChecker heatIntervalMeasurementCycle;
+
     #endregion
 
 
@@ -338,7 +340,7 @@ public class Stand1 : Notify
         AllDevices = new(allDevices);
         //-
         devices = new(allDevices.Where(d => d is not MainRelay && d is not RelayVip || d.Name.Contains("SL")));
-        
+
         //TODO удалить после отладки
         devices = new(devices.Where(d => d is Thermometer));
 
@@ -552,6 +554,8 @@ public class Stand1 : Notify
 
         ResetMeasurementCycle();
 
+        ResetHeatCycle();
+
         ctsAllCancel?.Cancel();
         ctsConnectDevice?.Cancel();
         ctsReceiveDevice?.Cancel();
@@ -740,6 +744,26 @@ public class Stand1 : Notify
         // }
         PercentCurrentReset += Math.Round((1 / (float)devices.Count) * percent);
     }
+
+    private void ResetHeatCycle()
+    {
+        //
+        SetPriorityStatusStand(1, $"Сброс таймера нагрева штуке", percentSubTest: 0,
+            colorSubTest: Brushes.Green, clearAll: true);
+        //
+        heatIntervalMeasurementCycle?.Stop();
+        if (timerHeat != null)
+        {
+            timerHeat.Elapsed -= HeatCycle_Tick;
+            timerHeat.Stop();
+        }
+
+        //
+        SetPriorityStatusStand(1, $"Сброс таймера нагрева штуке, ок!", percentSubTest: 100,
+            colorSubTest: Brushes.Green, clearAll: true);
+        //
+    }
+
 
     private void ResetMeasurementCycle()
     {
@@ -1282,153 +1306,71 @@ public class Stand1 : Notify
         throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
     }
 
+    private System.Timers.Timer timerHeat;
+    double HeatIntervalSec = 60;
+
+    //--prepare--pretest--prestart--heat
+    public void StartHeatCycle()
+    {
+        //
+        TestRun = TypeOfTestRun.WaitHeatPlate;
+        PercentCurrentTest = 50;
+        ProgressColor = Brushes.Green;
+        //
+
+        // TempChecks t = TempChecks.Start();
+        //
+
+        // bool isHeatEnable = t.IsOk;
+
+        HeatIntervalSec = 60;
+
+        if (timerHeat != null)
+        {
+            timerHeat.Stop();
+            timerHeat.Elapsed -= HeatCycle_Tick;
+        }
+
+        timerHeat = new System.Timers.Timer(10);
+        heatIntervalMeasurementCycle = new(HeatIntervalSec);
+    }
+
+    //цикл нагревание пластины 
+    private async void HeatCycle_Tick(object sender, ElapsedEventArgs e)
+    {
+        TempChecks t = TempChecks.Start();
+
+        if (heatIntervalMeasurementCycle.Check())
+        {
+            timerErrorMeasurement?.Invoke(
+                $"Время на нагрев вышло!");
+            return;
+        }
+        //
+        // currentDevice = devices.GetTypeDevice<Thermometer>();
+        // var receiveData = await WriteIdentCommand(currentDevice, "Get 1ch temp", t: t);
+        // var temperature = GetValueReceive(currentDevice, receiveData);
+        //
+        // var checkValueInTermodat = CheckValueInVip(vipsTested[0], temperature, TypeCheckVal.Temperature);
+        //
+        //
+        // if (isChecked.threshold == Threshold.High && isHeatEnable)
+        // {
+        //     isHeatEnable = false;
+        //     if (t.IsOk) await OutputDevice(devices.GetTypeDevice<Heat>(), t: t, on: false);
+        // }
+        // else if (!isHeatEnable)
+        // {
+        //     isHeatEnable = true;
+        //     if (t.IsOk) await OutputDevice(devices.GetTypeDevice<Heat>(), t: t);
+        // }
+        //
+    }
+
 
     //TODO уточнить будет ли вообще в стенде
-    //--prepare--pretest--prestart--heat
-    // public async Task<bool> PrepareMeasurementCycle(int countChecked = 3, int loopDelay = 1000, int timeHeatSec = 120)
-    // {
-    //     //
-    //     TestRun = TypeOfTestRun.WaitHeatPlate;
-    //     PercentCurrentTest = 50;
-    //     ProgressColor = Brushes.Green;
-    //     //
-    //
-    //     TempChecks t = TempChecks.Start();
-    //
-    //     currentDevice = devices.GetTypeDevice<Heat>();
-    //     bool isHeatEnable = t.IsOk;
-    //     await OutputDevice(currentDevice, t: t);
-    //
-    //     if (t.IsOk)
-    //     {
-    //         currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
-    //         var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
-    //         await WriteIdentCommand(currentDevice, "Set temp meter");
-    //         await SetCheckValueInDevice(currentDevice, "Set tco type", getThermoCurrentValues.TermocoupleType,
-    //             countChecked, loopDelay, t, "Get tco type");
-    //     }
-    //
-    //     //цикл нагревание пластины 
-    //
-    //     var timeHeat = timeHeatSec / 10;
-    //     float extPercent = 0;
-    //     (bool isChecked, Threshold threshold) isChecked = (false, Threshold.Low);
-    //     string error = null;
-    //
-    //     if (t.IsOk)
-    //     {
-    //         for (int i = 1; i <= timeHeat; i++)
-    //         {
-    //             try
-    //             {
-    //                 var percent = ((1) * 100 / timeHeat);
-    //                 if (percent > 100)
-    //                 {
-    //                     percent = 100;
-    //                 }
-    //
-    //                 extPercent += percent;
-    //
-    //                 SetPriorityStatusStand(3, $"Нагрев основания", currentDevice, percentSubTest: extPercent,
-    //                     currentCountCheckedSubTest: $"Цикл: {i.ToString()}/{timeHeat}",
-    //                     colorSubTest: Brushes.RosyBrown);
-    //
-    //                 var receiveData = await WriteIdentCommand(currentDevice, "Get all value", t: t);
-    //                 var temperature = GetValueReceive(currentDevice, receiveData);
-    //                 isChecked = CheckValueInVip(vipsTested[0], temperature, TypeCheckVal.Temperature);
-    //
-    //                 //
-    //                 if (isChecked.threshold == Threshold.High && isHeatEnable)
-    //                 {
-    //                     isHeatEnable = false;
-    //                     if (t.IsOk) await OutputDevice(devices.GetTypeDevice<Heat>(), t: t, on: false);
-    //                 }
-    //                 else if (!isHeatEnable)
-    //                 {
-    //                     isHeatEnable = true;
-    //                     if (t.IsOk) await OutputDevice(devices.GetTypeDevice<Heat>(), t: t);
-    //                 }
-    //                 //
-    //
-    //                 if (isChecked.isChecked)
-    //                 {
-    //                     TestRun = TypeOfTestRun.WaitSupplyMeasurementZeroReady;
-    //                     PercentCurrentTest = 100;
-    //                     ProgressColor = Brushes.Green;
-    //                     //
-    //                     SetPriorityStatusStand(3, $"Нагрев основания, ок!", currentDevice, percentSubTest: 100,
-    //                         colorSubTest: Brushes.RosyBrown, clearAll: true);
-    //                     //
-    //                     t?.Add(true);
-    //                     break;
-    //                 }
-    //
-    //
-    //                 //проверка нагрева каждые 10 сек
-    //                 await Task.Delay(TimeSpan.FromMilliseconds(10000), ctsAllCancel.Token);
-    //             }
-    //             catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
-    //             {
-    //                 SetPriorityStatusStand(3, $"Нагрев основания, ошибка!", currentDevice, percentSubTest: 100,
-    //                     colorSubTest: Brushes.Red, clearAll: true);
-    //                 ctsAllCancel = new CancellationTokenSource();
-    //                 t?.Add(false);
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //
-    //     if (!isChecked.isChecked)
-    //     {
-    //         TestRun = TypeOfTestRun.Error;
-    //         PercentCurrentTest = 100;
-    //         ProgressColor = Brushes.Red;
-    //
-    //         if (isChecked.threshold == Threshold.Low)
-    //         {
-    //             //
-    //             error = $"Нагрев основания, ошибка - низкая температура!";
-    //             SetPriorityStatusStand(3, error, currentDevice,
-    //                 percentSubTest: 100,
-    //                 colorSubTest: Brushes.RosyBrown, clearAll: true);
-    //             //
-    //         }
-    //         else
-    //         {
-    //             //
-    //             error = $"Нагрев основания, ошибка!";
-    //             SetPriorityStatusStand(3, error, currentDevice,
-    //                 percentSubTest: 100,
-    //                 colorSubTest: Brushes.RosyBrown, clearAll: true);
-    //             //
-    //         }
-    //
-    //         t?.Add(false);
-    //     }
-    //
-    //     //TODO венуть
-    //     if (t.IsOk)
-    //     {
-    //         //
-    //         SetPriorityStatusStand(3, $"Нагрев основания, ок!", currentDevice, percentSubTest: 100,
-    //             colorSubTest: Brushes.RosyBrown, clearAll: true);
-    //         //
-    //         TestRun = TypeOfTestRun.WaitHeatPlateReady;
-    //         PercentCurrentTest = 100;
-    //
-    //         return true;
-    //     }
-    //
-    //     if (resetAll) return false;
-    //     //
-    //     SetPriorityStatusStand(1, $"Нагрев основания, ошибка!", percentSubTest: 100,
-    //         colorSubTest: Brushes.Red, clearAll: true);
-    //     TestRun = TypeOfTestRun.Error;
-    //     PercentCurrentTest = 100;
-    //     ProgressColor = Brushes.Red;
-    //     //
-    //     throw new Exception("Одно или несколько устройств не ответили или ответили\nс ошибкой!\n");
-    // }
+
+
     //TODO уточнить будет ли вообще в стенде
 
     //
@@ -4067,9 +4009,7 @@ public class Stand1 : Notify
     /// <param name="typeCheckVal">Тип значения</param>
     /// <param name="t">Чекер проверки</param>
     /// <returns></returns>
-    private (bool isChecked, Threshold threshold, bool isNegative) CheckValueInVip(Vip vip, decimal receiveVal,
-        TypeCheckVal typeCheckVal,
-        TempChecks t = null)
+    private (bool isChecked, Threshold threshold, bool isNegative) CheckValueInVip(Vip vip, decimal receiveVal, TypeCheckVal typeCheckVal, TempChecks t = null)
     {
         decimal vipMaxVal = 0;
         decimal vipPercentVal = 0;
