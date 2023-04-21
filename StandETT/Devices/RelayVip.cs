@@ -128,8 +128,7 @@ public class RelayVip : BaseDevice
     }
 
     public bool IsTested { get; set; }
-
-
+    
     public RelayVip(int id, string name) : base(name)
     {
         if (name.Contains("SL"))

@@ -51,7 +51,6 @@ class CreatorAllDevicesAndLib
 
         var deserializeDevices = serializer.DeserializeDevices();
 
-
         if (deserializeDevices == null || !deserializeDevices.Any())
         {
             mainRelayVip.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
@@ -73,28 +72,22 @@ class CreatorAllDevicesAndLib
 
             temp.Add(voltCurrentMeter);
 
-            // BaseDevice thermometer = new Thermometer("???") { RowIndex = 0, ColumnIndex = 2 };
-            // thermometer.SetConfigDevice(TypePort.SerialInput, "COM88", 115200, 1, 0, 8);
-            //
-            // temp.Add(thermometer);
-
 
             BaseDevice bigLoad = new BigLoad("AFG-72112") { RowIndex = 0, ColumnIndex = 4 };
             bigLoad.SetConfigDevice(TypePort.SerialInput, "COM6", 115200, 1, 0, 8);
 
             temp.Add(bigLoad);
 
-            // BaseDevice heat = new Heat("???") { RowIndex = 1, ColumnIndex = 0 };
-            // heat.SetConfigDevice(TypePort.SerialInput, "COM99", 9600, 1, 0, 8);
-            //
-            // temp.Add(heat);
-
-
             BaseDevice relayMeter = new RelayMeter("MRS")
                 { RowIndex = 1, ColumnIndex = 1, IsHiddenOutputOnOff = Visibility.Collapsed };
             relayMeter.SetConfigDevice(TypePort.SerialInput, "COM9", 9600, 1, 0, 8);
 
             temp.Add(relayMeter);
+
+            BaseDevice thermometer = new Thermometer("Termodat") { RowIndex = 0, ColumnIndex = 2 };
+            thermometer.SetConfigDevice(TypePort.SerialInput, "COM13", 115200, 1, 0, 8);
+            //
+            temp.Add(thermometer);
 
             BaseDevice relay0 = new RelayVip(0, "0");
             relay0.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
@@ -168,30 +161,6 @@ class CreatorAllDevicesAndLib
 
             temp.Add(relay11);
 
-            // BaseDevice smallLoad1 = new RelayVip(1, "SL-1")
-            //     { RowIndex = 1, ColumnIndex = 2, IsHiddenOutputOnOff = Visibility.Collapsed };
-            // smallLoad1.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // smallLoad1.Prefix = "1";
-            //
-            // temp.Add(smallLoad1);
-            //
-            // BaseDevice smallLoad2 = new RelayVip(2, "SL-2")
-            //     { RowIndex = 1, ColumnIndex = 3, IsHiddenOutputOnOff = Visibility.Collapsed };
-            // smallLoad2.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // smallLoad2.Prefix = "2";
-            //
-            // temp.Add(smallLoad2);
-            //
-            // BaseDevice smallLoad0 = new RelayVip(3, "SL-3")
-            // {
-            //     RowIndex = 1, ColumnIndex = 4,
-            //     IsHiddenOutputOnOff = Visibility.Collapsed
-            // };
-            // smallLoad0.SetConfigDevice(TypePort.SerialInput, "COM3", 9600, 1, 0, 8);
-            // smallLoad0.Prefix = "3";
-            //
-            // temp.Add(smallLoad0);
-
             //TODO вернуть
 
             serializer.SerializeDevices(temp);
@@ -201,9 +170,10 @@ class CreatorAllDevicesAndLib
             var relayVip = deserializeDevices.FirstOrDefault(x => x is RelayVip);
             if (relayVip != null)
             {
-                mainRelayVip.SetConfigDevice(TypePort.SerialInput, relayVip.Config.PortName, relayVip.Config.Baud, relayVip.Config.StopBits,  relayVip.Config.Parity,  relayVip.Config.DataBits, relayVip.Config.Dtr);
+                mainRelayVip.SetConfigDevice(TypePort.SerialInput, relayVip.Config.PortName, relayVip.Config.Baud,
+                    relayVip.Config.StopBits, relayVip.Config.Parity, relayVip.Config.DataBits, relayVip.Config.Dtr);
             }
-            
+
             temp = deserializeDevices;
         }
 
@@ -456,7 +426,8 @@ class CreatorAllDevicesAndLib
             var typeVip70 = new TypeVip
             {
                 Name = "Vip70",
-                MaxTemperature = 70,
+                MaxTemperature1 = 85,
+                MaxTemperature2 = 85,
                 //максимаьные значения во время испытаниий они означают ошибку
                 MaxVoltageIn = 220,
                 MaxVoltageOut1 = 40,
@@ -491,7 +462,8 @@ class CreatorAllDevicesAndLib
             {
                 Name = "Vip71",
                 //максимаьные значения во время испытаниий они означают ошибку
-                MaxTemperature = 90,
+                MaxTemperature1 = 90,
+                MaxTemperature2 = 90,
                 MaxVoltageIn = 120,
                 MaxVoltageOut1 = 20,
                 MaxVoltageOut2 = 25,
@@ -551,9 +523,16 @@ class CreatorAllDevicesAndLib
 
         foreach (var device in devices)
         {
+            if (device is Thermometer t)
+            {
+                t.TermodatReceiving += Device_Receiving;
+            }
+            else
+            {
+                device.DeviceReceiving += Device_Receiving;
+            }
             device.PortConnecting += Port_Connecting;
             device.DeviceError += Device_Error;
-            device.DeviceReceiving += Device_Receiving;
         }
     }
 

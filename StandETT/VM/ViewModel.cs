@@ -921,8 +921,11 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         typeConfig.PercentAccuracyVoltages = ConvertValToVip(PercentAccuracyVoltages);
         typeConfig.PercentAccuracyTemperature = ConvertValToVip(PercentAccuracyTemperature);
 
-        typeConfig.MaxTemperature = ConvertValToVip(Temperature);
-
+        typeConfig.MaxTemperature1 = ConvertValToVip(Temperature1);
+        typeConfig.MaxTemperature2 = ConvertValToVip(Temperature2);
+        
+        
+        
         typeConfig.ZeroTestInterval = ZeroTestInterval;
         
         typeConfig.TestFirstIntervalTime = TestFirstIntervalTime; 
@@ -1005,7 +1008,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             PercentAccuracyVoltages = null;
             PercentAccuracyTemperature = null;
 
-            Temperature = null;
+            Temperature1 = null;
 
             ZeroTestInterval = 0;
             
@@ -2101,9 +2104,11 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     selectTypeVipSettings.PercentAccuracyVoltages.ToString(CultureInfo.InvariantCulture);
                 PercentAccuracyTemperature =
                     selectTypeVipSettings.PercentAccuracyTemperature.ToString(CultureInfo.InvariantCulture);
-                Temperature =
-                    selectTypeVipSettings.MaxTemperature.ToString(CultureInfo.InvariantCulture);
-
+                Temperature1 =
+                    selectTypeVipSettings.MaxTemperature1.ToString(CultureInfo.InvariantCulture);
+                Temperature2 =
+                    selectTypeVipSettings.MaxTemperature2.ToString(CultureInfo.InvariantCulture);
+                
                 ZeroTestInterval = selectTypeVipSettings.ZeroTestInterval;
                 
                 TestFirstIntervalTime = selectTypeVipSettings.TestFirstIntervalTime;
@@ -2265,13 +2270,22 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref percentAccuracyTemperature, value);
     }
 
-    private string temperature;
+    private string temperature1;
 
-    public string Temperature
+    public string Temperature1
     {
-        get => temperature;
-        set => Set(ref temperature, value);
+        get => temperature1;
+        set => Set(ref temperature1, value);
     }
+
+    private string temperature2;
+
+    public string Temperature2
+    {
+        get => temperature2;
+        set => Set(ref temperature2, value);
+    }
+
 
     private double zeroTestInterval;
 
@@ -2692,7 +2706,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 case nameof(AvailabilityMaxCurrentIn):
                 case nameof(PrepareMaxCurrentIn):
                 case nameof(MaxCurrentIn):
-                case nameof(Temperature):
+                case nameof(Temperature1):
                 case nameof(ZeroTestInterval):
                 case nameof(PercentAccuracyCurrent):
                 case nameof(PercentAccuracyVoltages):
@@ -2751,7 +2765,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         this[nameof(MaxCurrentIn)] ??
         this[nameof(MaxVoltageOut1)] ??
         this[nameof(MaxVoltageOut2)] ??
-        this[nameof(Temperature)] ??
+        this[nameof(Temperature1)] ??
         this[nameof(ZeroTestInterval)] ??
         this[nameof(TestFirstIntervalTime)] ??
         this[nameof(TestIntervalTime)] ??

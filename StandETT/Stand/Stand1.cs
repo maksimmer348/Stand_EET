@@ -338,6 +338,10 @@ public class Stand1 : Notify
         AllDevices = new(allDevices);
         //-
         devices = new(allDevices.Where(d => d is not MainRelay && d is not RelayVip || d.Name.Contains("SL")));
+        
+        //TODO удалить после отладки
+        devices = new(devices.Where(d => d is Thermometer));
+
         Devices = new(devices);
         //-
         foreach (var device in createAllDevices)
@@ -547,7 +551,7 @@ public class Stand1 : Notify
         resetAll = true;
 
         ResetMeasurementCycle();
-        
+
         ctsAllCancel?.Cancel();
         ctsConnectDevice?.Cancel();
         ctsReceiveDevice?.Cancel();
@@ -763,7 +767,7 @@ public class Stand1 : Notify
             timerTest.Elapsed -= MeasurementCycle_Tick;
             timerTest.Stop();
         }
-        
+
         //
         SetPriorityStatusStand(1, $"Сброс таймера испытаний, ок!", percentSubTest: 100,
             colorSubTest: Brushes.Green, clearAll: true);
@@ -795,20 +799,8 @@ public class Stand1 : Notify
 
         var t = TempChecks.Start();
 
-        //TODO убрать когда или если эти приборы появятся в стенде
-        currentDevice = devices.GetTypeDevice<Thermometer>();
-        devices.Remove(currentDevice);
-        // currentDevice = devices.GetTypeDevice<Heat>();
-        // devices.Remove(currentDevice);
-        //TODO убрать когда или если эти приборы появятся в стенде
 
         await CheckConnectPorts(devices.ToList(), t: t);
-
-        //вычленяем нагрузки из общего списка приборов тк они висят на одной шине и
-        //обычные методы проверки порта и команд не подходят
-
-        //проверка порта первой нагрузки тк они все висят на одном порту
-        //await CheckConnectPort(supplyLoads[0], t: t);
 
         if (t.IsOk)
         {
@@ -818,11 +810,6 @@ public class Stand1 : Notify
             await WriteIdentCommands(devices.ToList(), "Status",
                 countChecked: innerCountCheck, loopDelay: innerDelay, t: t);
             //проверка нагрузок
-            foreach (var sl in supplyLoads)
-            {
-                await WriteIdentCommand(sl, "Status",
-                    countChecked: innerCountCheck, loopDelay: innerDelay, t: t);
-            }
 
             if (t.IsOk)
             {
@@ -1130,9 +1117,8 @@ public class Stand1 : Notify
     //--zero--ноль--
     public async Task<bool> MeasurementZero(int innerDelay = 3, int innerCountCheck = 1000)
     {
-        
         ResetCheckVips();
-        
+
         //
         TestRun = TypeOfTestRun.MeasurementZero;
         ProgressColor = Brushes.Green;
@@ -1510,7 +1496,9 @@ public class Stand1 : Notify
 
     //TODO сделать первый замер 1800 секунд = 30 минут
     double firstIntervalSec = 1800;
+
     double cycleTime = 1800;
+
     //TODO сделать последующие замеры 7200 секунд = 2 часа
     double intervalMeasurementSec = 7200;
 
@@ -1521,9 +1509,8 @@ public class Stand1 : Notify
     //--mesaure--cycle--cucle--start--loop
     public bool StartMeasurementCycle()
     {
-        
         ResetCheckVips();
-        
+
         //
         TestRun = TypeOfTestRun.CyclicMeasurement;
         ProgressColor = Brushes.Green;
@@ -1541,12 +1528,12 @@ public class Stand1 : Notify
         tickTimeSec = tickIntervalMs / 1000;
         cycleTime = firstIntervalSec;
         stopTime = lastMeasurementSec;
-        
+
         try
         {
             // countCheckCycle = 1;
             // countMeasurementCycle = 1;
-            
+
             if (timerTest != null)
             {
                 timerTest.Stop();
@@ -1558,10 +1545,10 @@ public class Stand1 : Notify
                 tickTimer.Stop();
                 tickTimer.Elapsed -= CycleTime_Tick;
             }
-            
+
             timerTest = new System.Timers.Timer(tickIntervalMs);
             tickTimer = new System.Timers.Timer(1000);
-            
+
             firstIntervalMeasurementCycle = new(firstIntervalSec);
             intervalMeasurementCycle = new(intervalMeasurementSec);
             lastIntervalMeasurementStop = new(lastMeasurementSec);
@@ -1575,10 +1562,10 @@ public class Stand1 : Notify
 
             //sTests.Restart();
             TimeTestStart = DateTime.Now.ToString("HH:mm:ss");
-            
+
             tickTimer.Elapsed += CycleTime_Tick;
             tickTimer.Enabled = true;
-            
+
             timerTest.Elapsed += MeasurementCycle_Tick;
             timerTest.Enabled = true;
 
@@ -1599,15 +1586,17 @@ public class Stand1 : Notify
         tickTimeSec--;
         cycleTime--;
         stopTime--;
-        
+
         if (tickTimeSec <= 0)
         {
             tickTimeSec = tickIntervalMs / 1000;
         }
+
         if (cycleTime <= 0)
         {
             cycleTime = intervalMeasurementSec;
         }
+
         if (stopTime == 0)
         {
             tickTimeSec = 0;
@@ -1788,7 +1777,7 @@ public class Stand1 : Notify
                     PercentCurrentTest = 100;
                     ProgressColor = Brushes.Red;
                     //
-                    
+
                     var stopString = StoppedDeviceMessage(t);
                     timerErrorDevice?.Invoke(stopString);
                 }
@@ -3856,7 +3845,7 @@ public class Stand1 : Notify
 
                     if (!tpt.IsOk)
                     {
-                        if (temperature > vip.Type.MaxTemperature)
+                        if (temperature > vip.Type.MaxTemperature1)
                         {
                             if (extraError)
                             {
@@ -3864,12 +3853,12 @@ public class Stand1 : Notify
                             }
 
                             vip.ErrorVip.TemperatureHigh = true;
-                            var over = temperature - vip.Type.MaxTemperature;
+                            var over = temperature - vip.Type.MaxTemperature1;
                             vip.ErrorStatusVip += $"T↑ на {over}℃";
                             extraError = true;
                         }
 
-                        if (temperature < vip.Type.MaxTemperature)
+                        if (temperature < vip.Type.MaxTemperature1)
                         {
                             if (extraError)
                             {
@@ -3877,7 +3866,7 @@ public class Stand1 : Notify
                             }
 
                             vip.ErrorVip.TemperatureHigh = true;
-                            var over = vip.Type.MaxTemperature - temperature;
+                            var over = vip.Type.MaxTemperature1 - temperature;
                             vip.ErrorStatusVip += $"T↓ на {over}℃";
                             extraError = true;
                         }
@@ -4088,7 +4077,7 @@ public class Stand1 : Notify
         //температура
         if (typeCheckVal == TypeCheckVal.Temperature)
         {
-            vipMaxVal = vip.Type.MaxTemperature;
+            vipMaxVal = vip.Type.MaxTemperature1;
             vipPercentVal = vip.Type.PercentAccuracyTemperature;
         }
 
@@ -5132,7 +5121,7 @@ public class Stand1 : Notify
             vip.StatusSmallLoad = OnOffStatus.None;
             vip.StatusTest = StatusDeviceTest.None;
             vip.Channel1AddrNum = 6;
-            vip.Channel2AddrNum = 14;
+            vip.Channel2AddrNum = 27;
         }
 
         vipsTested?.Clear();

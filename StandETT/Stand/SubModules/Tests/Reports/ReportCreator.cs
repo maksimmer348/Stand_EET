@@ -64,15 +64,15 @@ public class ReportCreator
             if (vip.Type.PrepareMaxVoltageOut1 > 0)
             {
                 var onlyLetters1 = new String(addr.channel1Addr.Where(Char.IsLetter).ToArray()).ToUpper();
-                string addrErrors1 = $"{addr.channel1Addr}:{onlyLetters1}11";
-                excelWorksheet.Cells[addrErrors1].Value = 0;
+                string addrChannel1 = $"{addr.channel1Addr}:{onlyLetters1}22";
+                excelWorksheet.Cells[addrChannel1].Value = 0;
                 excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
             }
             if (vip.Type.PrepareMaxVoltageOut2 > 0)
             {
                 var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();
-                string addrErrors2 = $"{addr.channel2Addr}:{onlyLetters2}19";
-                excelWorksheet.Cells[addrErrors2].Value = 0;
+                string addChannel2 = $"{addr.channel2Addr}:{onlyLetters2}43";
+                excelWorksheet.Cells[addChannel2].Value = 0;
                 excelWorksheet.Cells[addr.channel2Addr].Value = vip.VoltageOut2;
             }
         }

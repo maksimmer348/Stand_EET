@@ -204,7 +204,7 @@ public class SerialInput : ISerialLib
         var message = System.Text.Encoding.UTF8.GetBytes(cmd + terminator);
         try
         {
-            Port.SendMessage(message);
+            Port.SendHexMessage(message);
         }
         catch (Exception e)
         {
@@ -246,7 +246,7 @@ public class SerialInput : ISerialLib
         try
         {
            
-            Port.SendMessage(t.ToArray());
+            Port.SendHexMessage(t.ToArray());
         }
         catch (Exception e)
         {
@@ -254,4 +254,22 @@ public class SerialInput : ISerialLib
                 $"Команда \"{cmdMsg}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
         }
     }
+
+    public void TransmitCmdString(string cmd, int delay = 0)
+    {
+        if (string.IsNullOrEmpty(cmd))
+        {
+            throw new Exception($"SerialInput exception: Команда - не должна быть пустой");
+        }
+        try
+        {
+            Port.SendStringMessage(cmd);
+        }
+        catch (Exception e)
+        {
+            throw new Exception(
+                $"Команда \"{cmd}\", в порт \"{GetPortNum}\" не отправлена, ошибка - {e.Message}");
+        }
+    }
+
 }

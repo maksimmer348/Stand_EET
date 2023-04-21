@@ -199,6 +199,11 @@ public class SerialGod : ISerialLib
         TransmitCmdTextString(ISerialLib.GetStringHexInText(cmd), delay, ISerialLib.GetStringHexInText(terminator));
     }
 
+    public void TransmitCmdString(string cmd, int delay = 0)
+    {
+        TransmitCmdString(cmd, delay);
+    }
+
     public void DtrEnable()
     {
         port.DtrEnable = true;

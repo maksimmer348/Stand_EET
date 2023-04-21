@@ -81,6 +81,8 @@ public interface ISerialLib
     /// <param name="b"></param>
     public void TransmitCmdHexString(string cmd, int delay = 0, string terminator = null, bool isXor = false);
 
+    public void TransmitCmdString(string cmd, int delay = 0);
+    
     /// <summary>
     /// Преборазование строки в массив байт
     /// </summary>

@@ -241,6 +241,7 @@
                                         <ColumnDefinition />
                                         <ColumnDefinition />
                                         <ColumnDefinition />
+                                        <ColumnDefinition />
                                     </Grid.ColumnDefinitions>
                                 </Grid>
                             </ItemsPanelTemplate>
@@ -1252,6 +1253,38 @@
                                          Text="{Binding VoltMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                         </Grid>
+
+                        <Grid Grid.Row="1"
+                              Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="0.5*" />
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.ColumnSpan="2">
+                                <TextBlock HorizontalAlignment="Center"
+                                           Text="Термометр"
+                                           TextAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1">
+                                <TextBlock Text="T1" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding Temperature1, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1"
+                                        Grid.Column="1">
+                                <TextBlock Text="T2" />
+                                <TextBox Style="{StaticResource TextBoxStyle}"
+                                         Text="{Binding Temperature2, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                            </StackPanel>
+
+                        </Grid>
+                        
                     </Grid>
                 </Grid>
                 <!--Настройки типов Випов грид-->

@@ -154,6 +154,7 @@ public class BaseDevice : Notify
     }
 
     private Visibility isHidden = Visibility.Visible;
+
     public Visibility IsHiddenOutputOnOff
     {
         get => isHidden;
@@ -225,17 +226,16 @@ public class BaseDevice : Notify
 
     public void InvokePortConnecting(BaseDevice device, bool value)
     {
-        this.PortConnecting?.Invoke(device, value);
+        PortConnecting?.Invoke(device, value);
     }
 
     /// <summary>
     /// Событие приема данных с устройства
     /// </summary>
     public event Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
-
     public void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        this.DeviceReceiving?.Invoke(device, receive, cmd);
+        DeviceReceiving?.Invoke(device, receive, cmd);
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ public class BaseDevice : Notify
 
     public void InvokeDeviceError(BaseDevice device, string receive)
     {
-        this.DeviceError?.Invoke(device, receive);
+        DeviceError?.Invoke(device, receive);
     }
 
     // /// <summary>
@@ -322,7 +322,7 @@ public class BaseDevice : Notify
         Config.DataBits = dataBits;
         Config.Dtr = dtr;
     }
-    
+
     // public void SetConfigDevice(ConfigDeviceParams cfg)
     // {
     //     Config.TypePort = cfg.TypePort;
@@ -333,7 +333,7 @@ public class BaseDevice : Notify
     //     Config.DataBits = cfg.DataBits;
     //     Config.Dtr = cfg.Dtr;
     // }
-    
+
     /// <summary>
     /// Открыть компорт устройства
     /// </summary>
@@ -396,7 +396,7 @@ public class BaseDevice : Notify
         }
 
         SetInvoke();
-        
+
         port.SetPort(Config.PortName, Config.Baud, Config.StopBits, Config.Parity, Config.DataBits);
         port.Dtr = true;
     }
@@ -407,7 +407,6 @@ public class BaseDevice : Notify
         port.Receiving += Device_Receiving;
         port.ErrorPort += Device_Error;
     }
-
 
     /// <summary>
     /// Получить конфиг данные порта устройства 
@@ -445,7 +444,7 @@ public class BaseDevice : Notify
     /// <summary>
     /// Обработка события прнятого сообщения из устройства
     /// </summary>
-    private void Device_Receiving(byte[] data)
+    protected virtual void Device_Receiving(byte[] data)
     {
         ErrorStatus = string.Empty;
         var receive = string.Empty;
@@ -597,6 +596,4 @@ public class BaseDevice : Notify
     }
 
     #endregion
-
-  
 }

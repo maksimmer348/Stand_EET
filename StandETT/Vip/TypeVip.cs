@@ -53,7 +53,10 @@ public class TypeVip : Notify
     #region --Значения для Випов
 
     //максимальные значения во время цикла испытаниий 1...n, они означают ошибку
-    public decimal MaxTemperature { get; set; }
+    public decimal MaxTemperature1 { get; set; }
+    
+    public decimal MaxTemperature2 { get; set; }
+    
     public decimal PercentAccuracyTemperature { get; set; }
 
     //
