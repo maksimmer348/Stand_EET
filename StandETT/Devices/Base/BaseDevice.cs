@@ -502,7 +502,11 @@ public class BaseDevice : Notify
 
         NameCurrentCmd = nameCommand;
         CurrentParameter = parameter;
-
+        if (!string.IsNullOrWhiteSpace(CurrentParameterGet))
+        {
+            CurrentParameter = CurrentParameterGet;
+        }
+        
         CurrentCmd = GetLibItem(nameCommand, Name);
 
         SetErrors();
