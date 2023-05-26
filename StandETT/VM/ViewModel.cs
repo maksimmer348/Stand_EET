@@ -115,8 +115,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         SelectTab = 0;
         //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
     }
-
-
+    
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -413,9 +412,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 //TODO удалить после отладки
                 available = await stand.AvailabilityCheckVip();
+                return;
                 await stand.PrepareMeasurementCycle();
                 stand.StartMeasurementCycle();
-                return;
                 //TODO удалить после отладки
 
                 //--available

@@ -557,9 +557,9 @@ public class Stand1 : Notify
 
         if (testVipPlay)
         {
-            if (TestCurrentVip != null && report != null)
+            if (tvVip != null && report != null)
             {
-                await report.CreateErrorReport(TestCurrentVip);
+                await report.CreateErrorReport(tvVip);
             }
         }
 
@@ -785,13 +785,13 @@ public class Stand1 : Notify
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
         //TODO удалить после отладки
-        foreach (var vip in vips)
-        {
-            if (vip.Id is 1 or 2)
-            {
-                vip.Name = vip.Id.ToString();
-            }
-        }
+        // foreach (var vip in vips)
+        // {
+        //     if (vip.Id is 1 or 2)
+        //     {
+        //         vip.Name = vip.Id.ToString();
+        //     }
+        // }
 
         ReportNum = "отчет Тест";
         //TODO удалить после отладки
@@ -965,8 +965,10 @@ public class Stand1 : Notify
             {
                 if (t.IsOk) await TestVip(vipTested, TypeOfTestRun.AvailabilityCheckVip, t: t);
             }
-
+            
             testVipPlay = false;
+            tvVip = null;
+            
             if (resetAll) return false;
 
             if (vipsStopped.Any())
@@ -1054,7 +1056,7 @@ public class Stand1 : Notify
         
         if (vipsStopped.Any())
         {
-            vipsStoppedErrors = "Значения следующих Випов ошибочны:\n";
+            vipsStoppedErrors = "Значения следующих Випов ошибочны \n";
             
             foreach (var vip in vipsStopped)
             {
@@ -1210,7 +1212,7 @@ public class Stand1 : Notify
                 //TODO проверить
                 if (resetAll) return false;
                 testVipPlay = false;
-
+                tvVip = null;
                 if (vipsStopped.Any())
                 {
                     //
@@ -1733,7 +1735,7 @@ public class Stand1 : Notify
                 }
 
                 timerErrorMeasurement?.Invoke(
-                    $"У вас закончились рабочие Випы, проверять нечего!\n Значения следующих Випов ошибочны:\n{vipsStoppedErrors}");
+                    $"У вас закончились рабочие Випы, проверять нечего!\n Значения следующих Випов ошибочны \n{vipsStoppedErrors}");
                 return;
             }
 
@@ -1760,7 +1762,10 @@ public class Stand1 : Notify
         try
         {
             await TestVip(vip, typeTest, t: t);
+            
             testVipPlay = false;
+            tvVip = null;
+            
             return (t?.IsOk ?? true, vip);
         }
         catch (Exception e)
@@ -2188,10 +2193,7 @@ public class Stand1 : Notify
                     //установка гет парамтра
                     deviceCheck.CurrentParameterGet = paramGet;
                     deviceCheck.IsReceive = isReceiveVal;
-
-                    //
-                    s.Restart();
-                    //
+                    
 
                     //запись команды в каждое устройсттво
                     deviceCheck.WriteCmd(nameCmd, paramSet);
@@ -2753,8 +2755,6 @@ public class Stand1 : Notify
     {
         var deviceReceived = new Dictionary<BaseDevice, List<string>>();
 
-        s1.Restart();
-
         for (int i = 1; i <= countChecked; i++)
         {
             //
@@ -2768,10 +2768,6 @@ public class Stand1 : Notify
             {
                 await WriteIdentCommand(device, setCmd, paramSet: param);
             }
-
-
-            // Debug.WriteLine($"Установка настроек прибора/{s1.ElapsedMilliseconds} mc/{device.IsDeviceType}");
-
 
             //
             SetPriorityStatusStand(3, percentSubTest: 70);
@@ -3252,13 +3248,16 @@ public class Stand1 : Notify
     private async Task<bool> TestVip(Vip vip, TypeOfTestRun typeTest, int innerCountCheck = 3, int innerDelay = 200,
         TempChecks t = null)
     {
+        
         //s.Restart();
         //
         SetPriorityStatusStand(2, $"тест Випа", percentSubTest: 0, colorSubTest: Brushes.Violet, currentVipSubTest: vip,
             clearAll: true);
         //
-
+        
         testVipPlay = true;
+        tvVip = vip;
+        
         //общая провека для ответа приоров
         TempChecks tp = TempChecks.Start();
         //общая провека для ответа реле випа
@@ -3304,7 +3303,6 @@ public class Stand1 : Notify
 
             if (tp.IsOk && tpr.IsOk && (!tti.IsOk || !tto.IsOk))
             {
-                tvVip = vip;
                 tempInErr = !tti.IsOk;
                 tempOutErr = !tto.IsOk;
 
@@ -3388,37 +3386,37 @@ public class Stand1 : Notify
 
         //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
         //TODO вернуть!
-        // //Проверка на внутренние ошибки плат Випов
-        // TempChecks tpe = TempChecks.Start();
-        // // алгоритм проверки текущего випа на внутренние ошибки
-        // if (tp.IsOk) await GetErrorInVip(vip, t: tp, te: tpe);
+        //Проверка на внутренние ошибки плат Випов
+        TempChecks tpe = TempChecks.Start();
+        // алгоритм проверки текущего випа на внутренние ошибки
+        if (tp.IsOk) await GetErrorInVip(vip, t: tp, te: tpe);
+        
         //
-        // //
-        // SetPriorityStatusStand(2, $"Тест Випа: проверка на внутренние ошибки", percentSubTest: 30,
-        //     colorSubTest: Brushes.Violet,
-        //     currentVipSubTest: vip, clearAll: true);
-        // //
+        SetPriorityStatusStand(2, $"Тест Випа: проверка на внутренние ошибки", percentSubTest: 30,
+            colorSubTest: Brushes.Violet,
+            currentVipSubTest: vip, clearAll: true);
         //
-        // if (!tpe.IsOk && tp.IsOk && tpr.IsOk)
-        // {
-        //     try
-        //     {
-        //         await report.CreateReport(vip, true);
-        //         await report.CreateErrorReport(vip);
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         //
-        //         SetPriorityStatusStand(2, $"Запись репорта сбоя, ошибка!", percentSubTest: 0, colorSubTest: Brushes.Red,
-        //             currentVipSubTest: vip,
-        //             clearAll: true);
-        //         //
-        //         throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
-        //     }
-        //
-        //     t?.Add(true);
-        //     return true;
-        // }
+        
+        if (!tpe.IsOk && tp.IsOk && tpr.IsOk)
+        {
+            try
+            {
+                await report.CreateReport(vip, true);
+                await report.CreateErrorReport(vip);
+            }
+            catch (Exception e)
+            {
+                //
+                SetPriorityStatusStand(2, $"Запись репорта сбоя, ошибка!", percentSubTest: 0, colorSubTest: Brushes.Red,
+                    currentVipSubTest: vip,
+                    clearAll: true);
+                //
+                throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
+            }
+        
+            t?.Add(true);
+            return true;
+        }
         //TODO вернуть!
 
 
@@ -3782,13 +3780,6 @@ public class Stand1 : Notify
                 }
             }
         }
-
-        // if (!tp.IsOk)
-        // {
-        //     //статус випа - ошибка
-        //     vip.StatusTest = StatusDeviceTest.Error;
-        // }
-
         //если статус випа -  ошибка вычеркиваем из спика проверяемых випов
         vipsTested = GetIsTestedVips();
         //добавляем его в список выпиов с ошибкой
@@ -3854,6 +3845,7 @@ public class Stand1 : Notify
                 //записываем данные об ошибке випа в репортер ошибок
                 try
                 {
+                    //TODO возможно вернуть
                     if (typeTest is TypeOfTestRun.MeasurementZero or TypeOfTestRun.CyclicMeasurement
                         or TypeOfTestRun.CycleCheck)
                     {
@@ -3888,6 +3880,7 @@ public class Stand1 : Notify
 
         try
         {
+            //TODO возможно вернуть
             if (typeTest is not TypeOfTestRun.AvailabilityCheckVip)
             {
                 await report.CreateReport(vip, true);
