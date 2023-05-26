@@ -156,16 +156,26 @@ public class Vip : Notify
                 ErrorStatusVip += "U2вых.↓";
             }
 
-            if (ErrorVip.TemperatureHigh)
+            if (ErrorVip.TemperatureIn)
             {
                 if (extraError)
                 {
                     ErrorStatusVip += "/";
                 }
 
-                ErrorStatusVip += "T↑";
+                ErrorStatusVip += "Tin!";
             }
+            
+            if (ErrorVip.TemperatureOut)
+            {
+                if (extraError)
+                {
+                    ErrorStatusVip += "/";
+                }
 
+                ErrorStatusVip += "Tout!";
+            }
+            
             if (!ErrorVip.CheckIsUnselectError())
             {
                 if (!string.IsNullOrEmpty(Name) && value != StatusDeviceTest.None)
@@ -357,14 +367,21 @@ public class Vip : Notify
         set => Set(ref currentIn, value);
     }
 
-    private decimal temperature;
+    private decimal temperatureIn;
 
-    public decimal Temperature
+    public decimal TemperatureIn
     {
-        get => temperature;
-        set => Set(ref temperature, value);
+        get => temperatureIn;
+        set => Set(ref temperatureIn, value);
     }
+    
+    private decimal temperatureOut;
 
+    public decimal TemperatureOut
+    {
+        get => temperatureOut;
+        set => Set(ref temperatureOut, value);
+    }
 
     public decimal VoltageIn { get; set; }
 

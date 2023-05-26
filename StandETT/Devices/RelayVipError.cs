@@ -4,13 +4,12 @@ namespace StandETT;
 public class RelayVipError
 {
     public bool CurrentInHigh { get; set; } = false;
-
     public bool VoltageOut1High { get; set; } = false;
     public bool VoltageOut1Low { get; set; } = false;
-
     public bool VoltageOut2High { get; set; } = false;
     public bool VoltageOut2Low { get; set; } = false;
-    public bool TemperatureHigh { get; set; }
+    public bool TemperatureIn { get; set; }
+    public bool TemperatureOut { get; set; }
 
     public bool CheckIsUnselectError(VipError e = VipError.All)
     {
@@ -18,7 +17,9 @@ public class RelayVipError
                VoltageOut1High ||
                VoltageOut1Low ||
                VoltageOut2High ||
-               VoltageOut2Low;
+               VoltageOut2Low ||
+               TemperatureIn ||
+               TemperatureOut;
     }
 
     public void ResetAllError()
@@ -28,6 +29,8 @@ public class RelayVipError
         VoltageOut1Low = false;
         VoltageOut2High = false;
         VoltageOut2Low = false;
+        TemperatureIn = false;
+        TemperatureOut = false;
     }
 }
 
@@ -39,4 +42,6 @@ public enum VipError
     VoltageOut1Low,
     VoltageOut2High,
     VoltageOut2Low,
+    TemperatureIn,
+    TemperatureOut
 }

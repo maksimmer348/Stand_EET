@@ -426,8 +426,8 @@ class CreatorAllDevicesAndLib
             var typeVip70 = new TypeVip
             {
                 Name = "Vip70",
-                MaxTemperature1 = 85,
-                MaxTemperature2 = 85,
+                MaxTemperatureIn = 85,
+                MaxTemperatureOut = 85,
                 //максимаьные значения во время испытаниий они означают ошибку
                 MaxVoltageIn = 220,
                 MaxVoltageOut1 = 40,
@@ -462,8 +462,8 @@ class CreatorAllDevicesAndLib
             {
                 Name = "Vip71",
                 //максимаьные значения во время испытаниий они означают ошибку
-                MaxTemperature1 = 90,
-                MaxTemperature2 = 90,
+                MaxTemperatureIn = 90,
+                MaxTemperatureOut = 90,
                 MaxVoltageIn = 120,
                 MaxVoltageOut1 = 20,
                 MaxVoltageOut2 = 25,
