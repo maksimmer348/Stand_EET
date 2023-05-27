@@ -7,7 +7,7 @@ namespace StandETT;
 public class Vip : Notify
 {
     #region --Индентификация Випа
-    
+
     //расположение в таблице окна пограммы
     public int RowIndex { get; set; }
 
@@ -106,7 +106,7 @@ public class Vip : Notify
             bool extraError = false;
 
             ErrorStatusVip = " внутр. ошибка - ";
-                
+
             if (ErrorVip.CurrentInHigh)
             {
                 ErrorStatusVip += "Iвх.↑";
@@ -165,7 +165,7 @@ public class Vip : Notify
 
                 ErrorStatusVip += "Tin!";
             }
-            
+
             if (ErrorVip.TemperatureOut)
             {
                 if (extraError)
@@ -175,7 +175,15 @@ public class Vip : Notify
 
                 ErrorStatusVip += "Tout!";
             }
-            
+            if (!string.IsNullOrEmpty(Relay.ErrorStatus))
+            {
+                if (extraError)
+                {
+                    ErrorStatusVip += "/";
+                }
+                ErrorStatusVip += "Реле ≠>";
+            }
+
             if (!ErrorVip.CheckIsUnselectError())
             {
                 if (!string.IsNullOrEmpty(Name) && value != StatusDeviceTest.None)
@@ -185,9 +193,10 @@ public class Vip : Notify
 
                 if (!string.IsNullOrEmpty(Relay.ErrorStatus))
                 {
-                    ErrorStatusVip = $"{Relay.ErrorStatus}";
+                    ErrorStatusVip += "Реле ≠>";
+                    // ErrorStatusVip = $"{Relay.ErrorStatus}";
                 }
-                else   //TODO возможно веруть назад с добавлением увлоия на vip.StatusTest == StatusDeviceTest.Warning
+                else //TODO возможно веруть назад с добавлением увлоия на vip.StatusTest == StatusDeviceTest.Warning
                 {
                     ErrorStatusVip = null;
                 }
@@ -245,7 +254,8 @@ public class Vip : Notify
     public StatusChannelVipTest StatusChannelVipTest
     {
         get => statusChannelVipTest;
-        set => Set(ref statusChannelVipTest, value, nameof(StatusColorChannelV1), nameof(StatusColorChannelV2), nameof(StatusColorChannelA));
+        set => Set(ref statusChannelVipTest, value, nameof(StatusColorChannelV1), nameof(StatusColorChannelV2),
+            nameof(StatusColorChannelA));
     }
 
 
@@ -280,7 +290,7 @@ public class Vip : Notify
             };
         }
     }
-    
+
     [JsonIgnore]
     public Brush StatusColorChannelA
     {
@@ -374,7 +384,7 @@ public class Vip : Notify
         get => temperatureIn;
         set => Set(ref temperatureIn, value);
     }
-    
+
     private decimal temperatureOut;
 
     public decimal TemperatureOut

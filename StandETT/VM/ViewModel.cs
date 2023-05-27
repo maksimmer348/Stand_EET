@@ -411,10 +411,10 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             try
             {
                 //TODO удалить после отладки
-                available = await stand.AvailabilityCheckVip();
-                return;
-                await stand.PrepareMeasurementCycle();
-                stand.StartMeasurementCycle();
+                // available = await stand.AvailabilityCheckVip();
+                // await stand.PrepareMeasurementCycle();
+                // stand.StartMeasurementCycle();
+                // return;
                 //TODO удалить после отладки
 
                 //--available

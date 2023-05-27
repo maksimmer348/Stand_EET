@@ -787,7 +787,8 @@ public class Stand1 : Notify
         //TODO удалить после отладки
         foreach (var vip in vips)
         {
-            if (vip.Id is 0)
+            // if (vip.Id is 2 or 3)
+            if (vip.Id is 0 or 1)
             {
                 vip.Name = vip.Id.ToString();
             }
@@ -1058,11 +1059,11 @@ public class Stand1 : Notify
 
         if (vipsStopped.Any())
         {
-            vipsStoppedErrors = "Значения следующих Випов ошибочны \n";
+            vipsStoppedErrors = "Обнаружены ошибки следующих випов \n";
 
             foreach (var vip in vipsStopped)
             {
-                vipsStoppedErrors += $"Вип - {vip.Name}:\n {vip.ErrorStatusVip}\n";
+                vipsStoppedErrors += $"Вип - {vip.Name}\n {vip.ErrorStatusVip}\n";
             }
         }
 
@@ -1076,13 +1077,6 @@ public class Stand1 : Notify
                             $"полностью или частично:\n{vipsNotCheck}";
             }
             else if (tempOutErr)
-            {
-                extString = $"{testName} испытания принудительно остановлены! \n " +
-                            $"{tvVip.ErrorStatusVip}\n" +
-                            $"Следующие Випы не были проверены\n " +
-                            $"полностью или частично:\n{vipsNotCheck}";
-            }
-            else if (internalError)
             {
                 extString = $"{testName} испытания принудительно остановлены! \n " +
                             $"{tvVip.ErrorStatusVip}\n" +
@@ -1786,14 +1780,8 @@ public class Stand1 : Notify
     {
         foreach (var vip in vips)
         {
-            if (!string.IsNullOrWhiteSpace(vip.Name) && vip.StatusTest != StatusDeviceTest.Error)
-            {
-                vip.IsTested = true;
-            }
-            else
-            {
-                vip.IsTested = false;
-            }
+            vip.IsTested = !string.IsNullOrWhiteSpace(vip.Name) && vip.StatusTest != StatusDeviceTest.Error &&
+                           !vip.Relay.AllDeviceError.CheckIsUnselectError();
         }
 
         var testedVips = vips.Where(x => x.IsTested);
@@ -3079,141 +3067,30 @@ public class Stand1 : Notify
         return val;
     }
 
-    private async Task<bool> GetErrorInVip(Vip vip, int countChecked = 3, int innerCountCheck = 1, int delay = 200,
+    private bool GetErrorInVip(Vip vip, KeyValuePair<BaseDevice, string> receiveDataVip,
         TempChecks t = null, TempChecks te = null)
     {
         TempChecks tp = TempChecks.Start();
-        //var receiveDataVip = await WriteIdentCommand(vip.Relay, "Status", t: tp);
 
         bool availableRelay = true;
 
-        for (int i = 1; i <= countChecked; i++)
+        //
+        SetPriorityStatusStand(2, $"предварительная проверка на ошибку", percentSubTest: 50,
+            colorSubTest: Brushes.Teal, currentVipSubTest: vip, clearAll: true);
+        // 
+
+        if (tp.IsOk)
         {
-            //
-            SetPriorityStatusStand(2, $"предварительная проверка на ошибку", percentSubTest: 50,
-                currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}", colorSubTest: Brushes.Teal,
-                currentVipSubTest: vip, clearAll: true);
-            // 
-            var receiveDataVip = await WriteIdentCommand(vip.Relay, "Test", countChecked: innerCountCheck, t: tp,
-                loopDelay: delay,
-                isReceiveVal: true);
-
-            if (tp.IsOk)
+            try
             {
-                try
-                {
-                    var errorStatus = receiveDataVip.Value.Substring(4, 2);
-                    //vip.ErrorVip.ResetAllError();
-
-                    if (errorStatus.Contains("01"))
-                    {
-                        // выс I вх
-                        vip.ErrorVip.CurrentInHigh = true;
-                    }
-
-                    else if (errorStatus.Contains("02"))
-                    {
-                        // низк U1
-                        vip.ErrorVip.VoltageOut1Low = true;
-                    }
-
-                    else if (errorStatus.Contains("04"))
-                    {
-                        // выс U1
-                        vip.ErrorVip.VoltageOut1High = true;
-                    }
-
-                    else if (errorStatus.Contains("08"))
-                    {
-                        // низк U2
-                        vip.ErrorVip.VoltageOut2Low = true;
-                    }
-
-                    else if (errorStatus.Contains("16"))
-                    {
-                        // выс U2
-                        vip.ErrorVip.VoltageOut2High = true;
-                    }
-
-                    else if (errorStatus.Contains("15"))
-                    {
-                        // выс I вх, выс U1, выс U2
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut1High = true;
-                        vip.ErrorVip.VoltageOut2High = true;
-                    }
-
-                    else if (errorStatus.Contains("14"))
-                    {
-                        // выс U1, выс U2
-                        vip.ErrorVip.VoltageOut1High = true;
-                        vip.ErrorVip.VoltageOut2High = true;
-                    }
-
-                    else if (errorStatus.Contains("05"))
-                    {
-                        // выс I вх, выс U1
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut1High = true;
-                    }
-
-                    else if (errorStatus.Contains("11"))
-                    {
-                        // выс I вх, выс U2
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut2High = true;
-                    }
-
-                    else if (errorStatus.Contains("0B"))
-                    {
-                        // выс I вх, низк U1, низк U2
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut1Low = true;
-                        vip.ErrorVip.VoltageOut2Low = true;
-                    }
-
-                    else if (errorStatus.Contains("10"))
-                    {
-                        // низк U1, низк U2
-                        vip.ErrorVip.VoltageOut1Low = true;
-                        vip.ErrorVip.VoltageOut2Low = true;
-                    }
-
-                    else if (errorStatus.Contains("03"))
-                    {
-                        // выс I вх, низк U1
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut1Low = true;
-                    }
-
-                    else if (errorStatus.Contains("09"))
-                    {
-                        // выс I вх, низк U2
-                        vip.ErrorVip.CurrentInHigh = true;
-                        vip.ErrorVip.VoltageOut2Low = true;
-                    }
-                    else if (!vip.ErrorVip.CheckIsUnselectError())
-                    {
-                        vip.StatusTest = StatusDeviceTest.Ok;
-                        //
-                        SetPriorityStatusStand(2, $"ошибок не обнаружено!", percentSubTest: 100);
-                        // 
-                        t?.Add(true);
-                        te?.Add(true);
-                        return true;
-                    }
-
-                    break;
-                }
-                catch (ArgumentOutOfRangeException e)
-                {
-                    if (countChecked == i)
-                    {
-                        availableRelay = false;
-                    }
-                }
+                if (DecryptErrVip(vip, receiveDataVip)) return true;
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                availableRelay = false;
             }
         }
+
 
         if (availableRelay)
         {
@@ -3240,11 +3117,114 @@ public class Stand1 : Notify
         return false;
     }
 
+    private bool DecryptErrVip(Vip vip, KeyValuePair<BaseDevice, string> receiveDataVip)
+    {
+        var errorStatus = receiveDataVip.Value.Substring(4, 2);
+        //vip.ErrorVip.ResetAllError();
+
+        //TODO добавиьт когда появится карата ошибок от влада
+        // if (errorStatus.Contains("01"))
+        // {
+        //     // выс I вх
+        //     vip.ErrorVip.CurrentInHigh = true;
+        // }
+
+        if (errorStatus.Contains("02"))
+        {
+            // низк U1
+            vip.ErrorVip.VoltageOut1Low = true;
+        }
+
+        else if (errorStatus.Contains("04"))
+        {
+            // выс U1
+            vip.ErrorVip.VoltageOut1High = true;
+        }
+
+        else if (errorStatus.Contains("08"))
+        {
+            // низк U2
+            vip.ErrorVip.VoltageOut2Low = true;
+        }
+
+        else if (errorStatus.Contains("16"))
+        {
+            // выс U2
+            vip.ErrorVip.VoltageOut2High = true;
+        }
+
+        else if (errorStatus.Contains("15"))
+        {
+            // выс I вх, выс U1, выс U2
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut1High = true;
+            vip.ErrorVip.VoltageOut2High = true;
+        }
+
+        else if (errorStatus.Contains("14"))
+        {
+            // выс U1, выс U2
+            vip.ErrorVip.VoltageOut1High = true;
+            vip.ErrorVip.VoltageOut2High = true;
+        }
+
+        else if (errorStatus.Contains("05"))
+        {
+            // выс I вх, выс U1
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut1High = true;
+        }
+
+        else if (errorStatus.Contains("11"))
+        {
+            // выс I вх, выс U2
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut2High = true;
+        }
+
+        else if (errorStatus.Contains("0B"))
+        {
+            // выс I вх, низк U1, низк U2
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut1Low = true;
+            vip.ErrorVip.VoltageOut2Low = true;
+        }
+
+        else if (errorStatus.Contains("10"))
+        {
+            // низк U1, низк U2
+            vip.ErrorVip.VoltageOut1Low = true;
+            vip.ErrorVip.VoltageOut2Low = true;
+        }
+
+        else if (errorStatus.Contains("03"))
+        {
+            // выс I вх, низк U1
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut1Low = true;
+        }
+        else if (errorStatus.Contains("09"))
+        {
+            // выс I вх, низк U2
+            vip.ErrorVip.CurrentInHigh = true;
+            vip.ErrorVip.VoltageOut2Low = true;
+        }
+        else if (!vip.ErrorVip.CheckIsUnselectError())
+        {
+            vip.StatusTest = StatusDeviceTest.Ok;
+            //
+            SetPriorityStatusStand(2, $"ошибок не обнаружено!", percentSubTest: 100);
+            // 
+            return true;
+        }
+
+        return false;
+    }
+
     //запущен ли тест випов (для создания репорта сброса испытаний)
     private bool testVipPlay;
 
     //внешшние переменные для формировния уведомлений о ошибках температуры
-    private bool internalError;
     private bool tempInErr;
     private bool tempOutErr;
     private Vip tvVip;
@@ -3281,43 +3261,62 @@ public class Stand1 : Notify
         decimal temperatureIn = vip.TemperatureIn;
         decimal temperatureOut = vip.TemperatureOut;
 
-        //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
-        //TODO вернуть!
-
-
         //Включение реле Випа (если уже не включен)
         if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
         {
-            await OutputDevice(vip.Relay, t: tpr, countChecked: 1);
+            var outputVip = await OutputDevice(vip.Relay, t: tpr, countChecked: 3);
+
+            if (!outputVip.outputResult)
+            {
+                try
+                {
+                    await report.CreateReport(vip, true);
+                    await report.CreateErrorReport(vip);
+                }
+                catch (Exception e)
+                {
+                    //
+                    SetPriorityStatusStand(2, $"Запись репорта сбоя, ошибка!", percentSubTest: 0,
+                        colorSubTest: Brushes.Red,
+                        currentVipSubTest: vip,
+                        clearAll: true);
+                    //
+                    throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
+                }
+
+                t?.Add(true);
+                return true;
+            }
         }
 
+        //TODO уточнить до или после Включение реле Випа и в каких случаях (AvailabilityCheckVip/MeasurementZero etc)
+        //TODO вернуть!
         //Проверка на внутренние ошибки плат Випов
         TempChecks tpe = TempChecks.Start();
-        internalError = false;
         // алгоритм проверки текущего випа на внутренние ошибки
-        if (tp.IsOk) await GetErrorInVip(vip, t: tp, te: tpe);
-
-        if (!tpe.IsOk && tp.IsOk && tpr.IsOk)
-        {
-            internalError = tpe.IsOk;
-            try
-            {
-                await report.CreateReport(vip, true);
-                await report.CreateErrorReport(vip);
-            }
-            catch (Exception e)
-            {
-                //
-                SetPriorityStatusStand(2, $"Запись репорта сбоя, ошибка!", percentSubTest: 0, colorSubTest: Brushes.Red,
-                    currentVipSubTest: vip,
-                    clearAll: true);
-                //
-                throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
-            }
-
-            t?.Add(true);
-            return true;
-        }
+        // if (tpr.IsOk) await GetErrorInVip(vip, t: tp, te: tpe);
+        //
+        // if (!tpe.IsOk && tp.IsOk && tpr.IsOk)
+        // {
+        //     try
+        //     {
+        //         await report.CreateReport(vip, true);
+        //         await report.CreateErrorReport(vip);
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         //
+        //         SetPriorityStatusStand(2, $"Запись репорта сбоя, ошибка!", percentSubTest: 0, colorSubTest: Brushes.Red,
+        //             currentVipSubTest: vip,
+        //             clearAll: true);
+        //         //
+        //         throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
+        //     }
+        //
+        //     t?.Add(true);
+        //     return true;
+        // }
+        //TODO вернуть!
 
         //задание чекера для температуры in
         TempChecks tti = TempChecks.Start();
@@ -3426,25 +3425,20 @@ public class Stand1 : Notify
             currentVipSubTest: vip, clearAll: true);
         //
 
-        //TODO вернуть!
-
-
-        //задание задержки для переключения каналов измерений напряжений 1 и 2 и канала измерения тока
-        var delay = typeTest switch
-        {
-            TypeOfTestRun.AvailabilityCheckVip => 3000,
-            TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
-            TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 3000,
-            _ => 3000
-        };
-
-        // Debug.WriteLine($"Проверка реле випа/{s.ElapsedMilliseconds} mc /{typeTest}/Вип - {vip.Id}");
-        // s.Restart();
-
-        SetTestChannel setChannel;
 
         if (tpr.IsOk)
         {
+            //задание задержки для переключения каналов измерений напряжений 1 и 2 и канала измерения тока
+            var delay = typeTest switch
+            {
+                TypeOfTestRun.AvailabilityCheckVip => 3000,
+                TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
+                TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 3000,
+                _ => 3000
+            };
+
+            SetTestChannel setChannel;
+
             //задание чекера для 1 канала напряжений
             TempChecks tpv1 = TempChecks.Start();
 
@@ -3794,6 +3788,12 @@ public class Stand1 : Notify
         vipsTested = GetIsTestedVips();
         //добавляем его в список выпиов с ошибкой
         vipsStopped = GetStoppedVips();
+
+        if (!tpr.IsOk)
+        {
+            t.Add(true);
+            return true;
+        }
 
         if (tp.IsOk && tpr.IsOk)
         {
@@ -4511,6 +4511,12 @@ public class Stand1 : Notify
         }
     }
 
+    // private async Task<(BaseDevice outputDevice, bool outputResult)> OutputVip(Vip vip, int channel = -1,
+    //     int countChecked = 3, int innerCountCheck = 1, int delay = 200, TempChecks t = null,
+    //     bool forcedOff = false, bool on = true)
+    // {
+    //     return await OutputDevice(vip.Relay, channel, countChecked, innerCountCheck, delay, t, forcedOff, on);
+    // }
 
     //--output--on--off--вкл--выкл
     /// <summary>
@@ -4527,7 +4533,7 @@ public class Stand1 : Notify
     /// <param name="forcedAttempt"></param>
     /// <param name="values">Ответ который утройство должно отправить в ответ на запрос output</param>
     /// <returns>Результат включения/выключение</returns>
-    private async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device, int channel = -1,
+    async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device, int channel = -1,
         int countChecked = 3, int innerCountCheck = 1, int delay = 200, TempChecks t = null,
         bool forcedOff = false, bool on = true)
     {
@@ -4561,7 +4567,7 @@ public class Stand1 : Notify
             //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
             getParam = new BaseDeviceValues("99", "99");
             //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
-            getOutputCmdName = "Test";
+            getOutputCmdName = "Status";
             SetOutputOnCmdName = "On";
             SetOutputOffCmdName = "Off";
         }
@@ -4643,139 +4649,58 @@ public class Stand1 : Notify
 
                         if (device is RelayVip r)
                         {
-                            // вкл мал нагр
-                            if (device.Name.Contains("SL"))
+                            // вкл реле випа
+
+                            var cmdResult =
+                                await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
+                                    t: tp);
+
+                            if (tp.IsOk && r.StatusOnOff == OnOffStatus.Off || r.StatusOnOff == OnOffStatus.None)
                             {
-                                switch (channel)
-                                {
-                                    case 1:
-                                    {
-                                        var receiveOutput = await WriteIdentCommand(r, "On1",
-                                            countChecked: innerCountCheck,
-                                            loopDelay: delay, t: tp);
-                                        break;
-                                    }
-                                    case 2:
-                                    {
-                                        var receiveOutput = await WriteIdentCommand(r, "On2",
-                                            countChecked: innerCountCheck,
-                                            loopDelay: delay, t: tp);
-                                        break;
-                                    }
-                                    case 3:
-                                    {
-                                        var receiveOutput = await WriteIdentCommand(r, "On3",
-                                            countChecked: innerCountCheck,
-                                            loopDelay: delay, t: tp);
-                                        break;
-                                    }
-                                    case 4:
-                                    {
-                                        var receiveOutput = await WriteIdentCommand(r, "On4",
-                                            countChecked: innerCountCheck,
-                                            loopDelay: delay, t: tp);
-                                        break;
-                                    }
-                                }
+                                RelaySwitch = true;
+
+                                var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName,
+                                    countChecked: innerCountCheck,
+                                    loopDelay: delay, t: tp);
 
                                 if (tp.IsOk)
                                 {
-                                    //
-                                    SetPriorityStatusStand(3, $"#{channel} выход устройства включен", device,
-                                        percentSubTest: 100,
-                                        colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                    //
-                                    r.StatusOnOff = OnOffStatus.On;
-                                    r.StatusTest = StatusDeviceTest.Ok;
+                                    //проверить есть или нет ошибок 
+                                    if (!GetErrorInVip(tvVip, receiveOutput))
+                                    {
+                                        await WriteIdentCommand(r, SetOutputOffCmdName,
+                                            countChecked: innerCountCheck,
+                                            loopDelay: delay, t: tp);
 
-                                    t?.Add(true);
-                                    return (device, true);
+                                        r.StatusOnOff = OnOffStatus.None;
+                                        r.StatusTest = StatusDeviceTest.Error;
+                                        t?.Add(tp.IsOk);
+                                        return (device, false);
+                                    }
+                                    else
+                                    {
+                                        RelaySwitch = false;
+                                        r.StatusOnOff = OnOffStatus.None;
+                                    }
+                                }
+                                if (!tp.IsOk)
+                                {
+                                    r.StatusOnOff = OnOffStatus.None;
+                                    r.StatusTest = StatusDeviceTest.Error;
                                 }
                             }
-                            // вкл реле випа
-                            else
+
+                            if (tp.IsOk)
                             {
-                                //TODO добавить когда или если появтся команды от Влада
-                                // //опрос выхода устройства
-                                // var cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck, t: tp);
                                 //
-                                // //если выход выкл 
-                                // if (cmdResult.Value == getParam.OutputOff && tp.IsOk)
-                                // {
-                                //     //делаем выход вкл
-                                //     await WriteIdentCommand(device, SetOutputOnCmdName);
+                                SetPriorityStatusStand(3, $"выход устройства включен", device, percentSubTest: 100,
+                                    colorSubTest: Brushes.BlueViolet, clearAll: true);
                                 //
-                                //     //опрос выхода утсртойства
-                                //     cmdResult = await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
-                                //         loopDelay: externalDelay, t: tp);
-                                // }
-                                //TODO добавить когда или если появтся команды от Влада
+                                r.StatusOnOff = OnOffStatus.On;
+                                r.StatusTest = StatusDeviceTest.Ok;
 
-                                var cmdResult =
-                                    await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
-                                        t: tp);
-
-                                if (tp.IsOk && r.StatusOnOff == OnOffStatus.Off || r.StatusOnOff == OnOffStatus.None)
-                                {
-                                    RelaySwitch = true;
-
-                                    var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName,
-                                        countChecked: innerCountCheck,
-                                        loopDelay: delay, t: tp);
-
-                                    RelaySwitch = false;
-
-                                    r.StatusOnOff = OnOffStatus.None;
-                                }
-
-                                if (tp.IsOk)
-                                {
-                                    //
-                                    SetPriorityStatusStand(3, $"выход устройства включен", device, percentSubTest: 100,
-                                        colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                    //
-                                    r.StatusOnOff = OnOffStatus.On;
-                                    r.StatusTest = StatusDeviceTest.Ok;
-
-                                    t?.Add(true);
-                                    return (device, true);
-                                }
-
-                                //TODO добавить когда или если появтся команды от Влада
-                                // //если выход вкл
-                                // if (cmdResult.Value == getParam.OutputOn && tp.IsOk)
-                                // {
-                                //     //
-                                //     SetPriorityStatusStand(3, $"выход устройства включен", device, percentSubTest: 100,
-                                //         colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                //     //
-                                //
-                                //     device.StatusOnOff = OnOffStatus.On;
-                                //     device.StatusTest = StatusDeviceTest.Ok;
-                                //     t?.Add(true);
-                                //     return (device, true);
-                                // }
-                                //
-                                // if (cmdResult.Value != getParam.OutputOn)
-                                // {
-                                //     if (cmdResult.Value == null)
-                                //     {
-                                //         device.AllDeviceError.ErrorTimeout = true;
-                                //         device.ErrorStatus = $"Ошибка реле Випа \"{device.IsDeviceType}\"/нет ответа";
-                                //     }
-                                //     else
-                                //     {
-                                //         device.AllDeviceError.ErrorParam = true;
-                                //         device.ErrorStatus =
-                                //             $"Ошибка уcтройства {device.IsDeviceType}, команда {device.NameCurrentCmd}/неверный параметр, пришел \"{cmdResult.Value}\"/ожидался \"{getParam.OutputOn}\"\n";
-                                //     }
-                                // }
-                                //
-                                // if (cmdResult.Value == "Stop tests")
-                                // {
-                                //     return (device, false);
-                                // }
-                                //TODO добавить когда или если появтся команды от Влада
+                                t?.Add(true);
+                                return (device, true);
                             }
                         }
 
@@ -4892,68 +4817,25 @@ public class Stand1 : Notify
                             r.CtsRelayReceive = new();
                         }
 
-                        if (device.Name.Contains("SL"))
+                        // s.Restart();
+
+                        var receiveOutput = await WriteIdentCommand(r, SetOutputOffCmdName,
+                            countChecked: innerCountCheck,
+                            loopDelay: delay,
+                            t: tp);
+
+                        if (tp.IsOk)
                         {
-                            if (channel == 1)
-                            {
-                                var receiveOutput = await WriteIdentCommand(r, "Off1", countChecked: innerCountCheck,
-                                    loopDelay: delay, t: tp);
-                            }
+                            //
+                            SetPriorityStatusStand(3, $"#{channel} выход устройства выключен", device,
+                                percentSubTest: 100,
+                                colorSubTest: Brushes.BlueViolet, clearAll: true);
+                            //
+                            r.StatusOnOff = OnOffStatus.Off;
+                            r.StatusTest = StatusDeviceTest.Ok;
 
-                            if (channel == 2)
-                            {
-                                var receiveOutput = await WriteIdentCommand(r, "Off2", countChecked: innerCountCheck,
-                                    loopDelay: delay, t: tp);
-                            }
-
-                            if (channel == 3)
-                            {
-                                var receiveOutput = await WriteIdentCommand(r, "Off3", countChecked: innerCountCheck,
-                                    loopDelay: delay, t: tp);
-                            }
-
-                            if (channel == 4)
-                            {
-                                var receiveOutput = await WriteIdentCommand(r, "Off4", countChecked: innerCountCheck,
-                                    loopDelay: delay, t: tp);
-                            }
-
-                            if (tp.IsOk)
-                            {
-                                //
-                                SetPriorityStatusStand(3, $"#{channel} выход устройства выключен", device,
-                                    percentSubTest: 100,
-                                    colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                //
-                                r.StatusOnOff = OnOffStatus.Off;
-                                r.StatusTest = StatusDeviceTest.Ok;
-
-                                t?.Add(true);
-                                return (device, true);
-                            }
-                        }
-                        else
-                        {
-                            // s.Restart();
-
-                            var receiveOutput = await WriteIdentCommand(r, SetOutputOffCmdName,
-                                countChecked: innerCountCheck,
-                                loopDelay: delay,
-                                t: tp);
-
-                            if (tp.IsOk)
-                            {
-                                //
-                                SetPriorityStatusStand(3, $"#{channel} выход устройства выключен", device,
-                                    percentSubTest: 100,
-                                    colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                //
-                                r.StatusOnOff = OnOffStatus.Off;
-                                r.StatusTest = StatusDeviceTest.Ok;
-
-                                t?.Add(true);
-                                return (device, true);
-                            }
+                            t?.Add(true);
+                            return (device, true);
                         }
                     }
 
