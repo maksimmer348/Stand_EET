@@ -115,7 +115,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         SelectTab = 0;
         //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
     }
-    
+
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -411,10 +411,12 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             try
             {
                 //TODO удалить после отладки
-                // available = await stand.AvailabilityCheckVip();
+                await stand.AvailabilityCheckVip();
+                //--zero
+                // await stand.MeasurementZero();
                 // await stand.PrepareMeasurementCycle();
                 // stand.StartMeasurementCycle();
-                // return;
+                return;
                 //TODO удалить после отладки
 
                 //--available
@@ -446,7 +448,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                 if (!stand.IsResetAll)
                 {
-                    await stand.ResetAllTests(true);
+                    await stand.ResetAllTests();
                 }
 
                 goToSelectTab = result switch
@@ -481,14 +483,15 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 const string caption = "Ошибка температуры";
                 var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + "Проверте модуль температуры \n" + " Перейти в настройки?", caption,
+                var result = MessageBox.Show(errorStr + "Проверте модуль температуры \n" + " Перейти в настройки?",
+                    caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 if (!stand.IsResetAll)
                 {
                     await stand.ResetAllTests(true);
                 }
-                
+
                 if (result == MessageBoxResult.Yes)
                 {
                     goToSelectTab = 4;

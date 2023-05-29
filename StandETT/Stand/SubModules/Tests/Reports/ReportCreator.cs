@@ -49,6 +49,7 @@ public class ReportCreator
         await excelPackage.SaveAsAsync(pathReport, "");
     }
 
+    
     public async Task CreateReport(Vip vip, bool isError = false)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
@@ -114,9 +115,9 @@ public class ReportCreator
             excelWorksheet.Cells[addr.currentInAddr].Value =
                 vip.ErrorVip.CurrentInHigh ? $"{vip.CurrentIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddr].Value =
-                vip.ErrorVip.TemperatureIn ? $"{vip.ErrorStatusVip}{timeNow}" : null;
+                vip.ErrorVip.TemperatureIn ? $"{vip.TemperatureIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddrOut].Value =
-                vip.ErrorVip.TemperatureOut ? $"{vip.ErrorStatusVip}{timeNow}" : null;
+                vip.ErrorVip.TemperatureOut ? $"{vip.TemperatureOut}{timeNow}" : null;
             excelWorksheet.Cells[addr.errConnectAddr].Value =
                 vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Ошибка{timeNow}" : null;
         }

@@ -860,7 +860,7 @@
                                                     <TextBlock.Text>
                                                         <MultiBinding StringFormat="{}Uₒᵤₜ₁: {0} V {1}">
                                                             <Binding Path="VoltageOut1" />
-                                                            <Binding Path="Channel1Revers" />
+                                                            <Binding Path="ChannelV1Revers" />
                                                         </MultiBinding>
                                                     </TextBlock.Text>
                                                 </TextBlock>
@@ -868,7 +868,7 @@
                                                     <TextBlock.Text>
                                                         <MultiBinding StringFormat="{}Uₒᵤₜ₂: {0} V {1}">
                                                             <Binding Path="VoltageOut2" />
-                                                            <Binding Path="Channel2Revers" />
+                                                            <Binding Path="ChannelV2Revers" />
                                                         </MultiBinding>
                                                     </TextBlock.Text>
                                                 </TextBlock>
@@ -882,7 +882,7 @@
                                                 </TextBlock>
                                                 <TextBlock DockPanel.Dock="Top"
                                                            TextWrapping="WrapWithOverflow"
-                                                           Text="{Binding ErrorStatusVip, StringFormat=Статус: \{0\}}"
+                                                           Text="{Binding ErrorStatusVip, StringFormat=Статус Випа: \{0\}}"
                                                            Foreground="{Binding StatusColor}" />
                                             </DockPanel>
                                         </Grid>

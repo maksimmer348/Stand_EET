@@ -48,22 +48,13 @@ public class Vip : Notify
         }
     }
 
-    private string errorStatusRelay;
+    private string channelV2Revers;
 
     [JsonIgnore]
-    public string ErrorStatusRelay
+    public string ChannelV2Revers
     {
-        get => Relay.ErrorStatus;
-        set => Set(ref errorStatusRelay, value);
-    }
-
-    private string channel2Revers;
-
-    [JsonIgnore]
-    public string Channel2Revers
-    {
-        get => channel2Revers;
-        set => Set(ref channel2Revers, value);
+        get => channelV2Revers;
+        set => Set(ref channelV2Revers, value);
     }
 
     private string channelARevers;
@@ -75,13 +66,13 @@ public class Vip : Notify
         set => Set(ref channelARevers, value);
     }
 
-    private string channel1Revers = "";
+    private string channelV1Revers = "";
 
     [JsonIgnore]
-    public string Channel1Revers
+    public string ChannelV1Revers
     {
-        get => channel1Revers;
-        set => Set(ref channel1Revers, value);
+        get => channelV1Revers;
+        set => Set(ref channelV1Revers, value);
     }
 
 
@@ -103,102 +94,100 @@ public class Vip : Notify
         {
             Set(ref statusTest, value, nameof(StatusColor));
 
-            bool extraError = false;
-
-            ErrorStatusVip = " внутр. ошибка - ";
-
-            if (ErrorVip.CurrentInHigh)
-            {
-                ErrorStatusVip += "Iвх.↑";
-                extraError = true;
-            }
-
-            if (ErrorVip.VoltageOut1High)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "U1вых.↑";
-                extraError = true;
-            }
-
-            if (ErrorVip.VoltageOut1Low)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "U1вых.↓";
-                extraError = true;
-            }
-
-            if (ErrorVip.VoltageOut2High)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "U2вых.↑";
-                extraError = true;
-            }
-
-            if (ErrorVip.VoltageOut2Low)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "U2вых.↓";
-            }
-
-            if (ErrorVip.TemperatureIn)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "Tin!";
-            }
-
-            if (ErrorVip.TemperatureOut)
-            {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-
-                ErrorStatusVip += "Tout!";
-            }
             if (!string.IsNullOrEmpty(Relay.ErrorStatus))
             {
-                if (extraError)
-                {
-                    ErrorStatusVip += "/";
-                }
-                ErrorStatusVip += "Реле ≠>";
+                ErrorStatusVip = $"{Relay.ErrorStatus}";
             }
-
-            if (!ErrorVip.CheckIsUnselectError())
+            else
             {
-                if (!string.IsNullOrEmpty(Name) && value != StatusDeviceTest.None)
+                bool extraError = false;
+
+                ErrorStatusVip = "внутр. ошибка - ";
+
+                if (ErrorVip.CurrentInHigh)
                 {
-                    ErrorStatusVip = "Ok!";
+                    ErrorStatusVip += "Iвх.↑";
+                    extraError = true;
                 }
 
-                if (!string.IsNullOrEmpty(Relay.ErrorStatus))
+                if (ErrorVip.VoltageOut1High)
                 {
-                    ErrorStatusVip += "Реле ≠>";
-                    // ErrorStatusVip = $"{Relay.ErrorStatus}";
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "U1вых.↑";
+                    extraError = true;
                 }
-                else //TODO возможно веруть назад с добавлением увлоия на vip.StatusTest == StatusDeviceTest.Warning
+
+                if (ErrorVip.VoltageOut1Low)
                 {
-                    ErrorStatusVip = null;
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "U1вых.↓";
+                    extraError = true;
+                }
+
+                if (ErrorVip.VoltageOut2High)
+                {
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "U2вых.↑";
+                    extraError = true;
+                }
+
+                if (ErrorVip.VoltageOut2Low)
+                {
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "U2вых.↓";
+                }
+
+                if (ErrorVip.TemperatureIn)
+                {
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "Tin!";
+                }
+
+                if (ErrorVip.TemperatureOut)
+                {
+                    if (extraError)
+                    {
+                        ErrorStatusVip += "/";
+                    }
+
+                    ErrorStatusVip += "Tout!";
+                }
+
+                if (!ErrorVip.CheckIsUnselectError())
+                {
+                    if (!string.IsNullOrEmpty(Name) && value != StatusDeviceTest.None)
+                    {
+                        ErrorStatusVip = "Ok!";
+                    }
+
+                    if (!string.IsNullOrEmpty(Relay.ErrorStatus))
+                    {
+                        ErrorStatusVip += "Реле ≠>";
+                    }
+                    else
+                    {
+                        ErrorStatusVip = null;
+                    }
                 }
             }
         }

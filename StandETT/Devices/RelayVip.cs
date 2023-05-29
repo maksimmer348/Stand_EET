@@ -147,7 +147,7 @@ public class RelayVip : BaseDevice
     {
         if (NameCurrentCmd.Contains("On"))
         {
-            StatusOnOff = OnOffStatus.None;
+            //StatusOnOff = OnOffStatus.None;
             CtsRelayReceive.Cancel();
         }
     }
