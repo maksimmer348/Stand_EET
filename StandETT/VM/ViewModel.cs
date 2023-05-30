@@ -101,9 +101,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         RemoveTypeVipSettingsCmd =
             new ActionCommand(OnRemoveTypeVipSettingsCmdExecuted, CanRemoveTypeVipSettingsCmdExecuted);
 
-        stand.timerErrorMeasurement += TimerErrorMeasurement;
-        stand.timerErrorDevice += TimerErrorDevice;
-        stand.timerOk += TimerOkMeasurement;
+        stand.TimerErrorMeasurement += TimerErrorMeasurement;
+        stand.TimerErrorDevice += TimerErrorDevice;
+        stand.TimerOk += TimerOkMeasurement;
 
         #endregion
 
@@ -411,11 +411,11 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             try
             {
                 //TODO удалить после отладки
-                await stand.AvailabilityCheckVip();
-                await stand.MeasurementZero();
-                await stand.PrepareMeasurementCycle();
-                stand.StartMeasurementCycle();
-                return;
+                // await stand.AvailabilityCheckVip();
+                // await stand.MeasurementZero();
+                // await stand.PrepareMeasurementCycle();
+                // stand.StartMeasurementCycle();
+                // return;
                 //TODO удалить после отладки
 
                 //--available
@@ -453,7 +453,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 goToSelectTab = result switch
                 {
                     MessageBoxResult.Yes => 4,
-                    MessageBoxResult.No => errorStr.Contains("Реле Випа") ? 1 : 0,
+                    MessageBoxResult.No => 1,//errorStr.Contains("Реле Випа") ? 1 : 0,
                     _ => goToSelectTab
                 };
             }
