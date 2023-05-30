@@ -104,9 +104,9 @@ public class Vip : Notify
 
                 ErrorStatusVip = "внутр. ошибка - ";
 
-                if (ErrorVip.CurrentInHigh)
+                if (ErrorVip.CurrentInErr)
                 {
-                    ErrorStatusVip += "Iвх.↑";
+                    ErrorStatusVip += "Iвх.!";
                     extraError = true;
                 }
 

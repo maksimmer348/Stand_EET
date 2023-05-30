@@ -354,15 +354,15 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
+                await stand.ResetAllTests(true);
+                
                 if (result == MessageBoxResult.No)
                 {
-                    await stand.ResetAllTests(true);
                     goToSelectTab = 0;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await stand.ResetAllTests(true);
                     goToSelectTab = 3;
                 }
             }
@@ -393,15 +393,15 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
+                await stand.ResetAllTests(true);
+                
                 if (result == MessageBoxResult.No)
                 {
-                    await stand.ResetAllTests(true);
                     goToSelectTab = 1;
                 }
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await stand.ResetAllTests(true);
                     goToSelectTab = 3;
                 }
             }
@@ -412,10 +412,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 //TODO удалить после отладки
                 await stand.AvailabilityCheckVip();
-                //--zero
-                // await stand.MeasurementZero();
-                // await stand.PrepareMeasurementCycle();
-                // stand.StartMeasurementCycle();
+                await stand.MeasurementZero();
+                await stand.PrepareMeasurementCycle();
+                stand.StartMeasurementCycle();
                 return;
                 //TODO удалить после отладки
 
@@ -454,7 +453,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 goToSelectTab = result switch
                 {
                     MessageBoxResult.Yes => 4,
-                    MessageBoxResult.No => 1, //errorStr.Contains("Реле Випа") ? 1 : 0;
+                    MessageBoxResult.No => errorStr.Contains("Реле Випа") ? 1 : 0,
                     _ => goToSelectTab
                 };
             }

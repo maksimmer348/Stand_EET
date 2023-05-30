@@ -3,7 +3,7 @@ namespace StandETT;
 //TODO Уточнить про эти ошибки
 public class RelayVipError
 {
-    public bool CurrentInHigh { get; set; } = false;
+    public bool CurrentInErr { get; set; } = false;
     public bool VoltageOut1High { get; set; } = false;
     public bool VoltageOut1Low { get; set; } = false;
     public bool VoltageOut2High { get; set; } = false;
@@ -14,7 +14,7 @@ public class RelayVipError
 
     public bool CheckIsUnselectError(VipError e = VipError.All)
     {
-        return CurrentInHigh ||
+        return CurrentInErr ||
                VoltageOut1High ||
                VoltageOut1Low ||
                VoltageOut2High ||
@@ -25,7 +25,7 @@ public class RelayVipError
 
     public void ResetAllError()
     {
-        CurrentInHigh = false;
+        CurrentInErr = false;
         VoltageOut1High = false;
         VoltageOut1Low = false;
         VoltageOut2High = false;

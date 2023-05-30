@@ -113,7 +113,7 @@ public class ReportCreator
                 vip.ErrorVip.VoltageOut2High || vip.ErrorVip.VoltageOut2Low ? $"{vip.VoltageOut2}{timeNow}" : null;
 
             excelWorksheet.Cells[addr.currentInAddr].Value =
-                vip.ErrorVip.CurrentInHigh ? $"{vip.CurrentIn}{timeNow}" : null;
+                vip.ErrorVip.CurrentInErr ? $"{vip.CurrentIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddr].Value =
                 vip.ErrorVip.TemperatureIn ? $"{vip.TemperatureIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddrOut].Value =

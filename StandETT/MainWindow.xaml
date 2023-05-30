@@ -1291,12 +1291,15 @@
                             <RowDefinition />
                             <RowDefinition Height="0.1*" />
                         </Grid.RowDefinitions>
-
+                        <Rectangle Grid.Row="0"
+                                   Style="{StaticResource LightGrayRectangle}" />
                         <Rectangle Grid.Row="1"
                                    Style="{StaticResource LightGrayRectangle}" />
                         <Rectangle Grid.Row="2"
                                    Style="{StaticResource LightGrayRectangle}" />
+                        
                         <StackPanel Grid.Row="0"
+                                    
                                     DockPanel.Dock="Left">
                             <TextBlock>Выбор Типа Випов</TextBlock>
                             <ComboBox ItemsSource="{Binding TypeVips, UpdateSourceTrigger=PropertyChanged}"
