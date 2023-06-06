@@ -14,6 +14,8 @@ namespace StandETT;
 
 public class Stand1 : Notify
 {
+    //---
+
     #region --Вспомогательное/Отладка
 
     Stopwatch s0 = new();
@@ -283,9 +285,7 @@ public class Stand1 : Notify
 
     #endregion
 
-    #region Ошибки устройств
-
-    #endregion
+    //---
 
     #region --Конструктор --ctor
 
@@ -1486,8 +1486,8 @@ public class Stand1 : Notify
         //TODO убрать после отладки
         tickInterval = 15 * vipsTested.Count;
         intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = (intervalMeasurementSec * 8) - 1;
-        lastMeasurementSec = (intervalMeasurementSec * 2);
+        lastMeasurementSec = (intervalMeasurementSec * 8) - 1;
+        //lastMeasurementSec = (intervalMeasurementSec * 2);
 
         //
         TestRun = TypeOfTestRun.CyclicMeasurement;
@@ -4736,6 +4736,7 @@ public class Stand1 : Notify
                                     countChecked: innerCountCheck,
                                     loopDelay: delay, t: tp);
 
+                                RelaySwitch = false;
                                 if (tp.IsOk)
                                 {
                                     var vipIsErr = GetErrorVip(tvVip, receiveOutput);
@@ -4750,7 +4751,7 @@ public class Stand1 : Notify
                                         return (device, tp.IsOk);
                                     }
 
-                                    RelaySwitch = false;
+                                    // RelaySwitch = false;
                                 }
 
                                 if (!tp.IsOk)
@@ -5194,7 +5195,7 @@ public class Stand1 : Notify
 
     #endregion
 
-//--
+//---
 }
 
 internal enum Threshold

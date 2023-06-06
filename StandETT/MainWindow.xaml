@@ -1685,8 +1685,8 @@
             </TabItem>
             <!--/Настройки типов Випов таб-->
 
-            <TabItem Header="StopAll"
-                     IsEnabled="{Binding StopAllTab}">
+            <TabItem Header="Остановка"
+                     IsEnabled="{Binding StopAllTab}" Visibility="Collapsed">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition />
@@ -1740,12 +1740,12 @@
                                Grid.Row="1"
                                HorizontalAlignment="Right"
                                VerticalAlignment="Center">
-                        <Button MinHeight="20"
-                                MinWidth="80"
-                                Command="{Binding CloseActionWindowCmd}"
-                                IsEnabled="{Binding CloseActionWindowBtnEnabled}">
-                            Ок
-                        </Button>
+                        <!-- <Button MinHeight="20" -->
+                        <!--         MinWidth="80" -->
+                        <!--         Command="{Binding CloseActionWindowCmd}" -->
+                        <!--         IsEnabled="{Binding CloseActionWindowBtnEnabled}"> -->
+                        <!--     Ок -->
+                        <!-- </Button> -->
                     </DockPanel>
 
                 </Grid>
@@ -1849,8 +1849,9 @@
                             MinWidth="80"
                             Margin="10,20"
                             Command="{Binding CancelAllTestCmd}"
-                            Content="Остановить"
-                            IsEnabled="{Binding CancelAllTestBtnEnabled}" />
+                            Content="{Binding StopBtnText}"
+                            IsEnabled="{Binding CancelAllTestBtnEnabled}"
+                          />
                     <Button DockPanel.Dock="Right"
                             MinHeight="10"
                             MinWidth="110"

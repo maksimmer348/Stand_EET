@@ -101,20 +101,19 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         RemoveTypeVipSettingsCmd =
             new ActionCommand(OnRemoveTypeVipSettingsCmdExecuted, CanRemoveTypeVipSettingsCmdExecuted);
 
+        #endregion
+
         stand.TimerErrorMeasurement += TimerErrorMeasurement;
         stand.TimerErrorDevice += TimerErrorDevice;
         stand.TimerOk += TimerOkMeasurement;
-
-        #endregion
-
-        #endregion
-
-        //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
-        AllBtnsEnable();
-        AllTabsEnable();
+        
+        AllTabsDisable();
+        SettingsTab = true;
+        SettingsVipsTab = true;
         SelectTab = 0;
-        //TODO убрать когда допишу функцинал отключения влкадок режимами прогверки 
     }
+
+    #endregion
 
     //Именно посредством него View получает уведомления, что во VM что-то изменилось и требуется обновить данные.
     private void StandTestOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -152,32 +151,48 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     {
         get
         {
-            NextBtnEnabled = true;
-
+            AllBtnsDisable();
+            StopBtnText = "Остановить";
             if (selectTab == 0)
             {
+                BackButtonText = "Открыть\nконфиг";
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
             }
             else if (selectTab == 1)
             {
+                BackButtonText = "Открыть\nконфиг";
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
             }
             else if (selectTab == 2)
             {
+                BackButtonText = "Открыть\nконфиг";
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
             }
             else if (selectTab == 3)
             {
+                BackButtonText = "Назад";
+                DeviceConfigBtnEnabled = true;
             }
             else if (selectTab == 4)
             {
+                BackButtonText = "Назад";
+                DeviceConfigBtnEnabled = true;
             }
             else if (selectTab == 5)
             {
+                StopBtnText = "Ok";
                 BackButtonText = "Назад";
-                NextBtnEnabled = false;
             }
 
             return selectTab;
         }
-        set => Set(ref selectTab, value);
+        set
+        {
+            Set(ref selectTab, value);
+        }
     }
 
     public double goToSelectTab;
@@ -198,8 +213,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         PrimaryCheckDevicesTab = false;
         PrimaryCheckVipsTab = false;
         CheckVipsTab = false;
-        SettingsTab = false;
-        SettingsVipsTab = false;
+        // SettingsTab = false;
+        // SettingsVipsTab = false;
         StopAllTab = false;
     }
 
@@ -223,8 +238,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     {
         DeviceConfigBtnEnabled = true;
         StartTestDevicesBtnEnabled = true;
-        CloseActionWindowBtnEnabled = true;
         CancelAllTestBtnEnabled = true;
+        NextBtnEnabled = true;
     }
 
     /// <summary>
@@ -234,8 +249,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     {
         DeviceConfigBtnEnabled = false;
         StartTestDevicesBtnEnabled = false;
-        CloseActionWindowBtnEnabled = false;
         CancelAllTestBtnEnabled = false;
+        NextBtnEnabled = false;
     }
 
     #endregion
@@ -265,6 +280,10 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             SelectTab = 2;
         }
+        // else if (TestRun == TypeOfTestRun.AvailabilityCheckVipReady)
+        // {
+        //     SelectTab = 3;
+        // }
     }
 
     bool CanNextCmdExecuted(object p)
@@ -280,11 +299,19 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     async Task OnCancelAllTestCmdExecuted(object p)
     {
-        CancelAllTestBtnEnabled = false;
+        if (SelectTab != 5)
+        {
+            CancelAllTestBtnEnabled = false;
 
-        await stand.ResetAllTests(false, !CancelAllTestBtnEnabled);
+            await stand.ResetAllTests(false, !CancelAllTestBtnEnabled);
 
-        CancelAllTestBtnEnabled = true;
+            CancelAllTestBtnEnabled = true;
+        }
+        else
+        {
+            StopAll = true;
+            SelectTab = goToSelectTab;
+        }
     }
 
     private void AwOnClosed(object sender, EventArgs e)
@@ -457,7 +484,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 goToSelectTab = result switch
                 {
                     MessageBoxResult.Yes => 4,
-                    MessageBoxResult.No => 1,//errorStr.Contains("Реле Випа") ? 1 : 0,
+                    MessageBoxResult.No => 1, //errorStr.Contains("Реле Випа") ? 1 : 0,
                     _ => goToSelectTab
                 };
             }
@@ -564,34 +591,33 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     Task OnDeviceConfigCmdExecuted(object p)
     {
-        // //обработчик команды
-        // if (SelectTab == 0)
-        // {
-        //     SelectTab = 3;
-        //     // BackButtonText = "Назад";
-        // }
-        // else if (SelectTab == 3)
-        // {
-        //     SelectTab = 0;
-        //     // BackButtonText = "Откыть конфиг";
-        // }
-        // //
-        // else if (SelectTab == 1)
-        // {
-        //     SelectTab = 4;
-        //     // BackButtonText = "Назад";
-        // }
-        // else if (SelectTab == 4)
-        // {
-        //     SelectTab = 1;
-        //     // BackButtonText = "Откыть конфиг";
-        // }
-
-        if (stand.TestRun == TypeOfTestRun.Stop)
+        //обработчик команды
+        if (SelectTab == 0)
+        {
+            SelectTab = 3;
+        }
+        else if (SelectTab == 2)
+        {
+            SelectTab = 4;
+        }
+        else if (SelectTab == 3)
         {
             SelectTab = 0;
         }
+        //
+        else if (SelectTab == 1)
+        {
+            SelectTab = 4;
+        }
+        else if (SelectTab == 4)
+        {
+            SelectTab = 2;
+        }
 
+        // if (stand.TestRun == TypeOfTestRun.Stop)
+        // {
+        //     SelectTab = 0;
+        // }
         return Task.CompletedTask;
     }
 
@@ -1031,6 +1057,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref backButtonText, value);
     }
 
+    private string stopBtnText = "Остановить";
+
+    public string StopBtnText
+    {
+        get => stopBtnText;
+        set => Set(ref stopBtnText, value);
+    }
+
 
     /// <summary>
     ///
@@ -1256,36 +1290,52 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     public TypeOfTestRun TestRun
     {
         get => testRun;
-
-        //TODO Вернуть убранно чтобы разлоичить вкладки
-        // set { testRun = value; }
+        
         set
         {
-
             if (!Set(ref testRun, value)) return;
 
-            //AllTabsDisable();
-            //AllBtnsEnable();
-
-            //-
-            if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
+            AllTabsDisable();
+            AllBtnsDisable();
+            if (stand.TestRun == TypeOfTestRun.Stop)
             {
-                TextCurrentTest = $"Предпроверка устройств: ";
+                TextCurrentTest = " Стенд остановлен! ";
+                BackButtonText = "Назад";
+                
+                SettingsTab = true;
+                SettingsVipsTab = true;
                 
                 CancelAllTestBtnEnabled = true;
             }
+            //-
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
+            {
+                TextCurrentTest = $"Предпроверка устройств: ";
+                
+                SettingsTab = false;
+                SettingsVipsTab = false;
+                
+                CancelAllTestBtnEnabled = true;
+            }
+            //-
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
             {
                 TextCurrentTest = " Предпроверка устройств ОК ";
-
+                
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
-                NextBtnEnabled = true; 
+                NextBtnEnabled = true;
             }
             //-
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
             {
                 TextCurrentTest = "Проверка реле Випов: ";
+                
+                SettingsTab = false;
+                SettingsVipsTab = false;
 
                 CancelAllTestBtnEnabled = true;
             }
@@ -1293,6 +1343,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 TextCurrentTest = " Проверка реле Випов Ок ";
 
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1302,12 +1355,18 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 TextCurrentTest = "Предварительный тест Випов: ";
 
+                SettingsTab = false;
+                SettingsVipsTab = false;
+                
                 CancelAllTestBtnEnabled = true;
             }
             else if (stand.TestRun == TypeOfTestRun.AvailabilityCheckVipReady)
             {
-                TextCurrentTest = "Предварительный тест Випов Ок ";
+                TextCurrentTest = " Предварительный тест Випов Ок ";
 
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1315,212 +1374,73 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             //-
             else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
             {
+                
+                SettingsTab = false;
+                SettingsVipsTab = false;
+                
                 TextCurrentTest = "Нулевой замер: ";
-
                 CancelAllTestBtnEnabled = true;
             }
             else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
             {
-                TextCurrentTest = " Нулевой замер ОК";
+                TextCurrentTest = " Нулевой замер ОК ";
 
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
-            }  
-
-            else if (stand.TestRun == TypeOfTestRun.Stopped)
-            {
-                TextCurrentTest = "Тесты прерваны, отключение устройств... ";
-                
-                StopAll = false;
-                
-                SelectTab = 5;   
             }
-
-            if (stand.TestRun == TypeOfTestRun.Stop)
+            else if (stand.TestRun == TypeOfTestRun.WaitHeatPlate)
             {
-                TextCurrentTest = "Стенд остановлен";
-                BackButtonText = "Назад"; 
+                SettingsTab = false;
+                SettingsVipsTab = false;
+                
+                CancelAllTestBtnEnabled = true;
+                TextCurrentTest = "Нагрев пластины: ";
             }
-
-            //if (stand.TestRun == TypeOfTestRun.Prep)
-            //{
-            //    TextCurrentTest = "Стенд остановлен";
-            //    BackButtonText = "Назад";
-
-            //    AllTabsDisable();
-            //    PrimaryCheckDevicesTab = true;
-
-            //    AllBtnsEnable();
-            //    CancelAllTestBtnEnabled = false;
-            //}
-
-            //    else if (stand.TestRun == TypeOfTestRun.None)
-            //    {
-            //        TextCurrentTest = "";
-
-            //        //
-            //        AllTabsEnable();
-            //        AllBtnsEnable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = false;
-            //    }
-            //    else if (stand.TestRun == TypeOfTestRun.None)
-            //    {
-            //        TextCurrentTest = "";
-
-            //        //
-            //        AllTabsEnable();
-            //        AllBtnsEnable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = false;
-            //    }
-
-            //    //-
-
-            //    else if (stand.TestRun == TypeOfTestRun.CheckPorts)
-            //    {
-            //        TextCurrentTest = " Проверка портов";
-
-            //        //
-            //        AllTabsDisable();
-            //        AllBtnsDisable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = true;
-            //    }
-
-            //    else if (stand.TestRun == TypeOfTestRun.CheckPortsReady)
-            //    {
-            //        TextCurrentTest = "Проверка портов ОК";
-
-            //        //
-            //        AllTabsEnable();
-            //        AllBtnsEnable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = false;
-            //    }
-
-            //    //-
-
-            //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmd)
-            //    {
-            //        TextCurrentTest = " Отправка на устройства";
-
-            //        //
-            //        AllTabsDisable();
-            //        AllBtnsDisable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = true;
-            //    }
-
-            //    else if (stand.TestRun == TypeOfTestRun.WriteDevicesCmdReady)
-            //    {
-            //        TextCurrentTest = "Отправка на устройства ОК";
-
-            //        //
-            //        AllTabsEnable();
-            //        AllBtnsEnable();
-            //        //
-
-            //        CancelAllTestBtnEnabled = false;
-            //    }
-
-            //    //-
-
-
-
-            //-
-
-
-
-
-
-            //    //-
-
-            //    else if (stand.TestRun == TypeOfTestRun.DeviceOperation)
-            //    {
-            //        TextCurrentTest = $" Включение устройства";
-            //        TextCountTimes = "Попытка включения:";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
-
-            //    else if (stand.TestRun == TypeOfTestRun.DeviceOperationReady)
-            //    {
-            //        TextCurrentTest = " Включение устройства Ок";
-            //        TextCountTimes = "Всего попыток:";
-            //        AllTabsEnable();
-            //    }
-
-            //    //-
-
-
-
-            //    //-
-
-            //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZero)
-            //    {
-            //        TextCurrentTest = " Ожидание источника питания";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
-
-            //    else if (stand.TestRun == TypeOfTestRun.WaitSupplyMeasurementZeroReady)
-            //    {
-            //        TextCurrentTest = " Ожидание источника питания ОК";
-            //        AllTabsEnable();
-            //    }
-
-            //    //-
-
-            //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlate)
-            //    {
-            //        TextCurrentTest = " Нагрев основания";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
-
-            //    else if (stand.TestRun == TypeOfTestRun.WaitHeatPlateReady)
-            //    {
-            //        TextCurrentTest = " Нагрев основания ОК";
-            //        AllTabsEnable();
-            //    }
-
-            //    //-
-
+            else if (stand.TestRun == TypeOfTestRun.WaitHeatPlate)
+            {
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
+                TextCurrentTest = " Нагрев пластины ОК ";
+            }
             else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
             {
-                TextCurrentTest = " Циклические замеры: ";
-                // AllTabsDisable();
-                // CheckVipsTab = true;
+                CancelAllTestBtnEnabled = true;
+                TextCurrentTest = "Циклические замеры: ";
+                
+                SettingsTab = false;
+                SettingsVipsTab = false;
             }
             else if (stand.TestRun == TypeOfTestRun.CyclicMeasurementReady)
             {
-                TextCurrentTest = " Циклическиe замеры закончены";
-                // AllTabsDisable();
-                // CheckVipsTab = true;
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
+                TextCurrentTest = " Циклическиe замеры ОК";
             }
-
-            //    else if (stand.TestRun == TypeOfTestRun.CycleWait)
-            //    {
-            //        TextCurrentTest = " Ожидание замер";
-            //        AllTabsDisable();
-            //        CheckVipsTab = true;
-            //    }
-
-            //-
-
             else if (stand.TestRun == TypeOfTestRun.Error)
             {
-                TextCurrentTest = "Ошибка стенда";
+                SettingsTab = true;
+                SettingsVipsTab = true;
+                
+                TextCurrentTest = " Ошибка стенда ";
                 stand.CurrentCountChecked = string.Empty;
                 stand.SubTestText = string.Empty;
-                AllTabsEnable();
+            }
+            else if (stand.TestRun == TypeOfTestRun.Stopped)
+            {
+                TextCurrentTest = " Тесты прерваны, отключение устройств... ";
+                
+                SettingsTab = false;
+                SettingsVipsTab = false;
+                
+                StopAll = false;
+                
+                SelectTab = 5;
             }
         }
     }
@@ -1553,7 +1473,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref startTestDevicesEnabled, value);
     }
 
-    private bool cancelAllTestEnabled = false;
+    private bool cancelAllTestEnabled;
 
     /// <summary>
     /// Включатель кнопки Остановить
@@ -1565,6 +1485,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     }
 
     private bool nextEnabled = true;
+
     /// <summary>
     /// Включатель кнопки Далее
     /// </summary>
@@ -1803,8 +1724,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         get => isGdmConfig;
         set => Set(ref isGdmConfig, value);
     }
-    
+
     private bool isGdmDevice;
+
     /// <summary>
     /// Имя устройства
     /// </summary>
@@ -1813,7 +1735,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         get => isGdmDevice;
         set => Set(ref isGdmDevice, value);
     }
-    
+
     private string isSaveDevice;
 
     /// <summary>
