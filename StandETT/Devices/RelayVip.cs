@@ -16,8 +16,7 @@ public class RelayVip : BaseDevice
     MainRelay MainRelay = MainRelay.GetInstance();
 
     public override void SetConfigDevice(TypePort typePort, string portName, int baud, int stopBits, int parity,
-        int dataBits,
-        bool dtr = true)
+        int dataBits, bool dtr = true, bool isGdmConfig = false)
     {
         MainRelay.Config.TypePort = typePort;
         MainRelay.Config.PortName = $"COM{portName}";
@@ -26,6 +25,7 @@ public class RelayVip : BaseDevice
         MainRelay.Config.Parity = parity;
         MainRelay.Config.DataBits = dataBits;
         MainRelay.Config.Dtr = dtr;
+        MainRelay.Config.IsGdmConfig = isGdmConfig;
     }
 
     public override void Close()

@@ -199,6 +199,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         PrimaryCheckVipsTab = false;
         CheckVipsTab = false;
         SettingsTab = false;
+        SettingsVipsTab = false;
+        StopAllTab = false;
     }
 
     /// <summary>
@@ -210,6 +212,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         PrimaryCheckVipsTab = true;
         CheckVipsTab = true;
         SettingsTab = true;
+        SettingsVipsTab = true;
+        StopAllTab = true;
     }
 
     /// <summary>
@@ -278,7 +282,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     {
         CancelAllTestBtnEnabled = false;
 
-        await stand.ResetAllTests();
+        await stand.ResetAllTests(false, !CancelAllTestBtnEnabled);
 
         CancelAllTestBtnEnabled = true;
     }
@@ -355,7 +359,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 await stand.ResetAllTests(true);
-                
+
                 if (result == MessageBoxResult.No)
                 {
                     goToSelectTab = 0;
@@ -394,7 +398,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
                 await stand.ResetAllTests(true);
-                
+
                 if (result == MessageBoxResult.No)
                 {
                     goToSelectTab = 1;
@@ -651,6 +655,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             AllDevices[index].Config.Parity = Parity;
             AllDevices[index].Config.DataBits = Convert.ToInt32(DataBit);
             AllDevices[index].Config.Dtr = Dtr;
+            AllDevices[index].Config.IsGdmConfig = IsGdmConfig;
 
             NameDevice = selectDevice.Name;
             Prefix = selectDevice.Prefix;
@@ -663,11 +668,12 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 Parity = selectDevice.GetConfigDevice().Parity;
                 DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
+                IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
             }
 
             AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Convert.ToInt32(Baud),
                 Convert.ToInt32(StopBit), Parity,
-                Convert.ToInt32(DataBit), Dtr);
+                Convert.ToInt32(DataBit), Dtr, IsGdmConfig);
 
             selectedDeviceCmd.Source =
                 SelectDevice?.LibCmd.DeviceCommands.Where(x =>
@@ -1050,7 +1056,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     private bool primaryCheckDevicesTab;
 
     /// <summary>
-    /// Включатель вкладки подключения устройств 0
+    /// Включатель вкладки Подключение устройств (0)
     /// </summary>
     public bool PrimaryCheckDevicesTab
     {
@@ -1061,7 +1067,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     private bool primaryCheckVipsTab;
 
     /// <summary>
-    /// Включатель вкладки предварительной проверки випов 1
+    /// Включатель вкладки Подключение Випов (1)
     /// </summary>
     public bool PrimaryCheckVipsTab
     {
@@ -1072,7 +1078,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     private bool checkVipsTab;
 
     /// <summary>
-    /// Включатель влкадки проверки випов 2
+    /// Включатель влкадки Тесты (2)
     /// </summary>
     public bool CheckVipsTab
     {
@@ -1083,12 +1089,34 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     private bool settingsTab;
 
     /// <summary>
-    /// Включатель влкадки настроек 3
+    /// Включатель влкадки Настройка устройств (3)
     /// </summary>
     public bool SettingsTab
     {
         get => settingsTab;
         set => Set(ref settingsTab, value);
+    }
+
+    private bool settingsVipsTab;
+
+    /// <summary>
+    /// Включатель влкадки Настройка Випов/Параметров (5)
+    /// </summary>
+    public bool SettingsVipsTab
+    {
+        get => settingsVipsTab;
+        set => Set(ref settingsVipsTab, value);
+    }
+
+    private bool stopAllTab;
+
+    /// <summary>
+    /// Включатель влкадки  (6)
+    /// </summary>
+    public bool StopAllTab
+    {
+        get => stopAllTab;
+        set => Set(ref stopAllTab, value);
     }
 
     #endregion
@@ -1233,35 +1261,111 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         // set { testRun = value; }
         set
         {
+
             if (!Set(ref testRun, value)) return;
+
+            //AllTabsDisable();
+            //AllBtnsEnable();
+
             //-
-
-            if (stand.TestRun == TypeOfTestRun.Stop)
+            if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
             {
-                TextCurrentTest = "Стенд остановлен";
-                BackButtonText = "Назад";
-
-                //AllTabsDisable();
-                PrimaryCheckDevicesTab = true;
-
-                AllBtnsEnable();
-                CancelAllTestBtnEnabled = false;
+                TextCurrentTest = $"Предпроверка устройств: ";
+                
+                CancelAllTestBtnEnabled = true;
             }
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
+            {
+                TextCurrentTest = " Предпроверка устройств ОК ";
+
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
+                NextBtnEnabled = true; 
+            }
+            //-
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
+            {
+                TextCurrentTest = "Проверка реле Випов: ";
+
+                CancelAllTestBtnEnabled = true;
+            }
+            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
+            {
+                TextCurrentTest = " Проверка реле Випов Ок ";
+
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
+                NextBtnEnabled = true;
+            }
+            //-
+            else if (stand.TestRun == TypeOfTestRun.AvailabilityCheckVip)
+            {
+                TextCurrentTest = "Предварительный тест Випов: ";
+
+                CancelAllTestBtnEnabled = true;
+            }
+            else if (stand.TestRun == TypeOfTestRun.AvailabilityCheckVipReady)
+            {
+                TextCurrentTest = "Предварительный тест Випов Ок ";
+
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
+                NextBtnEnabled = true;
+            }
+            //-
+            else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
+            {
+                TextCurrentTest = "Нулевой замер: ";
+
+                CancelAllTestBtnEnabled = true;
+            }
+            else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
+            {
+                TextCurrentTest = " Нулевой замер ОК";
+
+                DeviceConfigBtnEnabled = true;
+                StartTestDevicesBtnEnabled = true;
+                NextBtnEnabled = true;
+            }  
 
             else if (stand.TestRun == TypeOfTestRun.Stopped)
             {
                 TextCurrentTest = "Тесты прерваны, отключение устройств... ";
-
+                
                 StopAll = false;
-                SelectTab = 5;
-
-
-                // AllTabsDisable();
-                // PrimaryCheckDevicesTab = true;
-
-                AllBtnsDisable();
+                
+                SelectTab = 5;   
             }
 
+            if (stand.TestRun == TypeOfTestRun.Stop)
+            {
+                TextCurrentTest = "Стенд остановлен";
+                BackButtonText = "Назад"; 
+            }
+
+            //if (stand.TestRun == TypeOfTestRun.Prep)
+            //{
+            //    TextCurrentTest = "Стенд остановлен";
+            //    BackButtonText = "Назад";
+
+            //    AllTabsDisable();
+            //    PrimaryCheckDevicesTab = true;
+
+            //    AllBtnsEnable();
+            //    CancelAllTestBtnEnabled = false;
+            //}
+
+            //    else if (stand.TestRun == TypeOfTestRun.None)
+            //    {
+            //        TextCurrentTest = "";
+
+            //        //
+            //        AllTabsEnable();
+            //        AllBtnsEnable();
+            //        //
+
+            //        CancelAllTestBtnEnabled = false;
+            //    }
             //    else if (stand.TestRun == TypeOfTestRun.None)
             //    {
             //        TextCurrentTest = "";
@@ -1328,61 +1432,13 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
             //    //-
 
-            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
-            {
-                TextCurrentTest = $"Предпроверка устройств: ";
 
-                // //
-                // AllTabsDisable();
-                // AllBtnsDisable();
-                // //
-                //
-                // CancelAllTestBtnEnabled = true;
-                // PrimaryCheckDevicesTab = true;
-            }
 
-            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
-            //    {
-            //        TextCurrentTest = " Предпроверка устройств ОК";
-            //        TextCountTimes = "Всего попыток:";
+            //-
 
-            //        //
-            //        AllTabsDisable();
-            //        AllBtnsEnable();
-            //        //
 
-            //        CancelAllTestBtnEnabled = false;
-            //        PrimaryCheckDevicesTab = true;
-            //        PrimaryCheckVipsTab = true;
-            //    }
 
-            //    //-
 
-            else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
-            {
-                TextCurrentTest = "Предпроверка Випов: ";
-                // //
-                // AllTabsDisable();
-                // AllBtnsDisable();
-                // //
-                //
-                // CancelAllTestBtnEnabled = true;
-                // PrimaryCheckVipsTab = true;
-            }
-
-            //    else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVipsReady)
-            //    {
-            //        TextCurrentTest = " Предпроверка Випов Ок";
-            //        TextCountTimes = "Всего попыток:";
-
-            //        //
-            //        AllTabsDisable();
-            //        AllBtnsEnable();
-            //        //
-            //        CancelAllTestBtnEnabled = false;
-            //        PrimaryCheckDevicesTab = true;
-            //        CheckVipsTab = true;
-            //    }
 
             //    //-
 
@@ -1403,18 +1459,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
             //    //-
 
-            else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
-            {
-                TextCurrentTest = "Нулевой замер: ";
-                // AllTabsDisable();
-                // CheckVipsTab = true;
-            }
 
-            else if (stand.TestRun == TypeOfTestRun.MeasurementZeroReady)
-            {
-                TextCurrentTest = " Нулевой замер ОК";
-                //AllTabsEnable();
-            }
 
             //    //-
 
@@ -1488,6 +1533,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     private bool deviceConfigEnabled = true;
 
+    /// <summary>
+    /// Включатель кнопки Открыть конфиг
+    /// </summary>
     public bool DeviceConfigBtnEnabled
     {
         get => deviceConfigEnabled;
@@ -1496,6 +1544,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     private bool startTestDevicesEnabled = true;
 
+    /// <summary>
+    /// Включатель кнопки Начать/повтороить тест
+    /// </summary>
     public bool StartTestDevicesBtnEnabled
     {
         get => startTestDevicesEnabled;
@@ -1504,10 +1555,23 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     private bool cancelAllTestEnabled = false;
 
+    /// <summary>
+    /// Включатель кнопки Остановить
+    /// </summary>
     public bool CancelAllTestBtnEnabled
     {
         get => cancelAllTestEnabled;
         set => Set(ref cancelAllTestEnabled, value);
+    }
+
+    private bool nextEnabled = true;
+    /// <summary>
+    /// Включатель кнопки Далее
+    /// </summary>
+    public bool NextBtnEnabled
+    {
+        get => nextEnabled;
+        set => Set(ref nextEnabled, value);
     }
 
 
@@ -1518,16 +1582,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         get => closeActionWindowBtnEnabled;
         set => Set(ref closeActionWindowBtnEnabled, value);
     }
-
-
-    private bool nextEnabled = true;
-
-    public bool NextBtnEnabled
-    {
-        get => nextEnabled;
-        set => Set(ref nextEnabled, value);
-    }
-
 
     private bool removeCmdFromDeviceBtnEnabled;
 
@@ -1613,6 +1667,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 Parity = selectDevice.GetConfigDevice().Parity;
                 DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
+                IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
+
+                IsGdmDevice = selectDevice.Name != null && selectDevice.Name.ToLower().Contains("gdm");
 
                 var cmds = value?.LibCmd.DeviceCommands.Where(x =>
                     x.Key.NameDevice == selectDevice.Name);
@@ -1736,6 +1793,27 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref dtr, value);
     }
 
+    private bool isGdmConfig;
+
+    /// <summary>
+    /// Имя устройства
+    /// </summary>
+    public bool IsGdmConfig
+    {
+        get => isGdmConfig;
+        set => Set(ref isGdmConfig, value);
+    }
+    
+    private bool isGdmDevice;
+    /// <summary>
+    /// Имя устройства
+    /// </summary>
+    public bool IsGdmDevice
+    {
+        get => isGdmDevice;
+        set => Set(ref isGdmDevice, value);
+    }
+    
     private string isSaveDevice;
 
     /// <summary>

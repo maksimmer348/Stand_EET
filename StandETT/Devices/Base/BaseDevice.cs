@@ -312,7 +312,7 @@ public class BaseDevice : Notify
     /// <returns></returns>
     public virtual void SetConfigDevice(TypePort typePort, string portName, int baud, int stopBits, int parity,
         int dataBits,
-        bool dtr = true)
+        bool dtr = true, bool isGdmConfig = false)
     {
         Config.TypePort = typePort;
         Config.PortName = $"COM{portName}";
@@ -321,6 +321,7 @@ public class BaseDevice : Notify
         Config.Parity = parity;
         Config.DataBits = dataBits;
         Config.Dtr = dtr;
+        Config.IsGdmConfig = isGdmConfig;
     }
 
     // public void SetConfigDevice(ConfigDeviceParams cfg)
@@ -364,6 +365,7 @@ public class BaseDevice : Notify
         }
     }
 
+    
 
     public virtual void ClearBuff()
     {

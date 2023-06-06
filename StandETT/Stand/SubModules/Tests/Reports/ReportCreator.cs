@@ -49,7 +49,6 @@ public class ReportCreator
         await excelPackage.SaveAsAsync(pathReport, "");
     }
 
-    
     public async Task CreateReport(Vip vip, bool isError = false)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
@@ -69,6 +68,7 @@ public class ReportCreator
                 excelWorksheet.Cells[addrChannel1].Value = 0;
                 excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
             }
+
             if (vip.Type.PrepareMaxVoltageOut2 > 0)
             {
                 var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();
@@ -103,7 +103,7 @@ public class ReportCreator
 
         excelWorksheet.Cells[addr.nameAddr].Value = vip.Name;
 
-        var timeNow = $"\n{DateTime.Now:HH:mm:ss}";
+        var timeNow = $"/\n{DateTime.Now:HH:mm:ss}";
 
         if (!isReset)
         {
@@ -119,12 +119,29 @@ public class ReportCreator
             excelWorksheet.Cells[addr.tempAddrOut].Value =
                 vip.ErrorVip.TemperatureOut ? $"{vip.TemperatureOut}{timeNow}" : null;
             excelWorksheet.Cells[addr.errConnectAddr].Value =
-                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Ошибка{timeNow}" : null;
+                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"X{timeNow}" : null;
         }
         else
         {
-            excelWorksheet.Cells[addr.errConnectAddr + 1].Value =
-                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Сброс{timeNow}" : null;
+            if (vip.CurrentTestVip == TypeOfTestRun.AvailabilityCheckVip)
+            {
+                excelWorksheet.Cells[addr.errResetAddr ].Value = $"Сброс ПИ{timeNow}";
+            }
+
+            else if (vip.CurrentTestVip == TypeOfTestRun.MeasurementZero)
+            {
+                excelWorksheet.Cells[addr.errResetAddr].Value = $"Сброс НКУ{timeNow}";
+            }
+
+            else if (vip.CurrentTestVip is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+            {
+                excelWorksheet.Cells[addr.errResetAddr].Value = $"Сброс ЦИ{timeNow}";
+            }
+            else
+            {
+                excelWorksheet.Cells[addr.errResetAddr].Value =
+                    vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"Сброс устр.{timeNow}" : null;
+            }
         }
 
         await excelPackage.SaveAsync();
@@ -202,7 +219,8 @@ public class ReportCreator
         return (nameAddr, channel1Addr, channel2Addr);
     }
 
-    (string nameAddr, string channel1Addr, string channel2Addr, string currentInAddr, string tempAddr, string tempAddrOut,string errConnectAddr)
+    (string nameAddr, string channel1Addr, string channel2Addr, string currentInAddr, string tempAddr, string
+        tempAddrOut, string errConnectAddr, string errResetAddr)
         GetChannelAddrErrorReport(Vip vip)
     {
         var channel1AddrErrNum = 5;
@@ -214,13 +232,14 @@ public class ReportCreator
         var channel2AddrErrNum = 7;
         if (vip.ErrorVip.VoltageOut2Low)
         {
-            channel1AddrErrNum = 8;
+            channel2AddrErrNum = 8;
         }
 
         var currentInAddrNum = 9;
         var tempAddrNumIn = 10;
         var tempAddrNumOut = 11;
         var errConnectAddrNum = 12;
+        var errResetAddrNum = 13;
 
         var nameAddr = $"D4";
 
@@ -231,6 +250,7 @@ public class ReportCreator
         var tempAddr = $"D{tempAddrNumIn}";
         var tempAddrOut = $"D{tempAddrNumOut}";
         var errConnectAdd = $"D{errConnectAddrNum}";
+        var errResetAdd = $"D{errResetAddrNum}";
 
         switch (vip.Id)
         {
@@ -241,11 +261,12 @@ public class ReportCreator
                 channel2ErrAddr = $"E{channel2AddrErrNum}";
 
                 currentErrAddr = $"E{currentInAddrNum}";
-                
+
                 tempAddr = $"E{tempAddrNumIn}";
                 tempAddrOut = $"E{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"E{errConnectAddrNum}";
+                errResetAdd = $"E{errResetAddrNum}";
                 break;
             case 2:
                 nameAddr = $"F4";
@@ -254,11 +275,13 @@ public class ReportCreator
                 channel2ErrAddr = $"F{channel2AddrErrNum}";
 
                 currentErrAddr = $"F{currentInAddrNum}";
-                
+
                 tempAddr = $"F{tempAddrNumIn}";
                 tempAddrOut = $"F{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"F{errConnectAddrNum}";
+                errResetAdd = $"F{errResetAddrNum}";
+
                 break;
             case 3:
                 nameAddr = $"G4";
@@ -267,11 +290,12 @@ public class ReportCreator
                 channel2ErrAddr = $"G{channel2AddrErrNum}";
 
                 currentErrAddr = $"G{currentInAddrNum}";
-                
+
                 tempAddr = $"G{tempAddrNumIn}";
                 tempAddrOut = $"G{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"G{errConnectAddrNum}";
+                errResetAdd = $"G{errResetAddrNum}";
                 break;
             case 4:
                 nameAddr = $"H4";
@@ -280,11 +304,12 @@ public class ReportCreator
                 channel2ErrAddr = $"H{channel2AddrErrNum}";
 
                 currentErrAddr = $"H{currentInAddrNum}";
-                
+
                 tempAddr = $"H{tempAddrNumIn}";
                 tempAddrOut = $"H{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"H{errConnectAddrNum}";
+                errResetAdd = $"H{errResetAddrNum}";
                 break;
             case 5:
                 nameAddr = $"I4";
@@ -293,11 +318,12 @@ public class ReportCreator
                 channel2ErrAddr = $"I{channel2AddrErrNum}";
 
                 currentErrAddr = $"I{currentInAddrNum}";
-                
+
                 tempAddr = $"I{tempAddrNumIn}";
                 tempAddrOut = $"I{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"I{errConnectAddrNum}";
+                errResetAdd = $"I{errResetAddrNum}";
                 break;
             case 6:
                 nameAddr = $"J4";
@@ -306,11 +332,12 @@ public class ReportCreator
                 channel2ErrAddr = $"J{channel2AddrErrNum}";
 
                 currentErrAddr = $"J{currentInAddrNum}";
-                
+
                 tempAddr = $"J{tempAddrNumIn}";
                 tempAddrOut = $"J{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"J{errConnectAddrNum}";
+                errResetAdd = $"J{errResetAddrNum}";
                 break;
             case 7:
                 nameAddr = $"K4";
@@ -319,12 +346,14 @@ public class ReportCreator
                 channel2ErrAddr = $"K{channel2AddrErrNum}";
 
                 currentErrAddr = $"K{currentInAddrNum}";
-                
+
                 tempAddr = $"K{tempAddrNumIn}";
                 tempAddrOut = $"K{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"K{errConnectAddrNum}";
+                errResetAdd = $"K{errResetAddrNum}";
                 break;
+                
             case 8:
                 nameAddr = $"L4";
 
@@ -332,11 +361,12 @@ public class ReportCreator
                 channel2ErrAddr = $"L{channel2AddrErrNum}";
 
                 currentErrAddr = $"L{currentInAddrNum}";
-                
+
                 tempAddr = $"L{tempAddrNumIn}";
-                tempAddrOut = $"L{tempAddrNumOut}"; 
-                
+                tempAddrOut = $"L{tempAddrNumOut}";
+
                 errConnectAdd = $"L{errConnectAddrNum}";
+                errResetAdd = $"L{errResetAddrNum}";
                 break;
             case 9:
                 nameAddr = $"M4";
@@ -345,11 +375,12 @@ public class ReportCreator
                 channel2ErrAddr = $"M{channel2AddrErrNum}";
 
                 currentErrAddr = $"M{currentInAddrNum}";
-                
+
                 tempAddr = $"M{tempAddrNumIn}";
                 tempAddrOut = $"M{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"M{errConnectAddrNum}";
+                errResetAdd = $"M{errResetAddrNum}";
                 break;
             case 10:
                 nameAddr = $"N4";
@@ -358,11 +389,12 @@ public class ReportCreator
                 channel2ErrAddr = $"N{channel2AddrErrNum}";
 
                 currentErrAddr = $"N{currentInAddrNum}";
-                
+
                 tempAddr = $"N{tempAddrNumIn}";
                 tempAddrOut = $"N{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"N{errConnectAddrNum}";
+                errResetAdd = $"N{errResetAddrNum}";
                 break;
             case 11:
                 nameAddr = $"O4";
@@ -371,15 +403,16 @@ public class ReportCreator
                 channel2ErrAddr = $"O{channel2AddrErrNum}";
 
                 currentErrAddr = $"O{currentInAddrNum}";
-                
+
                 tempAddr = $"O{tempAddrNumIn}";
                 tempAddrOut = $"O{tempAddrNumOut}";
-                
+
                 errConnectAdd = $"O{errConnectAddrNum}";
+                errResetAdd = $"O{errResetAddrNum}";
                 break;
         }
 
-        return (nameAddr, channel1ErrAddr, channel2ErrAddr, currentErrAddr, tempAddr, tempAddrOut, errConnectAdd);
+        return (nameAddr, channel1ErrAddr, channel2ErrAddr, currentErrAddr, tempAddr, tempAddrOut, errConnectAdd, errResetAdd);
     }
 }
 

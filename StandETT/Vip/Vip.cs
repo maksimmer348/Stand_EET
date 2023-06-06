@@ -74,16 +74,25 @@ public class Vip : Notify
         get => channelV1Revers;
         set => Set(ref channelV1Revers, value);
     }
-
-
+    
     private string errorStatusVip;
 
+    
     public string ErrorStatusVip
     {
         get => errorStatusVip;
         set => Set(ref errorStatusVip, value);
     }
-
+    
+    
+    private TypeOfTestRun currentTestVip;
+    
+    public TypeOfTestRun CurrentTestVip
+    {
+        get => currentTestVip;
+        set => Set(ref currentTestVip, value);
+    }
+    
     [JsonIgnore] private StatusDeviceTest statusTest;
 
     [JsonIgnore]

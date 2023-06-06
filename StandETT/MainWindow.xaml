@@ -721,8 +721,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Grid.Row="1"
-                                      Grid.Column="0"
-                                     >
+                                      Grid.Column="0">
                                     <Grid VerticalAlignment="Stretch"
                                           HorizontalAlignment="Stretch">
                                         <Grid.RowDefinitions>
@@ -902,7 +901,8 @@
             <!--//-->
 
             <!--Настройки устройств таб-->
-            <TabItem Header="Настройка устройств">
+            <TabItem Header="Настройка устройств"
+                     IsEnabled="{Binding SettingsTab}">
                 <!--Настройки и команды Grid-->
                 <Grid Style="{StaticResource GridSettingsTypeVip}">
 
@@ -1010,7 +1010,11 @@
 
                                 <TextBlock Text="DTR" />
                                 <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
-
+                                
+                                <TextBlock Text="ЕС_PSM" />
+                                <CheckBox IsChecked="{Binding IsGdmConfig}"
+                                          IsEnabled="{Binding IsGdmDevice, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+                                
                                 <TextBlock Text="{Binding IsSaveDeviceMessage}" />
                                 <Button Command="{Binding SaveSettingsCmd}"
                                         DockPanel.Dock="Right"
@@ -1270,7 +1274,8 @@
             <!--//-->
 
             <!--Настройки типов Випов таб-->
-            <TabItem Header="Настройка Випов/Параметров">
+            <TabItem Header="Настройка Випов/Параметров"
+                     IsEnabled="{Binding SettingsVipsTab}">
 
                 <!--Настройки типов Випов грид-->
                 <Grid Style="{StaticResource GridSettingsTypeVip}">
@@ -1282,8 +1287,7 @@
                         <RowDefinition Height="0.4*" />
                     </Grid.RowDefinitions>
 
-                    <Grid 
-                          Grid.Column="0"
+                    <Grid Grid.Column="0"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
@@ -1297,9 +1301,8 @@
                                    Style="{StaticResource LightGrayRectangle}" />
                         <Rectangle Grid.Row="2"
                                    Style="{StaticResource LightGrayRectangle}" />
-                        
+
                         <StackPanel Grid.Row="0"
-                                    
                                     DockPanel.Dock="Left">
                             <TextBlock>Выбор Типа Випов</TextBlock>
                             <ComboBox ItemsSource="{Binding TypeVips, UpdateSourceTrigger=PropertyChanged}"
@@ -1370,7 +1373,7 @@
                                          Text="{Binding TemperatureOut, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock DockPanel.Dock="Left"
-                                           Text="t стаб. НКУ" />
+                                           Text="t стаб. НКУ мс" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding ZeroTestInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
@@ -1408,18 +1411,21 @@
                                 <TextBlock Text="t 1 цикла"
                                            IsEnabled="False" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
-                                         Text="{Binding TestFirstIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                                         Text="{Binding TestFirstIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
 
                                 <TextBlock Text="t циклов"
                                            IsEnabled="False" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
-                                         Text="{Binding TestIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                                         Text="{Binding TestIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
 
                                 <TextBlock DockPanel.Dock="Left"
                                            Text="t общ. цикла"
                                            IsEnabled="False" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
-                                         Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+                                         Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
+                                         IsEnabled="False" />
 
 
                             </StackPanel>
@@ -1444,7 +1450,7 @@
 
                     <Grid Grid.Column="1"
                           VerticalAlignment="Stretch"
-                          HorizontalAlignment="Stretch" >
+                          HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
@@ -1454,11 +1460,11 @@
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        
-                        <Rectangle Grid.Row="0" 
+
+                        <Rectangle Grid.Row="0"
                                    Grid.Column="0"
-                                   Style="{StaticResource LightGrayRectangle}" 
-                                   Margin="2"/>
+                                   Style="{StaticResource LightGrayRectangle}"
+                                   Margin="2" />
                         <Rectangle Grid.Row="0"
                                    Grid.Column="1"
                                    Style="{StaticResource LightGrayRectangle}"
@@ -1554,13 +1560,13 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U" />
+                                <TextBlock Text="U рабочий" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltageSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="1">
-                                <TextBlock Text="I" />
+                                <TextBlock Text="I рабочий" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding CurrentSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
@@ -1613,13 +1619,13 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U" />
+                                <TextBlock Text="U измерений" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltCurrentMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="1">
-                                <TextBlock Text="I" />
+                                <TextBlock Text="I измерений" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding CurrentMeterCurrentMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
@@ -1650,7 +1656,7 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U" />
+                                <TextBlock Text="U измерений" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
@@ -1679,13 +1685,14 @@
             </TabItem>
             <!--/Настройки типов Випов таб-->
 
-            <TabItem Header="StopAll">
+            <TabItem Header="StopAll"
+                     IsEnabled="{Binding StopAllTab}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition Height="0.2*" />
                     </Grid.RowDefinitions>
-                    
+
                     <Rectangle Grid.Row="0"
                                Style="{StaticResource LightGrayRectangle}" />
                     <Rectangle Grid.Row="1"

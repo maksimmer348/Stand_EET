@@ -211,6 +211,9 @@ public class Stand1 : Notify
 
     private bool relaySwitch;
 
+    /// <summary>
+    /// Реле переключается
+    /// </summary>
     public bool RelaySwitch
     {
         get => relaySwitch;
@@ -236,6 +239,7 @@ public class Stand1 : Notify
     CancellationTokenSource ctsAllCancel = new();
     CancellationTokenSource ctsReceiveDevice = new();
     CancellationTokenSource ctsConnectDevice = new();
+    CancellationTokenSource errReportBusy = new();
 
     #endregion
 
@@ -518,7 +522,7 @@ public class Stand1 : Notify
 
     //--stop--resetall--allreset
     //Остановка всех тестов
-    public async Task ResetAllTests(bool checkEnabled = false)
+    public async Task ResetAllTests(bool checkEnabled = false, bool resetTest = false)
     {
         AllVipsNotCheck.Clear();
 
@@ -530,14 +534,6 @@ public class Stand1 : Notify
         ctsAllCancel?.Cancel();
         ctsConnectDevice?.Cancel();
         ctsReceiveDevice?.Cancel();
-
-        if (testVipPlay)
-        {
-            if (tvVip != null && report != null)
-            {
-                await CreateErrReport(tvVip);
-            }
-        }
 
         TestRun = TypeOfTestRun.Stopped;
 
@@ -626,8 +622,20 @@ public class Stand1 : Notify
                 break;
         }
 
-        await ResetAllVips();
+        try
+        {
+            if (resetTest && tvVip != null && report != null)
+            {
+                await CreateErrReport(tvVip, true);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"Ошибка записи репорта сбоя при остановке стенда- {e.Message}!");
+        }
 
+        await ResetAllVips();
+        tvVip = null;
         stopMeasurement = false;
         IsResetAll = false;
     }
@@ -763,11 +771,11 @@ public class Stand1 : Notify
         //TODO удалить после отладки
         foreach (var vip in vips)
         {
-            // if (vip.Id is 2 or 3)
-            if (vip.Id is 0 or 1)
-            {
+            // if (vip.Id % 2 == 0)
+            if (vip.Id is 0)
+                // {
                 vip.Name = vip.Id.ToString();
-            }
+            // }
         }
 
         ReportNum = "отчет Тест";
@@ -929,8 +937,16 @@ public class Stand1 : Notify
         var getVoltValues = GetParameterForDevice().VoltValues;
         //конфигурие вольтметр
         await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
-            innerCountCheck, innerDelay, tvm, "Get func", "Get volt meter");
-        //
+            innerCountCheck, innerDelay, tvm, "Get volt meter");
+        if (tvm.IsOk)
+        {
+            await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
+                loopDelay: innerDelay, t: tvm);
+            if (tvm.IsOk && currentDevice.Name.ToLower().Contains("gdm"))
+            {
+                await WriteIdentCommand(currentDevice, "Sampl count");
+            }
+        }
 
         //переключение волтьтамеперметра в режим вольтметра
         currentDevice = devices.GetTypeDevice<VoltCurrentMeter>();
@@ -939,8 +955,18 @@ public class Stand1 : Notify
         //вытаскиваем конфиги вольтамперметра
         var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
         //конфигурие вольтамперметр
+
         await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
-            innerCountCheck, innerDelay, tvc, "Get func", "Get volt meter");
+            innerCountCheck, innerDelay, tvc, "Get volt meter");
+        if (tvc.IsOk)
+        {
+            await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
+                loopDelay: innerDelay, t: tvc);
+            if (tvc.IsOk && currentDevice.Name.ToLower().Contains("gdm"))
+            {
+                await WriteIdentCommand(currentDevice, "Sampl count");
+            }
+        }
 
         td.Add(tps.IsOk && tvm.IsOk && tvc.IsOk);
 
@@ -959,8 +985,6 @@ public class Stand1 : Notify
                 if (td.IsOk) await TestVip(vipTested, currentMainTest, td, tvr, tv);
             }
 
-            testVipPlay = false;
-            tvVip = null;
 
             if (IsResetAll) return false;
 
@@ -1128,10 +1152,10 @@ public class Stand1 : Notify
         //общая провека для проверки реле випов  
         TempChecks tvr = TempChecks.Start();
         //выкл випы
-        foreach (var vip in vipsTested)
-        {
-            await OutputDevice(vip.Relay, t: tvr, forcedOff: true, on: false);
-        }
+        // foreach (var vip in vipsTested)
+        // {
+        //     await OutputDevice(vip.Relay, t: tvr, forcedOff: true, on: false);
+        // }
 
         //включение и настройка приборов
 
@@ -1206,8 +1230,6 @@ public class Stand1 : Notify
                 if (td.IsOk) await TestVip(vipTested, currentMainTest, td, tvr, tv);
             }
 
-            testVipPlay = false;
-            tvVip = null;
 
             if (IsResetAll) return false;
 
@@ -1440,13 +1462,16 @@ public class Stand1 : Notify
 
     //время и испытаний
     //TODO сделать тик таймера 15*12 секунд = 180 секунд = 3 минуты (возможно теперь больше)
-    double tickInterval = 30;
+    // double tickInterval = 30;
+    double tickInterval = 15 * 12;
 
     //TODO сделать последующие замеры 1800 секунд = 30 минут
-    double intervalMeasurementSec = 60;
+    //double intervalMeasurementSec = 60;
+    double intervalMeasurementSec;
 
     //TODO сделать последний замер/заверщение замеров 28800 секунд = 8 часов
-    double lastMeasurementSec = 960;
+    //double lastMeasurementSec = 960;
+    private double lastMeasurementSec;
 
     //для визуализации отсчета времени
     double tickTimeSec;
@@ -1457,6 +1482,12 @@ public class Stand1 : Notify
     public bool StartMeasurementCycle()
     {
         ResetCheckVips();
+
+        //TODO убрать после отладки
+        tickInterval = 15 * vipsTested.Count;
+        intervalMeasurementSec = tickInterval * 2;
+        // lastMeasurementSec = (intervalMeasurementSec * 8) - 1;
+        lastMeasurementSec = (intervalMeasurementSec * 2);
 
         //
         TestRun = TypeOfTestRun.CyclicMeasurement;
@@ -1599,6 +1630,8 @@ public class Stand1 : Notify
 
                 else if (lastIntervalMeasurementStop.Check())
                 {
+                    ResetMeasurementCycle();
+                    
                     countMeasurementCycle++;
 
                     PercentCurrentTest += 10;
@@ -1626,7 +1659,7 @@ public class Stand1 : Notify
                         colorSubTest: Brushes.Green);
                     //
 
-                    ResetMeasurementCycle();
+                    
 
                     if (vipsStopped.Any())
                     {
@@ -1764,9 +1797,6 @@ public class Stand1 : Notify
         try
         {
             if (t.IsOk) await TestVip(vipTested, currentMainTest, t, tvr, tv);
-
-            testVipPlay = false;
-            tvVip = null;
 
             return (t?.IsOk ?? true, vipTested);
         }
@@ -2790,18 +2820,10 @@ public class Stand1 : Notify
                         }
 
                         if (receive.Key != null) deviceReceived[receive.Key].Add(receive.Value);
-
-                        // if (receive)
-                        // {
-                        //
-                        // }
                     }
                 }
             }
 
-            //
-            // Debug.WriteLine($"Установка настроек проверка/{s1.ElapsedMilliseconds} mc/раз - {i}/{device.IsDeviceType}");
-            //
             if (!tp.IsOk)
             {
                 continue;
@@ -2812,10 +2834,6 @@ public class Stand1 : Notify
             SetPriorityStatusStand(3, $"запись и проверка параметров, ок!", percentSubTest: 100, clearAll: true);
             //
 
-            //
-            // Debug.WriteLine($"Установка настроек прибора, Ок/{s1.ElapsedMilliseconds} mc/{device.IsDeviceType}");
-
-
             t?.Add(true);
             return deviceReceived;
         }
@@ -2824,10 +2842,6 @@ public class Stand1 : Notify
         //
         SetPriorityStatusStand(3, $"запись и проверка параметров , ошибка!", percentSubTest: 100,
             colorSubTest: Brushes.Red, clearAll: true);
-        //
-
-        //
-        //Debug.WriteLine($"Установка настроек прибора, Ок/{s1.ElapsedMilliseconds} mc/{device.IsDeviceType}");
         //
 
         t?.Add(false);
@@ -3128,13 +3142,13 @@ public class Stand1 : Notify
         {
             var errorStatus = receiveDataVip.Value.Substring(4, 2);
             //TODO удалить после отладки
-            if (errorStatus.Contains("1b"))
-            {
-                // низ U1, выс U2
-                vip.ErrorVip.VoltageOut1Low = true;
-                vip.ErrorVip.VoltageOut2High = true;
-                return false;
-            }
+            // if (errorStatus.Contains("1b"))
+            // {
+            //     // низ U1, выс U2
+            //     vip.ErrorVip.VoltageOut1Low = true;
+            //     vip.ErrorVip.VoltageOut2High = true;
+            //     return false;
+            // }
 
             //TODO удалить после отладки
             var temp = Convert.ToString(Convert.ToInt32(errorStatus, 16), 2);
@@ -3258,7 +3272,6 @@ public class Stand1 : Notify
     }
 
     //запущен ли тест випов (для создания репорта сброса испытаний)
-    private bool testVipPlay;
 
     //внешшние переменные для формировния уведомлений о ошибках температуры
     private bool tempInErr;
@@ -3284,8 +3297,8 @@ public class Stand1 : Notify
             clearAll: true);
         //
 
-        testVipPlay = true;
         tvVip = vip;
+        vip.CurrentTestVip = typeTest;
 
         var isError = false;
 
@@ -3310,6 +3323,8 @@ public class Stand1 : Notify
 
             if (!tpr.IsOk || !tve.IsOk)
             {
+               
+                
                 if (!tpr.IsOk)
                 {
                     vip.StatusTest = StatusDeviceTest.Error;
@@ -3319,9 +3334,9 @@ public class Stand1 : Notify
                     //выключить вип со сбоем
                     await OutputDevice(vip.Relay, t: tpr, on: false);
                 }
-
+                
                 await CreateErrReport(vip);
-
+                
                 tvr?.Add(tpr.IsOk);
                 tv?.Add(tve.IsOk);
                 return tpr.IsOk;
@@ -3365,7 +3380,7 @@ public class Stand1 : Notify
         TempChecks tto = TempChecks.Start();
         tempOutErr = false;
 
-        // if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+        if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
         {
             //
             SetPriorityStatusStand(2, $"Тест Випа: опрос температур", percentSubTest: 10,
@@ -3578,17 +3593,16 @@ public class Stand1 : Notify
                 //если пусто по умолчанию 0.75 Ом
                 if (string.IsNullOrWhiteSpace(shuntResistanse))
                 {
-                    shuntResistanse = "0.75";
+                    shuntResistanse = "0.075";
                 }
 
                 //расчет тока по формуле 
-                current = Math.Round(rawVoltage / Convert.ToDecimal(shuntResistanse), 5);
+                current = Math.Round(rawVoltage / Convert.ToDecimal(shuntResistanse), 3);
                 //проверка значение на соотоветтвие с учетом допусков в %
                 var checkValueInVip = CheckValueInVip(vip, current, typeCurr, tpc);
 
                 current2IsNegative = checkValueInVip.isNegative;
-                if (current2IsNegative)
-                    current = Math.Abs(current);
+                if (current2IsNegative) current = Math.Abs(current);
                 vip.CurrentIn = current;
             }
 
@@ -3803,7 +3817,10 @@ public class Stand1 : Notify
         }
     }
 
-    private async Task CreateErrReport(Vip vip)
+    private bool isErrRepBusy = false;
+
+    //--report
+    private async Task CreateErrReport(Vip vip, bool isResetTest = false)
     {
         try
         {
@@ -3812,7 +3829,7 @@ public class Stand1 : Notify
                 currentVipSubTest: vip, clearAll: true);
             //
             await report.CreateReport(vip, true);
-            await report.CreateErrorReport(vip);
+            await report.CreateErrorReport(vip, isResetTest);
         }
         catch (Exception e)
         {
@@ -4371,7 +4388,8 @@ public class Stand1 : Notify
 
     private void SetGdmReceive(BaseDevice device, string param)
     {
-        if (device.Name.ToLower().Contains("gdm"))
+        //TODO --
+        if (device.GetConfigDevice().IsGdmConfig && device.Name.ToLower().Contains("gdm"))
         {
             if (device.NameCurrentCmd.Contains("Set curr"))
             {
@@ -4394,7 +4412,7 @@ public class Stand1 : Notify
     {
         try
         {
-            if (device.Name.ToLower().Contains("gdm"))
+            if (device.GetConfigDevice().IsGdmConfig && device.Name.ToLower().Contains("gdm"))
             {
                 if (device.NameCurrentCmd.Contains("Get func"))
                 {
@@ -4601,7 +4619,7 @@ public class Stand1 : Notify
             //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
             getParam = new BaseDeviceValues("99", "99");
             //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
-            getOutputCmdName = "Status";
+            getOutputCmdName = "Test";
             SetOutputOnCmdName = "On";
             SetOutputOffCmdName = "Off";
         }
@@ -4695,6 +4713,21 @@ public class Stand1 : Notify
                                 await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
                                     t: tpt);
 
+                            if (r.StatusOnOff is OnOffStatus.On)
+                            {
+                                var vipIsErrP = GetErrorVip(tvVip, cmdResult);
+
+                                if (vipIsErrP)
+                                {
+                                    r.StatusOnOff = OnOffStatus.Off;
+                                    r.StatusTest = StatusDeviceTest.Error;
+
+                                    tv?.Add(!vipIsErrP);
+                                    t?.Add(tpt.IsOk);
+                                    return (device, tpt.IsOk);
+                                }
+                            }
+
                             if (tpt.IsOk && r.StatusOnOff is OnOffStatus.Off or OnOffStatus.None)
                             {
                                 RelaySwitch = true;
@@ -4722,6 +4755,25 @@ public class Stand1 : Notify
 
                                 if (!tp.IsOk)
                                 {
+                                    if (tpt.IsOk)
+                                    {
+                                        r.ErrorStatus = null;
+                                        r.AllDeviceError.ErrorReceive = false;
+                                        r.AllDeviceError.ErrorTimeout = false;
+                                        r.AllDeviceError.ErrorLength = false;
+                                        var vipIsErrP = GetErrorVip(tvVip, cmdResult);
+
+                                        if (vipIsErrP)
+                                        {
+                                            r.StatusOnOff = OnOffStatus.Off;
+                                            r.StatusTest = StatusDeviceTest.Error;
+
+                                            tv?.Add(!vipIsErrP);
+                                            t?.Add(tpt.IsOk);
+                                            return (device, tpt.IsOk);
+                                        }
+                                    }
+
                                     r.StatusOnOff = OnOffStatus.Off;
                                     r.StatusTest = StatusDeviceTest.Error;
                                 }
@@ -5093,43 +5145,46 @@ public class Stand1 : Notify
     /// <returns></returns>
     public string CastToNormalValues(string str)
     {
-        if (str != null)
+        try
         {
-            decimal myDecimalValue = 0;
-            int myIntlValue = 0;
-
-            if (str.Contains("E+") || str.Contains("e+") || str.Contains("e") || str.Contains("E-") ||
-                str.Contains("e-") || str[0] == '+' ||
-                str[0] == '-')
+            if (str != null)
             {
-                if (decimal.TryParse(str, out myDecimalValue))
+                decimal myDecimalValue = 0;
+                int myIntlValue = 0;
+
+                if (str.Contains("E+") || str.Contains("e+") || str.Contains("e") || str.Contains("E-") ||
+                    str.Contains("e-") || str[0] == '+' ||
+                    str[0] == '-')
                 {
-                    decimal x1 = Math.Floor(myDecimalValue);
-                    decimal x2 = myDecimalValue - Math.Floor(x1);
-
-                    // if (x2 == 0)
-                    // {
-                    //     return (T)Convert.ChangeType(x1, typeof(T));
-                    // }
-                    if (x2 == 0)
+                    if (decimal.TryParse(str, out myDecimalValue))
                     {
-                        return x1.ToString(CultureInfo.InvariantCulture);
+                        decimal x1 = Math.Floor(myDecimalValue);
+                        decimal x2 = myDecimalValue - Math.Floor(x1);
+
+                        if (x2 == 0)
+                        {
+                            return x1.ToString(CultureInfo.InvariantCulture);
+                        }
                     }
-                }
-                else
-                {
-                    myDecimalValue = Decimal.Parse(str, NumberStyles.Float);
-                    decimal x1 = Math.Floor(myDecimalValue);
-                    decimal x2 = myDecimalValue - Math.Floor(x1);
-                    if (x2 == 0)
+                    else
                     {
-                        return x1.ToString(CultureInfo.InvariantCulture);
+                        myDecimalValue = Decimal.Parse(str, NumberStyles.Float);
+                        decimal x1 = Math.Floor(myDecimalValue);
+                        decimal x2 = myDecimalValue - Math.Floor(x1);
+                        if (x2 == 0)
+                        {
+                            return x1.ToString(CultureInfo.InvariantCulture);
+                        }
                     }
+
+
+                    return myDecimalValue.ToString(CultureInfo.InvariantCulture);
                 }
-
-
-                return myDecimalValue.ToString(CultureInfo.InvariantCulture);
             }
+        }
+        catch (Exception e)
+        {
+            return "0";
         }
 
         return str;
