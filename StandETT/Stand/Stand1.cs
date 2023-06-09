@@ -772,8 +772,9 @@ public class Stand1 : Notify
         foreach (var vip in vips)
         {
             // if (vip.Id % 2 == 0)
-            if (vip.Id is 0)
+            // if (vip.Id is 11)
                 // {
+                 if (vip.Id is 6 or 7)
                 vip.Name = vip.Id.ToString();
             // }
         }
@@ -1595,12 +1596,14 @@ public class Stand1 : Notify
             var currentMainTest = TypeOfTestRun.CyclicMeasurement;
             PercentCurrentTest += 5;
 
+            string stopString;
+            
+            TempChecks t = TempChecks.Start();
+            TempChecks tvr = TempChecks.Start();
+            TempChecks tv = TempChecks.Start();
+            
             if (vipsTested.Any())
             {
-                TempChecks t = TempChecks.Start();
-                TempChecks tvr = TempChecks.Start();
-                TempChecks tv = TempChecks.Start();
-
                 float extPercent = 0;
 
                 if (firstIntervalMeasurement)
@@ -1672,7 +1675,7 @@ public class Stand1 : Notify
 
                         //TODO --отладка
                         //var stopString = StoppedDeviceMessage(t, TypeOfTestRun.CyclicMeasurement);
-                        string stopString = String.Empty;
+                        stopString = String.Empty;
                         //TODO --отладка
                         TimerErrorMeasurement?.Invoke(stopString);
                         return;
@@ -1709,6 +1712,7 @@ public class Stand1 : Notify
                         await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
                     }
                 }
+                
                 else
                 {
                     foreach (var vip in vipsTested)
@@ -1741,13 +1745,13 @@ public class Stand1 : Notify
                     PercentCurrentTest = 100;
                     ProgressColor = Brushes.Red;
                     //
-                    var stopString = StoppedDeviceMessage(t, tvr, tv, currentMainTest);
+                    stopString = StoppedDeviceMessage(t, tvr, tv, currentMainTest);
                     TimerErrorDevice?.Invoke(stopString);
                 }
             }
 
             if (vipsTested.Any()) return;
-
+            stopString = StoppedDeviceMessage(t, tvr, tv, currentMainTest);
             //
             SetPriorityStatusStand(1, $"Циклические замеры Випов, ошибка!", percentSubTest: 100,
                 colorSubTest: Brushes.Red, clearAll: true);
@@ -1755,9 +1759,9 @@ public class Stand1 : Notify
             PercentCurrentTest = 100;
             ProgressColor = Brushes.Red;
             //
-
+            
             ResetMeasurementCycle();
-
+            
             if (vipsStopped.Any())
             {
                 string vipsStoppedErrors = null;
@@ -1766,13 +1770,12 @@ public class Stand1 : Notify
                 {
                     vipsStoppedErrors += $" Вип - {vip.Name}";
                 }
-
+                
                 TimerErrorMeasurement?.Invoke(
-                    $"У вас закончились рабочие Випы, проверять нечего!\n Значения следующих Випов ошибочны \n{vipsStoppedErrors}\n");
+                    $"У вас закончились рабочие Випы, проверять нечего!\n {stopString}");
                 return;
             }
-
-            TimerErrorMeasurement?.Invoke($"У вас закончились рабочие Випы, проверять нечего!\n");
+            TimerErrorMeasurement?.Invoke($"У вас закончились рабочие Випы, проверять нечего!\n {stopString}");
         }
         catch (Exception ex)
         {

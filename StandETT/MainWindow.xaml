@@ -1686,7 +1686,9 @@
             <!--/Настройки типов Випов таб-->
 
             <TabItem Header="Остановка"
-                     IsEnabled="{Binding StopAllTab}" Visibility="Collapsed">
+                     IsEnabled="{Binding StopAllTab}">
+                <!-- TODO раскоментить после отладки -->
+                <!--  Visibility="Collapsed"> -->
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition />
