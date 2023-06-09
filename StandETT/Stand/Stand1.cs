@@ -626,7 +626,7 @@ public class Stand1 : Notify
         {
             if (resetTest && tvVip != null && report != null)
             {
-                await CreateErrReport(tvVip, true);
+                await CreateErrReport(tvVip, TypeOfTestRun.Stopped ,true);
             }
         }
         catch (Exception e)
@@ -3300,9 +3300,11 @@ public class Stand1 : Notify
             clearAll: true);
         //
 
+        
         tvVip = vip;
         vip.CurrentTestVip = typeTest;
-
+        
+        
         var isError = false;
 
         var voltage1 = vip.VoltageOut1;
@@ -3326,7 +3328,6 @@ public class Stand1 : Notify
 
             if (!tpr.IsOk || !tve.IsOk)
             {
-               
                 
                 if (!tpr.IsOk)
                 {
@@ -3338,7 +3339,13 @@ public class Stand1 : Notify
                     await OutputDevice(vip.Relay, t: tpr, on: false);
                 }
                 
-                await CreateErrReport(vip);
+                vip.VoltageOut1 = 0;
+                vip.VoltageOut2 = 0;
+                vip.CurrentIn = 0;
+                
+                //TODO проверить как работает
+                await CreateErrReport(vip, typeTest);
+               
                 
                 tvr?.Add(tpr.IsOk);
                 tv?.Add(tve.IsOk);
@@ -3364,9 +3371,14 @@ public class Stand1 : Notify
                     await OutputDevice(vip.Relay, t: tpr, on: false);
                 }
 
-                await CreateErrReport(vip);
+                vip.VoltageOut1 = 0;
+                vip.VoltageOut2 = 0;
+                vip.CurrentIn = 0;
 
-                tvr?.Add(tpr.IsOk);
+                //TODO проверить как работает
+                await CreateErrReport(vip, typeTest);
+
+                    tvr?.Add(tpr.IsOk);
                 tv?.Add(!vipIsErr);
                 return tpr.IsOk;
             }
@@ -3403,7 +3415,7 @@ public class Stand1 : Notify
                     //выключить вип со сбоем
                     await OutputDevice(vip.Relay, t: tpr, on: false);
 
-                    await CreateErrReport(vip);
+                    await CreateErrReport(vip, typeTest);
 
                     SetErrorVip();
 
@@ -3672,7 +3684,7 @@ public class Stand1 : Notify
             //если вип с ошибкой
             else
             {
-                await CreateErrReport(vip);
+                await CreateErrReport(vip, typeTest);
             }
 
             vip.StatusChannelVipTest = StatusChannelVipTest.None;
@@ -3681,7 +3693,7 @@ public class Stand1 : Notify
             return true;
         }
 
-        await CreateErrReport(vip);
+        await CreateErrReport(vip, typeTest);
 
         vip.VoltageOut1 = 0;
         vip.VoltageOut2 = 0;
@@ -3823,7 +3835,7 @@ public class Stand1 : Notify
     private bool isErrRepBusy = false;
 
     //--report
-    private async Task CreateErrReport(Vip vip, bool isResetTest = false)
+    private async Task CreateErrReport(Vip vip,TypeOfTestRun typeTest, bool isResetTest = false)
     {
         try
         {
@@ -3831,7 +3843,12 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"Запись репорта сбоя", percentSubTest: 0, colorSubTest: Brushes.Sienna,
                 currentVipSubTest: vip, clearAll: true);
             //
-            await report.CreateReport(vip, true);
+            
+            //TODO проверить как работает
+            if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.MeasurementZero)
+            {
+                await report.CreateReport(vip, true);
+            }
             await report.CreateErrorReport(vip, isResetTest);
         }
         catch (Exception e)

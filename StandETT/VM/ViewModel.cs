@@ -463,6 +463,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                     if (mesZero)
                     {
+                        //--prepare
                         var prepare = await stand.PrepareMeasurementCycle();
 
                         if (prepare)
