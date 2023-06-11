@@ -108,7 +108,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         stand.TimerOk += TimerOkMeasurement;
         
         //TODO вернуить после отоладки
-        //AllTabsDisable();
+        // AllTabsDisable();
+        
+        //TODO удалить после отоладки
         AllTabsEnable();
         
         SettingsTab = true;
@@ -213,7 +215,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     /// </summary>
     void AllTabsDisable()
     {
-        //TODO вернуть поле отладки
+        //TODO удалить поле отладки
         return;
         PrimaryCheckDevicesTab = false;
         PrimaryCheckVipsTab = false;

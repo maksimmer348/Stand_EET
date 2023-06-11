@@ -626,7 +626,7 @@ public class Stand1 : Notify
         {
             if (resetTest && tvVip != null && report != null)
             {
-                await CreateErrReport(tvVip, TypeOfTestRun.Stopped ,true);
+                await CreateErrReport(tvVip, TypeOfTestRun.Stopped, true);
             }
         }
         catch (Exception e)
@@ -772,9 +772,9 @@ public class Stand1 : Notify
         foreach (var vip in vips)
         {
             // if (vip.Id % 2 == 0)
-            // if (vip.Id is 11)
-                // {
-                 if (vip.Id is 6 or 7)
+            // if (vip.Id is 11 or 10)
+            // {
+            if (vip.Id is 6 or 7)
                 vip.Name = vip.Id.ToString();
             // }
         }
@@ -933,16 +933,26 @@ public class Stand1 : Notify
         currentDevice = devices.GetTypeDevice<VoltMeter>();
         //общая провека для ответа волтметра
         TempChecks tvm = TempChecks.Start();
-
         //вытаскиваем конфиги вольтметра
         var getVoltValues = GetParameterForDevice().VoltValues;
         //конфигурие вольтметр
-        await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
-            innerCountCheck, innerDelay, tvm, "Get volt meter");
+
+        if (currentDevice.Name.Contains("8255"))
+        {
+            await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
+                innerCountCheck, innerDelay, tvm, "Get func", "Get volt meter");
+        }
+        else
+        {
+            await SetCheckValueInDevice(currentDevice, "Set volt meter", getVoltValues.VoltMaxLimit,
+                innerCountCheck, innerDelay, tvm, "Get volt meter");
+            if (tvm.IsOk)
+                await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
+                    loopDelay: innerDelay, t: tvm);
+        }
+
         if (tvm.IsOk)
         {
-            await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
-                loopDelay: innerDelay, t: tvm);
             if (tvm.IsOk && currentDevice.Name.ToLower().Contains("gdm"))
             {
                 await WriteIdentCommand(currentDevice, "Sampl count");
@@ -954,15 +964,25 @@ public class Stand1 : Notify
         //общая провека для ответа волтьтамеперметра
         TempChecks tvc = TempChecks.Start();
         //вытаскиваем конфиги вольтамперметра
-        var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
+        var getThermoCurrentValues = GetParameterForDevice().VoltValues;
         //конфигурие вольтамперметр
 
-        await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
-            innerCountCheck, innerDelay, tvc, "Get volt meter");
+        if (currentDevice.Name.Contains("8255"))
+        {
+            await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
+                innerCountCheck, innerDelay, tvc, "Get func", "Get volt meter");
+        }
+        else
+        {
+            await SetCheckValueInDevice(currentDevice, "Set volt meter", getThermoCurrentValues.VoltMaxLimit,
+                innerCountCheck, innerDelay, tvc, "Get volt meter");
+            if (tvc.IsOk)
+                await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
+                    loopDelay: innerDelay, t: tvc);
+        }
+
         if (tvc.IsOk)
         {
-            await WriteIdentCommand(currentDevice, "Get func volt", countChecked: innerCountCheck,
-                loopDelay: innerDelay, t: tvc);
             if (tvc.IsOk && currentDevice.Name.ToLower().Contains("gdm"))
             {
                 await WriteIdentCommand(currentDevice, "Sampl count");
@@ -1597,11 +1617,11 @@ public class Stand1 : Notify
             PercentCurrentTest += 5;
 
             string stopString;
-            
+
             TempChecks t = TempChecks.Start();
             TempChecks tvr = TempChecks.Start();
             TempChecks tv = TempChecks.Start();
-            
+
             if (vipsTested.Any())
             {
                 float extPercent = 0;
@@ -1634,7 +1654,7 @@ public class Stand1 : Notify
                 else if (lastIntervalMeasurementStop.Check())
                 {
                     ResetMeasurementCycle();
-                    
+
                     countMeasurementCycle++;
 
                     PercentCurrentTest += 10;
@@ -1662,7 +1682,6 @@ public class Stand1 : Notify
                         colorSubTest: Brushes.Green);
                     //
 
-                    
 
                     if (vipsStopped.Any())
                     {
@@ -1712,7 +1731,7 @@ public class Stand1 : Notify
                         await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
                     }
                 }
-                
+
                 else
                 {
                     foreach (var vip in vipsTested)
@@ -1759,9 +1778,9 @@ public class Stand1 : Notify
             PercentCurrentTest = 100;
             ProgressColor = Brushes.Red;
             //
-            
+
             ResetMeasurementCycle();
-            
+
             if (vipsStopped.Any())
             {
                 string vipsStoppedErrors = null;
@@ -1770,11 +1789,12 @@ public class Stand1 : Notify
                 {
                     vipsStoppedErrors += $" Вип - {vip.Name}";
                 }
-                
+
                 TimerErrorMeasurement?.Invoke(
                     $"У вас закончились рабочие Випы, проверять нечего!\n {stopString}");
                 return;
             }
+
             TimerErrorMeasurement?.Invoke($"У вас закончились рабочие Випы, проверять нечего!\n {stopString}");
         }
         catch (Exception ex)
@@ -3300,11 +3320,11 @@ public class Stand1 : Notify
             clearAll: true);
         //
 
-        
+
         tvVip = vip;
         vip.CurrentTestVip = typeTest;
-        
-        
+
+
         var isError = false;
 
         var voltage1 = vip.VoltageOut1;
@@ -3328,7 +3348,6 @@ public class Stand1 : Notify
 
             if (!tpr.IsOk || !tve.IsOk)
             {
-                
                 if (!tpr.IsOk)
                 {
                     vip.StatusTest = StatusDeviceTest.Error;
@@ -3338,15 +3357,15 @@ public class Stand1 : Notify
                     //выключить вип со сбоем
                     await OutputDevice(vip.Relay, t: tpr, on: false);
                 }
-                
+
                 vip.VoltageOut1 = 0;
                 vip.VoltageOut2 = 0;
                 vip.CurrentIn = 0;
-                
+
                 //TODO проверить как работает
                 await CreateErrReport(vip, typeTest);
-               
-                
+
+
                 tvr?.Add(tpr.IsOk);
                 tv?.Add(tve.IsOk);
                 return tpr.IsOk;
@@ -3378,7 +3397,7 @@ public class Stand1 : Notify
                 //TODO проверить как работает
                 await CreateErrReport(vip, typeTest);
 
-                    tvr?.Add(tpr.IsOk);
+                tvr?.Add(tpr.IsOk);
                 tv?.Add(!vipIsErr);
                 return tpr.IsOk;
             }
@@ -3835,7 +3854,7 @@ public class Stand1 : Notify
     private bool isErrRepBusy = false;
 
     //--report
-    private async Task CreateErrReport(Vip vip,TypeOfTestRun typeTest, bool isResetTest = false)
+    private async Task CreateErrReport(Vip vip, TypeOfTestRun typeTest, bool isResetTest = false)
     {
         try
         {
@@ -3843,12 +3862,13 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"Запись репорта сбоя", percentSubTest: 0, colorSubTest: Brushes.Sienna,
                 currentVipSubTest: vip, clearAll: true);
             //
-            
+
             //TODO проверить как работает
             if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.MeasurementZero)
             {
                 await report.CreateReport(vip, true);
             }
+
             await report.CreateErrorReport(vip, isResetTest);
         }
         catch (Exception e)
@@ -4432,7 +4452,7 @@ public class Stand1 : Notify
     {
         try
         {
-            if (device.GetConfigDevice().IsGdmConfig && device.Name.ToLower().Contains("gdm"))
+            if (device.Name.ToLower().Contains("8255"))
             {
                 if (device.NameCurrentCmd.Contains("Get func"))
                 {
