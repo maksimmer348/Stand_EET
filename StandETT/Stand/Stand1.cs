@@ -441,6 +441,7 @@ public class Stand1 : Notify
     bool stopMeasurement = false;
     public bool IsResetAll = false;
 
+
     private string captionAction;
 
     public string CaptionAction
@@ -775,8 +776,8 @@ public class Stand1 : Notify
             // if (vip.Id is 11 or 10)
             // {
             if (vip.Id is 6 or 7)
-            // if (vip.Id is 6)
-            vip.Name = vip.Id.ToString();
+                // if (vip.Id is 6)
+                vip.Name = vip.Id.ToString();
             // }
         }
 
@@ -1520,7 +1521,7 @@ public class Stand1 : Notify
         intervalMeasurementSec = tickInterval * 2;
         lastMeasurementSec = (intervalMeasurementSec * 14);
         //TODO убрать после отладки
-        
+
         //
         TestRun = TypeOfTestRun.CycleMeasurement;
         ProgressColor = Brushes.Green;
@@ -3439,7 +3440,7 @@ public class Stand1 : Notify
                 colorSubTest: Brushes.Violet,
                 currentVipSubTest: vip, clearAll: true);
             //
-
+            
             var getTemperatures = await CheckTemperature(vip, tp, tti, tto);
 
             if (tp.IsOk)
@@ -3945,8 +3946,8 @@ public class Stand1 : Notify
         try
         {
             await report.CreateReport(vip);
-            vip.Channel1AddrNum++;
-            vip.Channel2AddrNum++;
+            vip.Channel1AddrNum += 2;
+            vip.Channel2AddrNum += 2;
         }
         catch (Exception e)
         {
@@ -4153,7 +4154,6 @@ public class Stand1 : Notify
     {
         decimal vipAverageVal = 0;
         decimal vipPercentVal = 0;
-
 
         //температура вх
         if (typeCheckVal == TypeCheckVal.TemperatureIn)
@@ -5096,25 +5096,33 @@ public class Stand1 : Notify
 
     #region Общие
 
+    /// <summary>
+    /// Сброс и отключение всех випов и их статусов перед проверкой 
+    /// </summary>
+    /// <param name="countChecked"></param>
+    /// <param name="loopDelay"></param>
+    /// <param name="t"></param>
+    /// <returns></returns>
     async Task<bool> ResetAllVips(int countChecked = 3, int loopDelay = 600, TempChecks t = null)
     {
         //сбросы всех статусов перед проверкой
         foreach (var relayVip in allRelayVips)
         {
-            if (relayVip.Name.Contains("SL")) continue;
-
+            //отключение випов
             if (t != null)
             {
                 await WriteIdentCommand(relayVip, "Status", countChecked: countChecked, loopDelay: loopDelay, t: t);
                 await OutputDevice(relayVip, t: t, forcedOff: true, on: false);
             }
 
+            //сброс стаусов реле випов
             relayVip.AllDeviceError = new AllDeviceError();
             relayVip.StatusOnOff = OnOffStatus.None;
             relayVip.StatusTest = StatusDeviceTest.None;
             relayVip.ErrorStatus = null;
         }
 
+        //сброс стаусов випов
         foreach (var vip in vips)
         {
             vip.ErrorVip = new RelayVipError();
@@ -5122,14 +5130,16 @@ public class Stand1 : Notify
             vip.StatusSmallLoad = OnOffStatus.None;
             vip.StatusTest = StatusDeviceTest.None;
             vip.Channel1AddrNum = 6;
-            vip.Channel2AddrNum = 27;
+            vip.Channel2AddrNum = 7;
         }
 
+        //очистука списка проверяемых випов
         vipsTested?.Clear();
 
+        //если првоерка работоспосообности не требуется всегда вернем тру
         if (t == null) return true;
         if (resetAll) return false;
-
+        //вернем статус проверки работоспосообности
         return t.IsOk;
     }
 
