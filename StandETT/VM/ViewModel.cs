@@ -107,10 +107,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         stand.TimerErrorDevice += TimerErrorDevice;
         stand.TimerOk += TimerOkMeasurement;
         
-        //TODO вернуить после отоладки
+        //TODO вернуть после отладки
         // AllTabsDisable();
-        
-        //TODO удалить после отоладки
+        //TODO удалить после отладки
         AllTabsEnable();
         
         SettingsTab = true;
@@ -194,10 +193,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
             return selectTab;
         }
-        set
-        {
-            Set(ref selectTab, value);
-        }
+        set { Set(ref selectTab, value); }
     }
 
     public double goToSelectTab;
@@ -215,7 +211,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     /// </summary>
     void AllTabsDisable()
     {
-        //TODO удалить поле отладки
+        //TODO вернуть после отладки
         return;
         PrimaryCheckDevicesTab = false;
         PrimaryCheckVipsTab = false;
@@ -448,14 +444,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             try
             {
-                //TODO удалить после отладки
-                // await stand.AvailabilityCheckVip();
-                // await stand.MeasurementZero();
-                // await stand.PrepareMeasurementCycle();
-                // stand.StartMeasurementCycle();
-                // return;
-                //TODO удалить после отладки
-
                 //--available
                 available = await stand.AvailabilityCheckVip();
                 if (available)
@@ -619,13 +607,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         }
         else if (SelectTab == 4)
         {
-            SelectTab = 2;
+            SelectTab = stand.TestRun is TypeOfTestRun.PrimaryCheckDevicesReady or TypeOfTestRun.Stop or TypeOfTestRun.Stopped ? 1 : 2;
         }
-
-        // if (stand.TestRun == TypeOfTestRun.Stop)
-        // {
-        //     SelectTab = 0;
-        // }
         return Task.CompletedTask;
     }
 
@@ -689,7 +672,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             AllDevices[index].Config.Parity = Parity;
             AllDevices[index].Config.DataBits = Convert.ToInt32(DataBit);
             AllDevices[index].Config.Dtr = Dtr;
-            AllDevices[index].Config.IsGdmConfig = IsGdmConfig;
+            // AllDevices[index].Config.IsGdmConfig = IsGdmConfig;
 
             NameDevice = selectDevice.Name;
             Prefix = selectDevice.Prefix;
@@ -702,7 +685,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 Parity = selectDevice.GetConfigDevice().Parity;
                 DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
-                IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
+                // IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
             }
 
             AllDevices[index].SetConfigDevice(TypePort.SerialInput, PortName, Convert.ToInt32(Baud),
@@ -715,13 +698,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             OnPropertyChanged(nameof(SelectedDeviceCmd));
 
             stand.SerializeDevice();
-
-
-            //TODO добавит когда повяться время
-            // stand.timeMachine.CountChecked = CountChecked;
-            // stand.timeMachine.AllTimeChecked = AllTimeChecked;
-            //stand.SerializeTime();
-            //TODO добавит когда повяться время
         }
         catch (Exception e)
         {
@@ -1298,7 +1274,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     public TypeOfTestRun TestRun
     {
         get => testRun;
-        
+
         set
         {
             if (!Set(ref testRun, value)) return;
@@ -1309,30 +1285,30 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 TextCurrentTest = " Стенд остановлен! ";
                 BackButtonText = "Назад";
-                
+
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 CancelAllTestBtnEnabled = true;
             }
             //-
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevices)
             {
                 TextCurrentTest = $"Предпроверка устройств: ";
-                
+
                 SettingsTab = false;
                 SettingsVipsTab = false;
-                
+
                 CancelAllTestBtnEnabled = true;
             }
             //-
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckDevicesReady)
             {
                 TextCurrentTest = " Предпроверка устройств ОК ";
-                
+
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1341,7 +1317,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             else if (stand.TestRun == TypeOfTestRun.PrimaryCheckVips)
             {
                 TextCurrentTest = "Проверка реле Випов: ";
-                
+
                 SettingsTab = false;
                 SettingsVipsTab = false;
 
@@ -1353,7 +1329,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1365,7 +1341,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                 SettingsTab = false;
                 SettingsVipsTab = false;
-                
+
                 CancelAllTestBtnEnabled = true;
             }
             else if (stand.TestRun == TypeOfTestRun.AvailabilityCheckVipReady)
@@ -1374,7 +1350,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1382,10 +1358,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             //-
             else if (stand.TestRun == TypeOfTestRun.MeasurementZero)
             {
-                
                 SettingsTab = false;
                 SettingsVipsTab = false;
-                
+
                 TextCurrentTest = "Нулевой замер: ";
                 CancelAllTestBtnEnabled = true;
             }
@@ -1395,7 +1370,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 DeviceConfigBtnEnabled = true;
                 StartTestDevicesBtnEnabled = true;
                 NextBtnEnabled = true;
@@ -1404,7 +1379,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 SettingsTab = false;
                 SettingsVipsTab = false;
-                
+
                 CancelAllTestBtnEnabled = true;
                 TextCurrentTest = "Нагрев пластины: ";
             }
@@ -1412,14 +1387,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 TextCurrentTest = " Нагрев пластины ОК ";
             }
-            else if (stand.TestRun == TypeOfTestRun.CyclicMeasurement)
+            else if (stand.TestRun == TypeOfTestRun.CycleMeasurement)
             {
                 CancelAllTestBtnEnabled = true;
                 TextCurrentTest = "Циклические замеры: ";
-                
+
                 SettingsTab = false;
                 SettingsVipsTab = false;
             }
@@ -1427,14 +1402,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             {
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 TextCurrentTest = " Циклическиe замеры ОК";
             }
             else if (stand.TestRun == TypeOfTestRun.Error)
             {
                 SettingsTab = true;
                 SettingsVipsTab = true;
-                
+
                 TextCurrentTest = " Ошибка стенда ";
                 stand.CurrentCountChecked = string.Empty;
                 stand.SubTestText = string.Empty;
@@ -1442,12 +1417,12 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             else if (stand.TestRun == TypeOfTestRun.Stopped)
             {
                 TextCurrentTest = " Тесты прерваны, отключение устройств... ";
-                
+
                 SettingsTab = false;
                 SettingsVipsTab = false;
-                
+
                 StopAll = false;
-                
+
                 SelectTab = 5;
             }
         }
@@ -1596,7 +1571,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 Parity = selectDevice.GetConfigDevice().Parity;
                 DataBit = selectDevice.GetConfigDevice().DataBits.ToString();
                 Dtr = selectDevice.GetConfigDevice().Dtr;
-                IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
+                // IsGdmConfig = selectDevice.GetConfigDevice().IsGdmConfig;
 
                 IsGdmDevice = selectDevice.Name != null && selectDevice.Name.ToLower().Contains("gdm");
 
@@ -2588,7 +2563,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 case nameof(PortName):
                     if (string.IsNullOrWhiteSpace(PortName))
                         error = "Введите comport устройства";
-                    //TODO возмонж сделать проверку на совпадение com ports !IsStingNumericNoMatch(PortName, comports) ||
                     else if (!IsStingNumericMaxMin(PortName, 1, 100))
                         error = "Введите корректный номер com port устройства от 1 до 100";
                     break;

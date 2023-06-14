@@ -12,5 +12,5 @@ public class ConfigDeviceParams
     public int Parity{ get; set; }
     public int DataBits{ get; set; }
     public bool Dtr { get; set; }
-    public bool IsGdmConfig { get; set; }
+    // public bool IsGdmConfig { get; set; }
 }

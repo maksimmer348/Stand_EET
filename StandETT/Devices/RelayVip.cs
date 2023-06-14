@@ -25,7 +25,7 @@ public class RelayVip : BaseDevice
         MainRelay.Config.Parity = parity;
         MainRelay.Config.DataBits = dataBits;
         MainRelay.Config.Dtr = dtr;
-        MainRelay.Config.IsGdmConfig = isGdmConfig;
+        // MainRelay.Config.IsGdmConfig = isGdmConfig;
     }
 
     public override void Close()

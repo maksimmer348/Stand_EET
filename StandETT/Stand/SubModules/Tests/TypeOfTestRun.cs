@@ -42,7 +42,7 @@ public enum TypeOfTestRun
     SmallLoadOutputReady,
     
     CycleCheck,
-    CyclicMeasurement,
+    CycleMeasurement,
     CyclicMeasurementReady,
     CycleWait,
     

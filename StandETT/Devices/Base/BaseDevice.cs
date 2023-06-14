@@ -321,7 +321,7 @@ public class BaseDevice : Notify
         Config.Parity = parity;
         Config.DataBits = dataBits;
         Config.Dtr = dtr;
-        Config.IsGdmConfig = isGdmConfig;
+        // Config.IsGdmConfig = isGdmConfig;
     }
 
     // public void SetConfigDevice(ConfigDeviceParams cfg)

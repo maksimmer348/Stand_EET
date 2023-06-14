@@ -775,7 +775,8 @@ public class Stand1 : Notify
             // if (vip.Id is 11 or 10)
             // {
             if (vip.Id is 6 or 7)
-                vip.Name = vip.Id.ToString();
+            // if (vip.Id is 6)
+            vip.Name = vip.Id.ToString();
             // }
         }
 
@@ -801,7 +802,6 @@ public class Stand1 : Notify
         // {
         //     throw new Exception("Отчет с таким номером уже сущетвует");
         // }
-        //TODO вернуть после отладки
 
         TempChecks t = TempChecks.Start();
         await ResetAllVips(innerCountCheck, innerDelay);
@@ -891,6 +891,11 @@ public class Stand1 : Notify
         {
             await report.CreateHeadersReport(new HeaderReport(ReportNum, vips[0].Type));
         }
+        catch (InvalidOperationException e)
+        {
+            throw new Exception($"Ошибка {e.Message} - Файл отчета не был создан!\n " +
+                                $"Закройте все открытые копии отчета \"{ReportNum}\"");
+        }
         catch (Exception e)
         {
             throw new Exception($"Ошибка {e.Message} - Файл отчета не был создан!");
@@ -964,7 +969,7 @@ public class Stand1 : Notify
         //общая провека для ответа волтьтамеперметра
         TempChecks tvc = TempChecks.Start();
         //вытаскиваем конфиги вольтамперметра
-        var getThermoCurrentValues = GetParameterForDevice().VoltValues;
+        var getThermoCurrentValues = GetParameterForDevice().VoltCurrentValues;
         //конфигурие вольтамперметр
 
         if (currentDevice.Name.Contains("8255"))
@@ -1505,13 +1510,19 @@ public class Stand1 : Notify
         ResetCheckVips();
 
         //TODO убрать после отладки
-        tickInterval = 15 * vipsTested.Count;
-        intervalMeasurementSec = tickInterval * 2;
-        lastMeasurementSec = (intervalMeasurementSec * 8) - 1;
-        //lastMeasurementSec = (intervalMeasurementSec * 2);
+        //для 12 штук
+        // tickInterval = 15 * 12;
+        // intervalMeasurementSec = tickInterval * 2;
+        // lastMeasurementSec = (intervalMeasurementSec * 14);
 
+        //для 2 штук
+        tickInterval = 15 * 2;
+        intervalMeasurementSec = tickInterval * 2;
+        lastMeasurementSec = (intervalMeasurementSec * 14);
+        //TODO убрать после отладки
+        
         //
-        TestRun = TypeOfTestRun.CyclicMeasurement;
+        TestRun = TypeOfTestRun.CycleMeasurement;
         ProgressColor = Brushes.Green;
         PercentCurrentTest = 10;
         SetPriorityStatusStand(0, clearAll: true);
@@ -1613,7 +1624,7 @@ public class Stand1 : Notify
     {
         try
         {
-            var currentMainTest = TypeOfTestRun.CyclicMeasurement;
+            var currentMainTest = TypeOfTestRun.CycleCheck;
             PercentCurrentTest += 5;
 
             string stopString;
@@ -1628,13 +1639,15 @@ public class Stand1 : Notify
 
                 if (firstIntervalMeasurement)
                 {
+                    currentMainTest = TypeOfTestRun.CycleMeasurement;
+
                     countMeasurementCycle++;
 
                     foreach (var vip in vipsTested)
                     {
                         //
                         var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (percent > 91)
                         {
                             percent = 100;
                         }
@@ -1653,6 +1666,8 @@ public class Stand1 : Notify
 
                 else if (lastIntervalMeasurementStop.Check())
                 {
+                    currentMainTest = TypeOfTestRun.CycleMeasurement;
+
                     ResetMeasurementCycle();
 
                     countMeasurementCycle++;
@@ -1712,13 +1727,15 @@ public class Stand1 : Notify
 
                 else if (intervalMeasurementCycle.Check())
                 {
+                    currentMainTest = TypeOfTestRun.CycleCheck;
+
                     countMeasurementCycle++;
 
                     foreach (var vip in vipsTested)
                     {
                         //
                         var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (percent > 91)
                         {
                             percent = 100;
                         }
@@ -1734,11 +1751,12 @@ public class Stand1 : Notify
 
                 else
                 {
+                    currentMainTest = TypeOfTestRun.CycleMeasurement;
                     foreach (var vip in vipsTested)
                     {
                         //
                         var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (percent > 91)
                         {
                             percent = 100;
                         }
@@ -1799,6 +1817,7 @@ public class Stand1 : Notify
         }
         catch (Exception ex)
         {
+            ResetMeasurementCycle();
             //
             SetPriorityStatusStand(1, $"Циклические замеры Випов, ошибка!", percentSubTest: 100,
                 colorSubTest: Brushes.Red, clearAll: true);
@@ -3365,14 +3384,13 @@ public class Stand1 : Notify
                 //TODO проверить как работает
                 await CreateErrReport(vip, typeTest);
 
-
                 tvr?.Add(tpr.IsOk);
                 tv?.Add(tve.IsOk);
                 return tpr.IsOk;
             }
         }
 
-        if (typeTest is TypeOfTestRun.CycleCheck or TypeOfTestRun.CyclicMeasurement)
+        if (typeTest is TypeOfTestRun.CycleCheck or TypeOfTestRun.CycleMeasurement)
         {
             var receive = await WriteIdentCommand(vip.Relay, "Test", t: tpr);
 
@@ -3414,7 +3432,7 @@ public class Stand1 : Notify
         TempChecks tto = TempChecks.Start();
         tempOutErr = false;
 
-        if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+        if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck)
         {
             //
             SetPriorityStatusStand(2, $"Тест Випа: опрос температур", percentSubTest: 10,
@@ -3459,7 +3477,7 @@ public class Stand1 : Notify
             {
                 TypeOfTestRun.AvailabilityCheckVip => 3000,
                 TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
-                TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck => 3000,
+                TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck => 3000,
                 _ => 1000
             };
 
@@ -3695,9 +3713,26 @@ public class Stand1 : Notify
                     vip.ErrorStatusVip = "Переполюсовка!";
                 }
 
-                if (typeTest is TypeOfTestRun.MeasurementZero or TypeOfTestRun.CyclicMeasurement)
+                try
                 {
-                    await CreateReport(vip);
+                    if (typeTest is TypeOfTestRun.MeasurementZero or TypeOfTestRun.CycleMeasurement)
+                    {
+                        await CreateReport(vip);
+                    }
+                }
+                catch (InvalidOperationException e)
+                {
+                    throw new Exception($"Ошибка {e.Message} - изменения в файл отчета не внесены!\n " +
+                                        $"Закройте все открытые копии отчета \"{ReportNum}\"");
+                }
+                catch (Exception e) when (e.Message.Contains("is not encrypted"))
+                {
+                    throw new Exception($"Ошибка {e.Message} - изменения в файл отчета не внесены!\n " +
+                                        $"Закройте все открытые копии отчета \"{ReportNum}\"");
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Ошибка {e.Message} - изменения в файл отчета не внесены!\n ");
                 }
             }
             //если вип с ошибкой
@@ -3751,7 +3786,7 @@ public class Stand1 : Notify
                 typeVipVoltage2 = vip.Type.PrepareMaxVoltageOut2;
                 typeVipСurrent = vip.Type.AvailabilityMaxCurrentIn;
                 break;
-            case TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck:
+            case TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck:
                 typeVipVoltage1 = vip.Type.MaxVoltageOut1;
                 typeVipVoltage2 = vip.Type.MaxVoltageOut2;
                 typeVipСurrent = vip.Type.MaxCurrentIn;
@@ -3864,12 +3899,22 @@ public class Stand1 : Notify
             //
 
             //TODO проверить как работает
-            if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.MeasurementZero)
+            if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.MeasurementZero)
             {
                 await report.CreateReport(vip, true);
             }
 
             await report.CreateErrorReport(vip, isResetTest);
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new Exception($"Ошибка {e.Message} - изменения в файл отчета об ошибках не внесены!\n " +
+                                $"Закройте все открытые копии отчета \"{ReportNum}\"");
+        }
+        catch (Exception e) when (e.Message.Contains("is not encrypted"))
+        {
+            throw new Exception($"Ошибка {e.Message} - изменения в файл отчета об ошибках не внесены!\n " +
+                                $"Закройте все открытые копии отчета \"{ReportNum}\"");
         }
         catch (Exception e)
         {
@@ -3879,7 +3924,7 @@ public class Stand1 : Notify
                 currentVipSubTest: vip,
                 clearAll: true);
             //
-            throw new Exception($"Ошибка записи репорта сбоя - {e.Message}!");
+            throw new Exception($"Ошибка {e.Message} - изменения в файл отчета об ошибках не внесены!\n ");
         }
 
         //
@@ -4060,7 +4105,7 @@ public class Stand1 : Notify
             if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
                 typeChannel = TypeCheckVal.PrepareVoltage1;
             //для режима цикла испытаний
-            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+            else if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck)
                 typeChannel = TypeCheckVal.Voltage1;
         }
         //проверка 2 канала напряжения
@@ -4070,7 +4115,7 @@ public class Stand1 : Notify
             if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
                 typeChannel = TypeCheckVal.PrepareVoltage2;
             //для режима цикла испытаний
-            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+            else if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck)
                 typeChannel = TypeCheckVal.Voltage2;
         }
         //проверка канала тока 
@@ -4083,7 +4128,7 @@ public class Stand1 : Notify
             else if (typeTest is TypeOfTestRun.MeasurementZero)
                 typeChannel = TypeCheckVal.PrepareCurrent;
             //проверка для режима цикла испытаний
-            else if (typeTest is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+            else if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck)
                 typeChannel = TypeCheckVal.Current;
         }
         else
@@ -4428,8 +4473,7 @@ public class Stand1 : Notify
 
     private void SetGdmReceive(BaseDevice device, string param)
     {
-        //TODO --
-        if (device.GetConfigDevice().IsGdmConfig && device.Name.ToLower().Contains("gdm"))
+        if (device.Name.ToLower().Contains("8255"))
         {
             if (device.NameCurrentCmd.Contains("Set curr"))
             {
@@ -4625,7 +4669,7 @@ public class Stand1 : Notify
     /// <param name="on">true - вкл, false - выкл</param>
     /// <returns>Результат включения/выключение</returns>
     async Task<(BaseDevice outputDevice, bool outputResult)> OutputDevice(BaseDevice device, int channel = -1,
-        int countChecked = 3, int innerCountCheck = 1, int delay = 200, int loopDelay = 500, TempChecks t = null,
+        int countChecked = 3, int innerCountCheck = 2, int delay = 200, int loopDelay = 500, TempChecks t = null,
         TempChecks tv = null,
         bool forcedOff = false, bool on = true)
     {
@@ -4656,9 +4700,7 @@ public class Stand1 : Notify
         }
         else if (device is RelayVip)
         {
-            //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
             getParam = new BaseDeviceValues("99", "99");
-            //TODO поменять на соответвующие значения из реле Test когда или появятся ли вообще команды от Влада
             getOutputCmdName = "Test";
             SetOutputOnCmdName = "On";
             SetOutputOffCmdName = "Off";

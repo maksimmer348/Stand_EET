@@ -133,7 +133,7 @@ public class ReportCreator
                 excelWorksheet.Cells[addr.errResetAddr].Value = $"Сброс НКУ{timeNow}";
             }
 
-            else if (vip.CurrentTestVip is TypeOfTestRun.CyclicMeasurement or TypeOfTestRun.CycleCheck)
+            else if (vip.CurrentTestVip is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck)
             {
                 excelWorksheet.Cells[addr.errResetAddr].Value = $"Сброс ЦИ{timeNow}";
             }
