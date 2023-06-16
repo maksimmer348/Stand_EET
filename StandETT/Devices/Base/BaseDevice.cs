@@ -363,18 +363,30 @@ public class BaseDevice : Notify
 
     public virtual void DtrEnable()
     {
-        if (port != null)
+        try
         {
+            if (port == null) return;
             port.DtrEnable();
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
         }
     }
 
 
     public virtual void ClearBuff()
     {
-        if (port != null)
+        try
         {
-            port.DiscardInBuffer();
+            if (port != null)
+            {
+                port.DiscardInBuffer();
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
         }
     }
 
@@ -383,9 +395,17 @@ public class BaseDevice : Notify
     /// </summary>
     public virtual void Start()
     {
-        SetPort();
-        PortIsOpen = port.Open();
-        port.Dtr = Config.Dtr;
+        try
+        {
+            SetPort();
+            PortIsOpen = port.Open();
+            port.Dtr = Config.Dtr;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+      
     }
 
     public void SetPort()

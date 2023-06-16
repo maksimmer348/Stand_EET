@@ -746,9 +746,9 @@ public class Stand1 : Notify
         var tempDevices = devices.ToList();
 
         currentDevice = devices.GetTypeDevice<Thermometer>();
-        
+
         //TODO currentDevice.IsTemperatureTest; после отладки
-        isTemperatureTest = false;// currentDevice.IsTemperatureTest;
+        isTemperatureTest = false; // currentDevice.IsTemperatureTest;
 
         if (!isTemperatureTest)
         {
@@ -864,6 +864,7 @@ public class Stand1 : Notify
         }
 
         mainRelay.Relays = relayVipsTested;
+
 
         await CheckConnectPort(mainRelay, t: t);
 
@@ -1037,8 +1038,7 @@ public class Stand1 : Notify
             {
                 if (td.IsOk) await TestVip(vipTested, currentMainTest, td, tvr, tv);
             }
-
-
+            
             if (IsResetAll) return false;
 
             if (vipsStopped.Any())
@@ -1062,7 +1062,7 @@ public class Stand1 : Notify
             throw new Exception(e.Message);
         }
 
-        if (td.IsOk)
+        if (td.IsOk && tvr.IsOk)
         {
             //
             SetPriorityStatusStand(1, $"Проверка наличия, Ок!", percentSubTest: 100,
@@ -1334,7 +1334,7 @@ public class Stand1 : Notify
             throw new Exception(e.Message);
         }
 
-        if (td.IsOk)
+        if (td.IsOk && tvr.IsOk)
         {
             //
             SetPriorityStatusStand(1, $"НКУ Випов, Ок!", percentSubTest: 100,
@@ -1711,13 +1711,18 @@ public class Stand1 : Notify
                     foreach (var vip in vipsTested)
                     {
                         //
-                        var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (vipsTested != null && vipsTested.Count > 0)
                         {
-                            percent = 100;
+                            var percent = ((1) * 100 / vipsTested.Count);
+
+                            if (percent > 95)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
 
-                        extPercent += percent;
                         SetPriorityStatusStand(1, $"цикл замера - {countMeasurementCycle}, Вип {vip.Name}",
                             percentSubTest: extPercent,
                             colorSubTest: Brushes.Azure);
@@ -1743,13 +1748,18 @@ public class Stand1 : Notify
                     foreach (var vip in vipsTested)
                     {
                         //
-                        var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (vipsTested != null && vipsTested.Count > 0)
                         {
-                            percent = 100;
+                            var percent = ((1) * 100 / vipsTested.Count);
+
+                            if (percent > 95)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
-                        
-                        extPercent += percent;
+
                         SetPriorityStatusStand(1, $"последний цикл замера - {countMeasurementCycle}, Вип {vip.Name}",
                             percentSubTest: extPercent,
                             colorSubTest: Brushes.Azure);
@@ -1803,13 +1813,18 @@ public class Stand1 : Notify
                     foreach (var vip in vipsTested)
                     {
                         //
-                        var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (vipsTested != null && vipsTested.Count > 0)
                         {
-                            percent = 100;
+                            var percent = ((1) * 100 / vipsTested.Count);
+
+                            if (percent > 95)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
 
-                        extPercent += percent;
                         SetPriorityStatusStand(1, $"цикл замера - {countMeasurementCycle}, Вип {vip.Name}",
                             percentSubTest: extPercent,
                             colorSubTest: Brushes.Azure);
@@ -1826,13 +1841,18 @@ public class Stand1 : Notify
                     foreach (var vip in vipsTested)
                     {
                         //
-                        var percent = ((1) * 100 / vipsTested.Count);
-                        if (percent > 95)
+                        if (vipsTested != null && vipsTested.Count > 0)
                         {
-                            percent = 100;
+                            var percent = ((1) * 100 / vipsTested.Count);
+
+                            if (percent > 95)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
 
-                        extPercent += percent;
                         SetPriorityStatusStand(1, $"цикл проверки работоспособности стенда, Вип {vip.Name}",
                             percentSubTest: extPercent,
                             colorSubTest: Brushes.NavajoWhite);
@@ -2136,13 +2156,19 @@ public class Stand1 : Notify
                         await Task.Delay(TimeSpan.FromMilliseconds(20), ctsAllCancel.Token);
                         device.DtrEnable();
 
-                        var percent = ((1 / (float)devices.Count) * 100);
-                        if (percent > 100)
+
+                        if (devices.Count > 0)
                         {
-                            percent = 100;
+                            var percent = ((1 / (float)devices.Count) * 100);
+                            if (percent > 100)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
 
-                        extPercent += percent;
+
                         //
                         SetPriorityStatusStand(5, $"проверка порта - {device.GetConfigDevice().PortName}", device);
                         //
@@ -2530,13 +2556,18 @@ public class Stand1 : Notify
                     if (i > 1)
                     {
                         //
-                        var percent = (float)Math.Round((1 / (float)tempDevices.Count) * 100 / i);
-                        if (percent > 100)
+
+                        if (devices.Count > 0)
                         {
-                            percent = 100;
+                            var percent = (float)Math.Round((1 / (float)tempDevices.Count) * 100 / i);
+                            if (percent > 100)
+                            {
+                                percent = 100;
+                            }
+
+                            extPercent += percent;
                         }
 
-                        extPercent += percent;
                         //
 
                         SetPriorityStatusStand(4, currentDeviceSubTest: tempDevices[0], percentSubTest: extPercent);
@@ -3723,13 +3754,13 @@ public class Stand1 : Notify
 
                 //расчет тока по формуле 
                 current = 0;
-                
+
                 if (rawVoltage > 0)
                 {
                     current = Math.Round(
                         rawVoltage / decimal.Parse(shuntResistanse, NumberStyles.Any, CultureInfo.InvariantCulture), 3);
                 }
-                
+
                 //проверка значение на соотоветтвие с учетом допусков в %
                 var checkValueInVip = CheckValueInVip(vip, current, typeCurr, tpc);
 
@@ -4382,6 +4413,13 @@ public class Stand1 : Notify
             device.AllDeviceError.ErrorDevice = true;
         }
 
+        if (err.Contains("Frame error detected"))
+        {
+            device.ErrorStatus =
+                $"Ошибка уcтройства \"{device.IsDeviceType}\"/сбой порта {device.GetConfigDevice().PortName}";
+            device.AllDeviceError.ErrorPort = true;
+        }
+
         if (err.Contains("Port not found"))
         {
             device.ErrorStatus =
@@ -4459,14 +4497,14 @@ public class Stand1 : Notify
 
             if (device.CurrentCmd.MessageType == TypeCmd.Hex)
             {
-                if (receive.Length / 2 != receiveLenght)
+                if (receive.Length == 0 || receive.Length / 2 != receiveLenght)
                 {
                     device.AllDeviceError.ErrorLength = true;
                     device.ErrorStatus =
                         $"Ошибка уcтройства {device.IsDeviceType}, команда {device.NameCurrentCmd}/неверная длина сообщения";
                 }
 
-                if (receive.Length / 2 == receiveLenght)
+                else if (receive.Length / 2 == receiveLenght)
                 {
                     device.AllDeviceError.ErrorLength = false;
                 }

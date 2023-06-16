@@ -74,7 +74,7 @@ public class MainRelay : BaseDevice
 
     private void Relay_Error(BaseDevice device, string error)
     {
-        if (error.Contains("Port not found") || error.Contains("Access Denied"))
+        if (error.Contains("Port not found") || error.Contains("Access Denied") || error.Contains("Frame error detected"))
         {
             foreach (var relay in Relays)
             {
@@ -83,7 +83,17 @@ public class MainRelay : BaseDevice
         }
         else
         {
-            currentRelayVip.InvokeDeviceError(currentRelayVip, error);
+            if (currentRelayVip != null)
+            {
+                currentRelayVip.InvokeDeviceError(currentRelayVip, error);
+            }
+            else
+            {
+                foreach (var relay in Relays)
+                {
+                    relay.InvokeDeviceError(relay, error);
+                }
+            }
         }
     }
 
