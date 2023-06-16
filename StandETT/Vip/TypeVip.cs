@@ -9,6 +9,7 @@ public class TypeVip : Notify
 {
     private static TypeVip instance;
     private static object syncRoot = new();
+
     public static TypeVip getInstance()
     {
         if (instance == null)
@@ -38,6 +39,7 @@ public class TypeVip : Notify
 
     //TODO уточнить куда вывести это
     private string specifications = "ЯКЛЮ.436638.001 ТУ";
+
     /// <summary>
     /// Тип Випа
     /// </summary>
@@ -48,15 +50,15 @@ public class TypeVip : Notify
     }
 
     #endregion
-   
+
 
     #region --Значения для Випов
 
     //максимальные значения во время цикла испытаниий 1...n, они означают ошибку
     public decimal MaxTemperatureIn { get; set; }
-    
+
     public decimal MaxTemperatureOut { get; set; }
-    
+
     public decimal PercentAccuracyTemperature { get; set; }
 
     //
@@ -102,9 +104,9 @@ public class TypeVip : Notify
 
     //максимальные значения во время замера 0
     public decimal PrepareMaxCurrentIn { get; set; }
-    
+
     public decimal AvailabilityMaxCurrentIn { get; set; }
-    
+
     public decimal PrepareMaxVoltageOut1 { get; set; }
     public decimal PrepareMaxVoltageOut2 { get; set; }
 
@@ -121,9 +123,9 @@ public class TypeVip : Notify
     public TimeSpan TestIntervalTime { get; set; }
     public TimeSpan TestFirstIntervalTime { get; set; }
     public TimeSpan TestAllTime { get; set; }
-    
-    
+
     public bool SetTestAllTime { get; set; }
+    public bool IsTemperatureTest { get; set; }
 
     #endregion
 
@@ -158,7 +160,6 @@ public class TypeVip : Notify
 
 #region --Параметры для приборов
 
-
 public class DeviceParameters
 {
     public BigLoadValues BigLoadValues { get; set; }
@@ -166,8 +167,8 @@ public class DeviceParameters
     public SupplyValues SupplyValues { get; set; }
     public VoltCurrentMeterValues VoltCurrentValues { get; set; }
     public VoltMeterValues VoltValues { get; set; }
-    
-     public BaseDeviceValues SmallLoadValues { get; set; }
+
+    public BaseDeviceValues SmallLoadValues { get; set; }
 }
 
 public class BaseDeviceValues
@@ -182,8 +183,17 @@ public class BaseDeviceValues
     /// <param name="outputOff">Выключить выход</param>
     public BaseDeviceValues(string outputOn, string outputOff)
     {
-        OutputOn = outputOn;
-        OutputOff = outputOff;
+        OutputOn = IsStringToDecimalString(outputOn);
+        OutputOff = IsStringToDecimalString(outputOff);
+    }
+
+    protected string IsStringToDecimalString(string str)
+    {
+        if (string.IsNullOrWhiteSpace(str)) return "0";
+        var replace = str.Replace(",", ".");
+        return decimal.TryParse(replace, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)
+            ? num.ToString(CultureInfo.InvariantCulture)
+            : "0";
     }
 }
 
@@ -221,12 +231,12 @@ public class VoltMeterValues : BaseDeviceValues
 
     public VoltMeterValues(string voltMaxLimit, string outputOn, string outputOff) : base(outputOn, outputOff)
     {
-        VoltMaxLimit = voltMaxLimit;
+        VoltMaxLimit = IsStringToDecimalString(voltMaxLimit);
         SetFuncVoltageGDM();
     }
 
     //
-    
+
     void SetFuncVoltageGDM()
     {
         if (VoltMaxLimit == null)
@@ -265,7 +275,7 @@ public class VoltCurrentMeterValues : BaseDeviceValues
 {
     [JsonIgnore] public string ReturnFuncGDM { get; set; }
     [JsonIgnore] public string ReturnCurrGDM { get; set; }
-    
+
     [JsonIgnore] public string ReturnVoltGDM { get; set; }
 
     private ModeGdm mode;
@@ -302,7 +312,7 @@ public class VoltCurrentMeterValues : BaseDeviceValues
             voltMaxLimit = value;
         }
     }
-    
+
     private string termocoupleType;
 
     public string TermocoupleType
@@ -310,20 +320,22 @@ public class VoltCurrentMeterValues : BaseDeviceValues
         get { return termocoupleType; }
         set { termocoupleType = value; }
     }
+
     //
     public string ShuntResistance { get; set; }
 
-    public VoltCurrentMeterValues(string currMaxLimit, string voltMaxLimit, string termocoupleType,string shuntResistance, string outputOn,
+    public VoltCurrentMeterValues(string currMaxLimit, string voltMaxLimit, string termocoupleType,
+        string shuntResistance, string outputOn,
         string outputOff) : base(outputOn, outputOff)
     {
-        CurrMaxLimit = currMaxLimit;
-        VoltMaxLimit = voltMaxLimit;
-        TermocoupleType = termocoupleType;
-        ShuntResistance = shuntResistance;
+        CurrMaxLimit = IsStringToDecimalString(currMaxLimit);
+        VoltMaxLimit = IsStringToDecimalString(voltMaxLimit);
+        TermocoupleType = IsStringToDecimalString(termocoupleType);
+        ShuntResistance = IsStringToDecimalString(shuntResistance);
         SetFuncGDM();
     }
-    
-    
+
+
     public void SetFuncGDM()
     {
         if (Mode == ModeGdm.Current)
@@ -401,10 +413,10 @@ public class BigLoadValues : BaseDeviceValues
     public BigLoadValues(string freq, string ampl, string dco, string squ, string outputOn, string outputOff) : base(
         outputOn, outputOff)
     {
-        Freq = freq;
-        Ampl = ampl;
-        Dco = dco;
-        Squ = squ;
+        Freq = IsStringToDecimalString(freq);
+        Ampl = IsStringToDecimalString(ampl);
+        Dco = IsStringToDecimalString(dco);
+        Squ = IsStringToDecimalString(squ);
     }
 }
 
@@ -425,9 +437,7 @@ public class SupplyValues : BaseDeviceValues
 {
     public string Voltage { get; set; }
     public string Current { get; set; }
-
     public string VoltageAvailability { get; set; }
-
     public string CurrentAvailability { get; set; }
 
     /// <summary>
@@ -438,10 +448,10 @@ public class SupplyValues : BaseDeviceValues
     public SupplyValues(string voltage, string current, string voltageAvailability, string currentAvailability,
         string outputOn, string outputOff) : base(outputOn, outputOff)
     {
-        Voltage = voltage;
-        Current = current;
-        VoltageAvailability = voltageAvailability;
-        CurrentAvailability = currentAvailability;
+        Voltage = IsStringToDecimalString(voltage);
+        Current = IsStringToDecimalString(current);
+        VoltageAvailability = IsStringToDecimalString(voltageAvailability);
+        CurrentAvailability = IsStringToDecimalString(currentAvailability);
     }
 }
 

@@ -233,6 +233,7 @@ public class BaseDevice : Notify
     /// Событие приема данных с устройства
     /// </summary>
     public event Action<BaseDevice, string, DeviceCmd> DeviceReceiving;
+
     public void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
     {
         DeviceReceiving?.Invoke(device, receive, cmd);
@@ -276,7 +277,10 @@ public class BaseDevice : Notify
 
     public bool IsNotCmd { get; set; }
 
+    public bool IsTemperatureTest { get; set; }
 
+    public Visibility IsThermomether { get; set; } = Visibility.Hidden;
+    
     //
 
     #endregion
@@ -365,7 +369,6 @@ public class BaseDevice : Notify
         }
     }
 
-    
 
     public virtual void ClearBuff()
     {
@@ -508,7 +511,7 @@ public class BaseDevice : Notify
         {
             CurrentParameter = CurrentParameterGet;
         }
-        
+
         CurrentCmd = GetLibItem(nameCommand, Name);
 
         SetErrors();

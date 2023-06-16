@@ -106,12 +106,12 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         stand.TimerErrorMeasurement += TimerErrorMeasurement;
         stand.TimerErrorDevice += TimerErrorDevice;
         stand.TimerOk += TimerOkMeasurement;
-        
+
         //TODO вернуть после отладки
         // AllTabsDisable();
         //TODO удалить после отладки
         AllTabsEnable();
-        
+
         SettingsTab = true;
         SettingsVipsTab = true;
         SelectTab = 0;
@@ -211,8 +211,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     /// </summary>
     void AllTabsDisable()
     {
-        //TODO вернуть после отладки
+        //TODO удалить после отладки
         return;
+        //TODO вернуть после отладки
         PrimaryCheckDevicesTab = false;
         PrimaryCheckVipsTab = false;
         CheckVipsTab = false;
@@ -229,8 +230,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         PrimaryCheckDevicesTab = true;
         PrimaryCheckVipsTab = true;
         CheckVipsTab = true;
-        SettingsTab = true;
-        SettingsVipsTab = true;
+
         StopAllTab = true;
     }
 
@@ -302,18 +302,34 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     async Task OnCancelAllTestCmdExecuted(object p)
     {
-        if (SelectTab != 5)
+        try
         {
-            CancelAllTestBtnEnabled = false;
+            if (SelectTab != 5)
+            {
+                CancelAllTestBtnEnabled = false;
 
-            await stand.ResetAllTests(false, !CancelAllTestBtnEnabled);
 
-            CancelAllTestBtnEnabled = true;
+                try
+                {
+                    await stand.ResetAllTests(false, !CancelAllTestBtnEnabled);
+                }
+                catch (Exception e)
+                {
+                    var errMsg = "Непредвиденная ошибка! ";
+                    MessageBox.Show(errMsg + e.Message);
+                }
+
+                CancelAllTestBtnEnabled = true;
+            }
+            else
+            {
+                StopAll = true;
+                SelectTab = goToSelectTab;
+            }
         }
-        else
+        catch (Exception e)
         {
-            StopAll = true;
-            SelectTab = goToSelectTab;
+            MessageBox.Show(e.Message);
         }
     }
 
@@ -334,36 +350,65 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     private void TimerErrorMeasurement(string message)
     {
-        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+        async void Action()
         {
-            await stand.ResetAllTests();
-
             const string caption = "Тесты завершены с ошибкой замеров!";
             MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-        }));
+            try
+            {
+                await stand.ResetAllTests();
+            }
+            catch (Exception e)
+            {
+                var errMsg = "Непредвиденная ошибка! ";
+                MessageBox.Show(errMsg + e.Message);
+            }
+        }
+
+        Application.Current.Dispatcher.BeginInvoke(new Action(Action));
     }
 
     private void TimerErrorDevice(string message)
     {
-        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+        async void Action()
         {
-            await stand.ResetAllTests();
-
             const string caption = "Тесты завершены с ошибкой устройств!";
-            var result = MessageBox.Show(message + "Перейти в настройки устройств?", caption, MessageBoxButton.OK,
+            MessageBox.Show(message + "Перейти в настройки устройств?", caption, MessageBoxButton.OK,
                 MessageBoxImage.Error);
-        }));
+            try
+            {
+                await stand.ResetAllTests();
+            }
+            catch (Exception e)
+            {
+                var errMsg = "Непредвиденная ошибка! ";
+                MessageBox.Show(errMsg + e.Message);
+            }
+        }
+
+        Application.Current.Dispatcher.BeginInvoke(new Action(Action));
     }
+
 
     private void TimerOkMeasurement(string message)
     {
-        Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+        async void Action()
         {
-            await stand.ResetAllTests();
-
             const string caption = "Тесты завершены без ошибок!";
             MessageBox.Show(message, caption, MessageBoxButton.OK);
-        }));
+
+            try
+            {
+                await stand.ResetAllTests();
+            }
+            catch (Exception e)
+            {
+                var errMsg = "Непредвиденная ошибка! ";
+                MessageBox.Show(errMsg + e.Message);
+            }
+        }
+
+        Application.Current.Dispatcher.BeginInvoke(new Action(Action));
     }
 
     /// <summary>
@@ -373,8 +418,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     async Task OnStartTestDevicesCmdExecuted(object p)
     {
-        bool available = false;
-
         if (SelectTab == 0)
         {
             try
@@ -388,17 +431,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
-                await stand.ResetAllTests(true);
-
-                if (result == MessageBoxResult.No)
-                {
-                    goToSelectTab = 0;
-                }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    goToSelectTab = 3;
-                }
+                await ResetAndGotoTabOnCheck(result);
             }
         }
         else if (SelectTab == 1)
@@ -411,12 +444,22 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             //Exception отсуствутют или дублируются номера Випов
             catch (Exception e) when (e.Message.ToLower().Contains("номера") || e.Message.ToLower().Contains("тип"))
             {
+                StartTestDevicesBtnEnabled = true;
+                CancelAllTestBtnEnabled = false;
+                SettingsTab = true;
+                SettingsVipsTab = true;
+
                 const string caption = "Ошибка предварительной проверки реле Випов";
                 MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
             //Exception создания отчета
             catch (Exception e) when (e.Message.ToLower().Contains("отчет"))
             {
+                StartTestDevicesBtnEnabled = true;
+                CancelAllTestBtnEnabled = false;
+                SettingsTab = true;
+                SettingsVipsTab = true;
+
                 const string caption = "Ошибка создания отчета";
                 MessageBox.Show(e.Message, caption, MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -427,7 +470,15 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(e.Message + "Перейти в настройки устройств?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
-                await stand.ResetAllTests(true);
+                try
+                {
+                    await stand.ResetAllTests(true);
+                }
+                catch (Exception ex)
+                {
+                    var errMsg = "Непредвиденная ошибка! ";
+                    MessageBox.Show(errMsg + ex.Message);
+                }
 
                 if (result == MessageBoxResult.No)
                 {
@@ -445,7 +496,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             try
             {
                 //--available
-                available = await stand.AvailabilityCheckVip();
+                bool available = await stand.AvailabilityCheckVip();
                 if (available)
                 {
                     //--zero
@@ -472,17 +523,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(errorStr + "Перейти в настройки типов Випов?", caption,
                     MessageBoxButton.YesNo, MessageBoxImage.Error);
 
-                if (!stand.IsResetAll)
-                {
-                    await stand.ResetAllTests();
-                }
-
-                goToSelectTab = result switch
-                {
-                    MessageBoxResult.Yes => 4,
-                    MessageBoxResult.No => 1, //errorStr.Contains("Реле Випа") ? 1 : 0,
-                    _ => goToSelectTab
-                };
+                await ResetAndGotoTabOnTests(result, errorStr);
             }
             //ошибка на этапе 0 замера / НКУ
             catch (Exception e) when (e.Message.Contains("НКУ"))
@@ -492,41 +533,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
 
-                if (!stand.IsResetAll)
-                {
-                    await stand.ResetAllTests();
-                }
-
-                goToSelectTab = result switch
-                {
-                    MessageBoxResult.Yes => 3,
-                    MessageBoxResult.No => 1, //errorStr.Contains("Реле Випа") ? 1 : 0;
-                    _ => goToSelectTab
-                };
-            }
-            //неверные значения преварительной проверки температуры
-            catch (Exception e) when (e.Message.Contains("температура"))
-            {
-                const string caption = "Ошибка температуры";
-                var errorStr = e.Message.Replace("/", "\n ");
-                var result = MessageBox.Show(errorStr + "Проверте модуль температуры \n" + " Перейти в настройки?",
-                    caption,
-                    MessageBoxButton.YesNo, MessageBoxImage.Error);
-
-                if (!stand.IsResetAll)
-                {
-                    await stand.ResetAllTests(true);
-                }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    goToSelectTab = 4;
-                }
-
-                if (result == MessageBoxResult.No)
-                {
-                    goToSelectTab = 1;
-                }
+                await ResetAndGotoTabOnTests(result, errorStr);
             }
             //отстувуют инициализированые випы тк все они отсеялись во время преварительной проверки Випов
             catch (Exception e) when (e.Message.Contains("Отсутвуют инициализировнные"))
@@ -538,11 +545,30 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 {
                     if (!stand.IsResetAll)
                     {
-                        await stand.ResetAllTests();
+                        try
+                        {
+                            await stand.ResetAllTests();
+                        }
+                        catch (Exception ex)
+                        {
+                            var errMsg = "Непредвиденная ошибка! ";
+                            MessageBox.Show(errMsg + ex.Message);
+                        }
                     }
 
                     goToSelectTab = 1;
                 }
+            }
+            //неверные значения преварительной проверки температуры
+            catch (Exception e) when (e.Message.Contains("температура"))
+            {
+                const string caption = "Ошибка температуры";
+                var errorStr = e.Message.Replace("/", "\n ");
+                var result = MessageBox.Show(errorStr + "Проверте модуль температуры \n" + " Перейти в настройки?",
+                    caption,
+                    MessageBoxButton.YesNo, MessageBoxImage.Error);
+
+                await ResetAndGotoTabOnTests(result, errorStr);
             }
             catch (Exception e)
             {
@@ -551,27 +577,57 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 var result = MessageBox.Show(errorStr + " Перейти в настройки?", caption, MessageBoxButton.YesNo,
                     MessageBoxImage.Error);
 
-                if (result == MessageBoxResult.No)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        await stand.ResetAllTests();
-                    }
-
-                    goToSelectTab = errorStr.Contains("Реле Випа") ? 1 : 0;
-                }
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    if (!stand.IsResetAll)
-                    {
-                        await stand.ResetAllTests();
-                    }
-
-                    goToSelectTab = 3;
-                }
+                await ResetAndGotoTabOnTests(result, errorStr);
             }
         }
+    }
+
+    private async Task ResetAndGotoTabOnCheck(MessageBoxResult result)
+    {
+        try
+        {
+            await stand.ResetAllTests(true);
+        }
+        catch (Exception e)
+        {
+            var errMsg = "Непредвиденная ошибка! ";
+            MessageBox.Show(errMsg + e.Message);
+        }
+
+        if (result == MessageBoxResult.No)
+        {
+            goToSelectTab = 0;
+        }
+
+        if (result == MessageBoxResult.Yes)
+        {
+            goToSelectTab = 3;
+        }
+    }
+
+    private async Task ResetAndGotoTabOnTests(MessageBoxResult result, string errorStr)
+    {
+        if (!stand.IsResetAll)
+        {
+            try
+            {
+                await stand.ResetAllTests();
+            }
+            catch (Exception e)
+            {
+                var errMsg = "Непредвиденная ошибка! ";
+                MessageBox.Show(errMsg + e.Message);
+            }
+        }
+
+        goToSelectTab = result switch
+        {
+            MessageBoxResult.Yes => 4,
+            MessageBoxResult.No => errorStr.Contains("реле Випов") || errorStr.Contains("Ошибка измерений")
+                ? 1
+                : 0,
+            _ => goToSelectTab
+        };
     }
 
 
@@ -607,8 +663,12 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         }
         else if (SelectTab == 4)
         {
-            SelectTab = stand.TestRun is TypeOfTestRun.PrimaryCheckDevicesReady or TypeOfTestRun.Stop or TypeOfTestRun.Stopped ? 1 : 2;
+            SelectTab = stand.TestRun is TypeOfTestRun.PrimaryCheckDevicesReady or TypeOfTestRun.Stop
+                or TypeOfTestRun.Stopped
+                ? 1
+                : 2;
         }
+
         return Task.CompletedTask;
     }
 
@@ -672,6 +732,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             AllDevices[index].Config.Parity = Parity;
             AllDevices[index].Config.DataBits = Convert.ToInt32(DataBit);
             AllDevices[index].Config.Dtr = Dtr;
+
             // AllDevices[index].Config.IsGdmConfig = IsGdmConfig;
 
             NameDevice = selectDevice.Name;
@@ -842,62 +903,70 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     Task OnSaveTypeVipSettingsCmdExecuted(object p)
     {
-        var typeConfig = new TypeVip();
-
-        typeConfig.Name = TypeVipNameSettings;
-
-
-        typeConfig.PrepareMaxCurrentIn = ConvertValToVip(PrepareMaxCurrentIn);
-
-        typeConfig.AvailabilityMaxCurrentIn = ConvertValToVip(AvailabilityMaxCurrentIn);
-
-        typeConfig.MaxCurrentIn = ConvertValToVip(MaxCurrentIn);
-        typeConfig.PercentAccuracyCurrent = ConvertValToVip(PercentAccuracyCurrent);
-        typeConfig.MaxVoltageOut1 = ConvertValToVip(MaxVoltageOut1);
-        typeConfig.MaxVoltageOut2 = ConvertValToVip(MaxVoltageOut2);
-        typeConfig.PercentAccuracyVoltages = ConvertValToVip(PercentAccuracyVoltages);
-        typeConfig.PercentAccuracyTemperature = ConvertValToVip(PercentAccuracyTemperature);
-
-
-        typeConfig.MaxTemperatureIn = ConvertValToVip(TemperatureIn);
-        typeConfig.MaxTemperatureOut = ConvertValToVip(TemperatureOut);
-
-
-        typeConfig.ZeroTestInterval = ZeroTestInterval;
-
-        typeConfig.TestFirstIntervalTime = TestFirstIntervalTime;
-        typeConfig.TestIntervalTime = TestIntervalTime;
-        typeConfig.TestAllTime = TestAllTime;
-
-        typeConfig.VoltageOut2Using = voltageOuе2Using;
-
-        // typeConfig.SetTestAllTime = voltageOuе2Using;
-        // typeConfig.VoltageOut2Using = voltageOuе2Using;
-        // typeConfig.VoltageOut2Using = voltageOuе2Using;
-
-
-        typeConfig.SetDeviceParameters(new DeviceParameters()
+        try
         {
-            BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
+            var typeConfig = new TypeVip();
 
-            HeatValues = new HeatValues(OutputOnHeat, OutputOffHeat),
+            typeConfig.Name = TypeVipNameSettings;
 
-            SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
-                CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
 
-            VoltCurrentValues = new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltCurrentMeterVoltMax,
-                TermocoupleType, ShuntResistance, OutputOnThermoCurrent, OutputOffThermoCurrent),
+            typeConfig.PrepareMaxCurrentIn = ConvertValToDouble(PrepareMaxCurrentIn);
 
-            VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
-        });
+            typeConfig.AvailabilityMaxCurrentIn = ConvertValToDouble(AvailabilityMaxCurrentIn);
 
-        stand.AddTypeVips(typeConfig);
+            typeConfig.MaxCurrentIn = ConvertValToDouble(MaxCurrentIn);
+            typeConfig.PercentAccuracyCurrent = ConvertValToDouble(PercentAccuracyCurrent);
+            typeConfig.MaxVoltageOut1 = ConvertValToDouble(MaxVoltageOut1);
+            typeConfig.MaxVoltageOut2 = ConvertValToDouble(MaxVoltageOut2);
+            typeConfig.PercentAccuracyVoltages = ConvertValToDouble(PercentAccuracyVoltages);
+            typeConfig.PercentAccuracyTemperature = ConvertValToDouble(PercentAccuracyTemperature);
 
-        selectedTypeVips.Source = SelectTypeVipSettings?.Name;
-        OnPropertyChanged(nameof(SelectedTypeVips));
+            // typeConfig.IsTemperatureTest = IsTemperatureTest;
 
-        stand.SerializeTypeVips();
-        CurrentTypeVipSettings = cfgTypeVips.TypeVips.IndexOf(typeConfig);
+            typeConfig.MaxTemperatureIn = ConvertValToDouble(TemperatureIn);
+            typeConfig.MaxTemperatureOut = ConvertValToDouble(TemperatureOut);
+
+
+            typeConfig.ZeroTestInterval = ZeroTestInterval;
+
+            typeConfig.TestFirstIntervalTime = TestFirstIntervalTime;
+            typeConfig.TestIntervalTime = TestIntervalTime;
+            typeConfig.TestAllTime = TestAllTime;
+
+            typeConfig.VoltageOut2Using = voltageOuе2Using;
+
+            // typeConfig.SetTestAllTime = voltageOuе2Using;
+            // typeConfig.VoltageOut2Using = voltageOuе2Using;
+            // typeConfig.VoltageOut2Using = voltageOuе2Using;
+
+
+            typeConfig.SetDeviceParameters(new DeviceParameters()
+            {
+                BigLoadValues = new BigLoadValues(FreqLoad, AmplLoad, DcoLoad, SquLoad, OutputOnLoad, OutputOffLoad),
+
+                HeatValues = new HeatValues(OutputOnHeat, OutputOffHeat),
+
+                SupplyValues = new SupplyValues(VoltageSupply, CurrentSupply, VoltageAvailabilitySupply,
+                    CurrentAvailabilitySupply, OutputOnSupply, OutputOffSupply),
+
+                VoltCurrentValues = new VoltCurrentMeterValues(CurrentMeterCurrentMax, VoltCurrentMeterVoltMax,
+                    TermocoupleType, ShuntResistance, OutputOnThermoCurrent, OutputOffThermoCurrent),
+
+                VoltValues = new VoltMeterValues(VoltMeterVoltMax, OutputOnVoltMeter, OutputOffVoltmeter)
+            });
+
+            stand.AddTypeVips(typeConfig);
+
+            selectedTypeVips.Source = SelectTypeVipSettings?.Name;
+            OnPropertyChanged(nameof(SelectedTypeVips));
+
+            stand.SerializeTypeVips();
+            CurrentTypeVipSettings = cfgTypeVips.TypeVips.IndexOf(typeConfig);
+        }
+        catch (Exception e)
+        {
+            MessageBox.Show(e.Message);
+        }
 
         return Task.CompletedTask;
     }
@@ -907,12 +976,28 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         return Error == null ||
                !Error.Contains("параметров") && !Error.Contains("Випа") && !Error.Contains("документации");
     }
-
-    private decimal ConvertValToVip(string s)
+    
+    private decimal ConvertValToDouble(string str)
     {
-        return string.IsNullOrWhiteSpace(s) ? 0m : Convert.ToDecimal(s.Replace(',', '.'));
+        var replace = str.Replace(",", ".");
+        if (decimal.TryParse(replace, NumberStyles.Any, CultureInfo.InvariantCulture, out var n))
+        {
+            return n;
+        }
+
+        return 0m;
     }
 
+    private decimal ConvertValToInt(string str)
+    {
+        var replace = str.Replace(",", ".");
+        if (int.TryParse(replace, NumberStyles.Any, CultureInfo.InvariantCulture, out var n))
+        {
+            return n;
+        }
+
+        return 0m;
+    }
 
     /// <summary>
     /// Команда УДАЛИТЬ тип випа
@@ -921,76 +1006,83 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     Task OnRemoveTypeVipSettingsCmdExecuted(object p)
     {
-        var index = cfgTypeVips.TypeVips.IndexOf(SelectTypeVipSettings);
-
-        stand.RemoveTypeVips(SelectTypeVipSettings);
-
-        stand.SerializeTypeVips();
-
-        if (index > 0)
+        try
         {
-            CurrentTypeVipSettings = index - 1;
+            var index = cfgTypeVips.TypeVips.IndexOf(SelectTypeVipSettings);
+
+            stand.RemoveTypeVips(SelectTypeVipSettings);
+
+            stand.SerializeTypeVips();
+
+            if (index > 0)
+            {
+                CurrentTypeVipSettings = index - 1;
+            }
+            else
+            {
+                TypeVipNameSettings = null;
+                EnableTypeVipName = true;
+                PrepareMaxCurrentIn = null;
+                AvailabilityMaxCurrentIn = null;
+
+                MaxCurrentIn = null;
+                PercentAccuracyCurrent = null;
+                MaxVoltageOut1 = null;
+                MaxVoltageOut2 = null;
+                PercentAccuracyVoltages = null;
+                PercentAccuracyTemperature = null;
+
+                TemperatureIn = null;
+                TemperatureOut = null;
+
+                ZeroTestInterval = 0;
+
+                TestFirstIntervalTime = TimeSpan.Zero;
+                TestIntervalTime = TimeSpan.Zero;
+                TestAllTime = TimeSpan.Zero;
+
+                voltageOuе2Using = false;
+
+                FreqLoad = null;
+                AmplLoad = null;
+                DcoLoad = null;
+                SquLoad = null;
+
+                OutputOnLoad = null;
+                OutputOffLoad = null;
+
+                OutputOnHeat = null;
+                OutputOffHeat = null;
+
+                VoltageSupply = null;
+                CurrentSupply = null;
+
+                CurrentAvailabilitySupply = null;
+                VoltageAvailabilitySupply = null;
+
+                OutputOnSupply = null;
+                OutputOffSupply = null;
+
+                CurrentMeterCurrentMax = null;
+                TermocoupleType = null;
+                OutputOnThermoCurrent = null;
+                OutputOffThermoCurrent = null;
+                ShuntResistance = null;
+
+                VoltMeterVoltMax = null;
+                VoltCurrentMeterVoltMax = null;
+
+                OutputOffVoltmeter = null;
+
+                OutputOnVoltMeter = null;
+
+
+                CurrentTypeVipSettings = 0;
+            }
         }
-        else
+        catch (Exception e)
         {
-            TypeVipNameSettings = null;
-            EnableTypeVipName = true;
-            PrepareMaxCurrentIn = null;
-            AvailabilityMaxCurrentIn = null;
-
-            MaxCurrentIn = null;
-            PercentAccuracyCurrent = null;
-            MaxVoltageOut1 = null;
-            MaxVoltageOut2 = null;
-            PercentAccuracyVoltages = null;
-            PercentAccuracyTemperature = null;
-
-            TemperatureIn = null;
-            TemperatureOut = null;
-
-            ZeroTestInterval = 0;
-
-            TestFirstIntervalTime = TimeSpan.Zero;
-            TestIntervalTime = TimeSpan.Zero;
-            TestAllTime = TimeSpan.Zero;
-
-            voltageOuе2Using = false;
-
-            FreqLoad = null;
-            AmplLoad = null;
-            DcoLoad = null;
-            SquLoad = null;
-
-            OutputOnLoad = null;
-            OutputOffLoad = null;
-
-            OutputOnHeat = null;
-            OutputOffHeat = null;
-
-            VoltageSupply = null;
-            CurrentSupply = null;
-
-            CurrentAvailabilitySupply = null;
-            VoltageAvailabilitySupply = null;
-
-            OutputOnSupply = null;
-            OutputOffSupply = null;
-
-            CurrentMeterCurrentMax = null;
-            TermocoupleType = null;
-            OutputOnThermoCurrent = null;
-            OutputOffThermoCurrent = null;
-            ShuntResistance = null;
-
-            VoltMeterVoltMax = null;
-            VoltCurrentMeterVoltMax = null;
-
-            OutputOffVoltmeter = null;
-
-            OutputOnVoltMeter = null;
-
-
-            CurrentTypeVipSettings = 0;
+            MessageBox.Show(e.Message);
         }
 
         return Task.CompletedTask;
@@ -2009,11 +2101,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                     selectTypeVipSettings.PercentAccuracyVoltages.ToString(CultureInfo.InvariantCulture);
                 PercentAccuracyTemperature =
                     selectTypeVipSettings.PercentAccuracyTemperature.ToString(CultureInfo.InvariantCulture);
+
+                //температура
+                // IsTemperatureTest = selectTypeVipSettings.IsTemperatureTest;
                 TemperatureIn =
                     selectTypeVipSettings.MaxTemperatureIn.ToString(CultureInfo.InvariantCulture);
                 TemperatureOut =
                     selectTypeVipSettings.MaxTemperatureOut.ToString(CultureInfo.InvariantCulture);
-
+                //время задержки нку
                 ZeroTestInterval = selectTypeVipSettings.ZeroTestInterval;
 
                 TestFirstIntervalTime = selectTypeVipSettings.TestFirstIntervalTime;
@@ -2167,14 +2262,6 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref percentAccuracyVoltages, value);
     }
 
-    private string percentAccuracyTemperature;
-
-    public string PercentAccuracyTemperature
-    {
-        get => percentAccuracyTemperature;
-        set => Set(ref percentAccuracyTemperature, value);
-    }
-
 
     private string temperatureIn;
 
@@ -2192,6 +2279,13 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         set => Set(ref temperatureOut, value);
     }
 
+    private string percentAccuracyTemperature;
+
+    public string PercentAccuracyTemperature
+    {
+        get => percentAccuracyTemperature;
+        set => Set(ref percentAccuracyTemperature, value);
+    }
 
     private string temperatureCurrentIn = "0";
 
@@ -2623,6 +2717,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 case nameof(MaxVoltageOut2):
                     if (string.IsNullOrWhiteSpace(MaxVoltageOut1) && string.IsNullOrWhiteSpace(MaxVoltageOut2))
                         error = $"Оба канала Uвых. типа Випа не могут быть пустыми";
+                    if (!IsStingDecimal(strValue))
+                        error = $"В поле {columnName} введите цисловое значение согласно документации";
                     break;
                 case nameof(AvailabilityMaxCurrentIn):
                 case nameof(PrepareMaxCurrentIn):
@@ -2635,6 +2731,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 case nameof(PercentAccuracyTemperature):
                     if (string.IsNullOrWhiteSpace(strValue))
                         error = $"Поле {columnName} типа Випа не должно быть пустым";
+                    if (!IsStingDecimal(strValue))
+                        error = $"В поле {columnName} введите цисловое значение согласно документации";
                     break;
                 case nameof(TestFirstIntervalTime):
                 case nameof(TestIntervalTime):
@@ -2748,19 +2846,24 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
 
     private bool IsStingInt(string str)
     {
-        if (!int.TryParse(str, out var num)) return false;
+        // var replace = str.Replace(",", ".");
+        if (str.Contains(',') || str.Contains('.')) return false;
+        if (!int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)) return false;
         return num > 0;
     }
 
     private bool IsStingDecimal(string str)
     {
-        if (!decimal.TryParse(str, out var num)) return false;
+        var replace = str.Replace(",", ".");
+        if (!decimal.TryParse(replace, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)) return false;
         return num > 0;
     }
 
     private bool IsStingNumericMaxMin(string str, int minVal, int maxVal)
     {
-        if (!int.TryParse(str, out var num)) return false;
+        //var replace = str.Replace(".", "").Replace(",", "");
+        if (str.Contains(',') || str.Contains('.')) return false;
+        if (!int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)) return false;
         return num >= minVal && num <= maxVal;
     }
 
@@ -2769,7 +2872,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     /// </summary>
     private bool IsStingNumericNoMatch(string str, List<int> matches)
     {
-        if (!int.TryParse(str, out var num)) return false;
+        var replace = str.Replace(",", ".");
+        if (!int.TryParse(replace, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)) return false;
         return !matches.Contains(num);
     }
 
@@ -2778,7 +2882,8 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     /// </summary>
     private bool IsStingNumericMatch(string str, List<int> matches)
     {
-        if (!int.TryParse(str, out var num)) return false;
+        if (str.Contains(',') || str.Contains('.')) return false;
+        if (!int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var num)) return false;
         return matches.Contains(num);
     }
 

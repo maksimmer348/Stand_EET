@@ -73,9 +73,11 @@
                             <Setter Property="HorizontalAlignment"
                                     Value="Center" />
                             <Setter Property="MinWidth"
-                                    Value="140"></Setter>
+                                    Value="140">
+                            </Setter>
                             <Setter Property="MinHeight"
-                                    Value="20"></Setter>
+                                    Value="20">
+                            </Setter>
                         </Style>
                         <Style TargetType="ComboBox">
                             <Setter Property="VerticalAlignment"
@@ -83,14 +85,17 @@
                             <Setter Property="HorizontalAlignment"
                                     Value="Center" />
                             <Setter Property="MinWidth"
-                                    Value="140"></Setter>
+                                    Value="140">
+                            </Setter>
                             <Setter Property="MinHeight"
-                                    Value="22"></Setter>
+                                    Value="22">
+                            </Setter>
                         </Style>
 
                         <Style TargetType="TextBlock">
                             <Setter Property="Margin"
-                                    Value="0,0,0,4"></Setter>
+                                    Value="0,0,0,4">
+                            </Setter>
 
                         </Style>
 
@@ -266,7 +271,9 @@
                 </Border>
                 <TextBlock Foreground="Red"
                            FontSize="26"
-                           FontWeight="Bold">!</TextBlock>
+                           FontWeight="Bold">
+                    !
+                </TextBlock>
             </StackPanel>
         </ControlTemplate>
 
@@ -295,6 +302,10 @@
             <TabItem IsEnabled="{Binding PrimaryCheckDevicesTab}"
                      Header="Подключение устройств">
                 <Grid>
+                    <!--<Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>-->
                     <ItemsControl Grid.Row="0"
                                   ItemsSource="{Binding Devices}"
                                   Grid.IsSharedSizeScope="True"
@@ -327,12 +338,26 @@
                         </ItemsControl.ItemContainerStyle>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-
                                 <Grid>
-                                    <Rectangle Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                    <Rectangle Style="{StaticResource LightGrayRectangle}" />
+
                                     <StackPanel HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Center">
+
+                                        <TextBlock Margin="5"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Text="Температурный тест"
+                                                   Visibility="{Binding IsThermomether}" />
+                                        <CheckBox Margin="5"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  IsChecked="{Binding IsTemperatureTest}"
+                                                  Visibility="{Binding IsThermomether}">
+                                        </CheckBox>
                                         <Grid>
+
+
                                             <Rectangle Margin="5"
                                                        MinHeight="30"
                                                        MinWidth="30"
@@ -360,6 +385,7 @@
                                                    TextWrapping="Wrap"
                                                    Foreground="{Binding StatusColor}"
                                                    Text="{Binding ErrorStatus, UpdateSourceTrigger=PropertyChanged}" />
+
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>
@@ -420,12 +446,17 @@
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
                             <TextBlock Margin="10"
-                                       DockPanel.Dock="Left">Выбор типа Випа</TextBlock>
+                                       DockPanel.Dock="Left">
+                                Выбор типа Випа
+                            </TextBlock>
                             <TextBox Margin="10"
                                      Width="200"
-                                     Text="{Binding ReportNum}"></TextBox>
+                                     Text="{Binding ReportNum}">
+                            </TextBox>
                             <TextBlock Margin="10"
-                                       DockPanel.Dock="Left">Номер отчета Випов</TextBlock>
+                                       DockPanel.Dock="Left">
+                                Номер отчета Випов
+                            </TextBlock>
                         </DockPanel>
                     </Grid>
 
@@ -466,7 +497,8 @@
                             <DataTemplate>
                                 <Grid>
                                     <Rectangle Style="{StaticResource LightGrayRectangle}"
-                                               Margin="1,1,1,1"></Rectangle>
+                                               Margin="1,1,1,1">
+                                    </Rectangle>
                                     <StackPanel HorizontalAlignment=" Center"
                                                 VerticalAlignment="Center">
                                         <Grid Margin="2"
@@ -570,7 +602,8 @@
                         </Grid.ColumnDefinitions>
 
                         <Rectangle Grid.Column="1"
-                                   Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                   Style="{StaticResource LightGrayRectangle}">
+                        </Rectangle>
                         <ItemsControl Grid.Row="0"
                                       ItemsSource="{Binding Devices}"
                                       Grid.IsSharedSizeScope="True">
@@ -738,13 +771,17 @@
                                             </Grid.ColumnDefinitions>
 
                                             <Rectangle Grid.Column="0"
-                                                       Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                                       Style="{StaticResource LightGrayRectangle}">
+                                            </Rectangle>
                                             <Rectangle Grid.Column="1"
-                                                       Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                                       Style="{StaticResource LightGrayRectangle}">
+                                            </Rectangle>
                                             <Rectangle Grid.Column="2"
-                                                       Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                                       Style="{StaticResource LightGrayRectangle}">
+                                            </Rectangle>
                                             <Rectangle Grid.Column="3"
-                                                       Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                                       Style="{StaticResource LightGrayRectangle}">
+                                            </Rectangle>
 
                                             <Rectangle Grid.Column="0"
                                                        DockPanel.Dock="Right"
@@ -845,7 +882,8 @@
                                         <Grid Grid.Row="1"
                                               Margin="1,0,1,1">
                                             <Rectangle Grid.Column="0"
-                                                       Style="{StaticResource LightGrayRectangle}"></Rectangle>
+                                                       Style="{StaticResource LightGrayRectangle}">
+                                            </Rectangle>
                                             <DockPanel Margin="10,2,10,0"
                                                        MinWidth="280"
                                                        HorizontalAlignment="Stretch"
@@ -933,7 +971,6 @@
                         </Grid.RowDefinitions>
 
 
-
                         <Grid Margin="1,0,0,1">
 
                             <Rectangle Grid.Column="1"
@@ -1010,11 +1047,7 @@
 
                                 <TextBlock Text="DTR" />
                                 <CheckBox IsChecked="{Binding Dtr}"></CheckBox>
-                                
-                                <TextBlock Text="ЕС_PSM" />
-                                <CheckBox IsChecked="{Binding IsGdmConfig}"
-                                          IsEnabled="{Binding IsGdmDevice, UpdateSourceTrigger=PropertyChanged}"></CheckBox>
-                                
+
                                 <TextBlock Text="{Binding IsSaveDeviceMessage}" />
                                 <Button Command="{Binding SaveSettingsCmd}"
                                         DockPanel.Dock="Right"
@@ -1373,9 +1406,10 @@
                                          Text="{Binding TemperatureOut, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
                                 <TextBlock DockPanel.Dock="Left"
-                                           Text="t стаб. НКУ мс" />
+                                           Text="Врем. стаб. НКУ мс" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding ZeroTestInterval, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
+
 
                             </StackPanel>
 
@@ -1408,7 +1442,7 @@
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding PercentAccuracyTemperature, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
 
-                                <TextBlock Text="t 1 цикла"
+                                <!--<TextBlock Text="t 1 цикла"
                                            IsEnabled="False" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding TestFirstIntervalTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
@@ -1425,7 +1459,7 @@
                                            IsEnabled="False" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding TestAllTime, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}"
-                                         IsEnabled="False" />
+                                         IsEnabled="False" />-->
 
 
                             </StackPanel>
@@ -1595,9 +1629,11 @@
                                          Text="{Binding OutputOffSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3"
-                                        Grid.Column="0"></StackPanel>
+                                        Grid.Column="0">
+                            </StackPanel>
                             <StackPanel Grid.Row="3"
-                                        Grid.Column="1"></StackPanel>
+                                        Grid.Column="1">
+                            </StackPanel>
                         </Grid>
 
                         <Grid Grid.Row="0"
@@ -1852,8 +1888,7 @@
                             Margin="10,20"
                             Command="{Binding CancelAllTestCmd}"
                             Content="{Binding StopBtnText}"
-                            IsEnabled="{Binding CancelAllTestBtnEnabled}"
-                          />
+                            IsEnabled="{Binding CancelAllTestBtnEnabled}" />
                     <Button DockPanel.Dock="Right"
                             MinHeight="10"
                             MinWidth="110"

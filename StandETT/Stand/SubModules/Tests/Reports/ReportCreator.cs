@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,6 +52,9 @@ public class ReportCreator
 
     public async Task CreateReport(Vip vip, bool isError = false)
     {
+        // Debug.WriteLine($"CreateReport/ 1ch - {vip.Channel1AddrNum}/test - {vip.CurrentTestVip}");
+        // Debug.WriteLine($"CreateReport/ 2ch - {vip.Channel2AddrNum}/test - {vip.CurrentTestVip}");
+        
         using var excelPackage = new ExcelPackage(pathReport, "");
         ExcelWorkbook excelWorkBook = excelPackage.Workbook;
         ExcelWorksheet excelWorksheet = excelWorkBook.Worksheets.First(x => x.Name.Contains("Лист1"));
@@ -65,7 +69,7 @@ public class ReportCreator
             {
                 var onlyLetters1 = new String(addr.channel1Addr.Where(Char.IsLetter).ToArray()).ToUpper();
                 string addrChannel1 = $"{addr.channel1Addr}";
-                excelWorksheet.Cells[addrChannel1].Value = "X";
+                excelWorksheet.Cells[addrChannel1].Value = "0";
                 //excelWorksheet.Cells[addr.channel1Addr].Value = vip.VoltageOut1;
             }
 
@@ -73,7 +77,7 @@ public class ReportCreator
             {
                 var onlyLetters2 = new String(addr.channel2Addr.Where(Char.IsLetter).ToArray()).ToUpper();
                 string addChannel2 = $"{addr.channel2Addr}";
-                excelWorksheet.Cells[addChannel2].Value = "X";
+                excelWorksheet.Cells[addChannel2].Value = "0";
                 //excelWorksheet.Cells[addr.channel2Addr].Value = vip.VoltageOut2;
             }
         }
@@ -159,57 +163,57 @@ public class ReportCreator
 
         switch (vipReport.Id)
         {
-            case 1:
+            case 2:
                 nameAddr = $"H5";
                 channel1Addr = $"H{channel1AddrNum}";
                 channel2Addr = $"H{channel2AddrNum}";
                 break;
-            case 2:
+            case 3:
                 nameAddr = $"I5";
                 channel1Addr = $"I{channel1AddrNum}";
                 channel2Addr = $"I{channel2AddrNum}";
                 break;
-            case 3:
+            case 4:
                 nameAddr = $"J5";
                 channel1Addr = $"J{channel1AddrNum}";
                 channel2Addr = $"J{channel2AddrNum}";
                 break;
-            case 4:
+            case 5:
                 nameAddr = $"K5";
                 channel1Addr = $"K{channel1AddrNum}";
                 channel2Addr = $"K{channel2AddrNum}";
                 break;
-            case 5:
+            case 6:
                 nameAddr = $"L5";
                 channel1Addr = $"L{channel1AddrNum}";
                 channel2Addr = $"L{channel2AddrNum}";
                 break;
-            case 6:
+            case 7:
                 nameAddr = $"M5";
                 channel1Addr = $"M{channel1AddrNum}";
                 channel2Addr = $"M{channel2AddrNum}";
                 break;
-            case 7:
+            case 8:
                 nameAddr = $"N5";
                 channel1Addr = $"N{channel1AddrNum}";
                 channel2Addr = $"N{channel2AddrNum}";
                 break;
-            case 8:
+            case 9:
                 nameAddr = $"O5";
                 channel1Addr = $"O{channel1AddrNum}";
                 channel2Addr = $"O{channel2AddrNum}";
                 break;
-            case 9:
+            case 10:
                 nameAddr = $"P5";
                 channel1Addr = $"P{channel1AddrNum}";
                 channel2Addr = $"P{channel2AddrNum}";
                 break;
-            case 10:
+            case 11:
                 nameAddr = $"Q5";
                 channel1Addr = $"Q{channel1AddrNum}";
                 channel2Addr = $"Q{channel2AddrNum}";
                 break;
-            case 11:
+            case 12:
                 nameAddr = $"R5";
                 channel1Addr = $"R{channel1AddrNum}";
                 channel2Addr = $"R{channel2AddrNum}";
@@ -254,7 +258,7 @@ public class ReportCreator
 
         switch (vip.Id)
         {
-            case 1:
+            case 2:
                 nameAddr = $"E4";
 
                 channel1ErrAddr = $"E{channel1AddrErrNum}";
@@ -268,7 +272,7 @@ public class ReportCreator
                 errConnectAdd = $"E{errConnectAddrNum}";
                 errResetAdd = $"E{errResetAddrNum}";
                 break;
-            case 2:
+            case 3:
                 nameAddr = $"F4";
 
                 channel1ErrAddr = $"F{channel1AddrErrNum}";
@@ -283,7 +287,7 @@ public class ReportCreator
                 errResetAdd = $"F{errResetAddrNum}";
 
                 break;
-            case 3:
+            case 4:
                 nameAddr = $"G4";
 
                 channel1ErrAddr = $"G{channel1AddrErrNum}";
@@ -297,7 +301,7 @@ public class ReportCreator
                 errConnectAdd = $"G{errConnectAddrNum}";
                 errResetAdd = $"G{errResetAddrNum}";
                 break;
-            case 4:
+            case 5:
                 nameAddr = $"H4";
 
                 channel1ErrAddr = $"H{channel1AddrErrNum}";
@@ -311,7 +315,7 @@ public class ReportCreator
                 errConnectAdd = $"H{errConnectAddrNum}";
                 errResetAdd = $"H{errResetAddrNum}";
                 break;
-            case 5:
+            case 6:
                 nameAddr = $"I4";
 
                 channel1ErrAddr = $"I{channel1AddrErrNum}";
@@ -325,7 +329,7 @@ public class ReportCreator
                 errConnectAdd = $"I{errConnectAddrNum}";
                 errResetAdd = $"I{errResetAddrNum}";
                 break;
-            case 6:
+            case 7:
                 nameAddr = $"J4";
 
                 channel1ErrAddr = $"J{channel1AddrErrNum}";
@@ -339,7 +343,7 @@ public class ReportCreator
                 errConnectAdd = $"J{errConnectAddrNum}";
                 errResetAdd = $"J{errResetAddrNum}";
                 break;
-            case 7:
+            case 8:
                 nameAddr = $"K4";
 
                 channel1ErrAddr = $"K{channel1AddrErrNum}";
@@ -354,7 +358,7 @@ public class ReportCreator
                 errResetAdd = $"K{errResetAddrNum}";
                 break;
                 
-            case 8:
+            case 9:
                 nameAddr = $"L4";
 
                 channel1ErrAddr = $"L{channel1AddrErrNum}";
@@ -368,7 +372,7 @@ public class ReportCreator
                 errConnectAdd = $"L{errConnectAddrNum}";
                 errResetAdd = $"L{errResetAddrNum}";
                 break;
-            case 9:
+            case 10:
                 nameAddr = $"M4";
 
                 channel1ErrAddr = $"M{channel1AddrErrNum}";
@@ -382,7 +386,7 @@ public class ReportCreator
                 errConnectAdd = $"M{errConnectAddrNum}";
                 errResetAdd = $"M{errResetAddrNum}";
                 break;
-            case 10:
+            case 11:
                 nameAddr = $"N4";
 
                 channel1ErrAddr = $"N{channel1AddrErrNum}";
@@ -396,7 +400,7 @@ public class ReportCreator
                 errConnectAdd = $"N{errConnectAddrNum}";
                 errResetAdd = $"N{errResetAddrNum}";
                 break;
-            case 11:
+            case 12:
                 nameAddr = $"O4";
 
                 channel1ErrAddr = $"O{channel1AddrErrNum}";

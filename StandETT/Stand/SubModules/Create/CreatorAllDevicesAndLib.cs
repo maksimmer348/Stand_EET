@@ -185,62 +185,62 @@ class CreatorAllDevicesAndLib
     {
         List<Vip> temp = new List<Vip>();
 
-        temp.Add(new Vip(0, relays[0])
+        temp.Add(new Vip(1, relays[0])
         {
             RowIndex = 0,
             ColumnIndex = 0,
         });
-        temp.Add(new Vip(1, relays[1])
+        temp.Add(new Vip(2, relays[1])
         {
             RowIndex = 0,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(2, relays[2])
+        temp.Add(new Vip(3, relays[2])
         {
             RowIndex = 0,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(3, relays[3])
+        temp.Add(new Vip(4, relays[3])
         {
             RowIndex = 0,
             ColumnIndex = 3
         });
-        temp.Add(new Vip(4, relays[4])
+        temp.Add(new Vip(5, relays[4])
         {
             RowIndex = 1,
             ColumnIndex = 0
         });
-        temp.Add(new Vip(5, relays[5])
+        temp.Add(new Vip(6, relays[5])
         {
             RowIndex = 1,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(6, relays[6])
+        temp.Add(new Vip(7, relays[6])
         {
             RowIndex = 1,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(7, relays[7])
+        temp.Add(new Vip(8, relays[7])
         {
             RowIndex = 1,
             ColumnIndex = 3
         });
-        temp.Add(new Vip(8, relays[8])
+        temp.Add(new Vip(9, relays[8])
         {
             RowIndex = 2,
             ColumnIndex = 0
         });
-        temp.Add(new Vip(9, relays[9])
+        temp.Add(new Vip(10, relays[9])
         {
             RowIndex = 2,
             ColumnIndex = 1
         });
-        temp.Add(new Vip(10, relays[10])
+        temp.Add(new Vip(11, relays[10])
         {
             RowIndex = 2,
             ColumnIndex = 2
         });
-        temp.Add(new Vip(11, relays[11])
+        temp.Add(new Vip(12, relays[11])
         {
             RowIndex = 2,
             ColumnIndex = 3
@@ -439,6 +439,7 @@ class CreatorAllDevicesAndLib
                 //процент погрешности измерения
                 PercentAccuracyCurrent = 10,
                 PercentAccuracyVoltages = 5,
+                IsTemperatureTest = true
             };
 
             //настройки для приборов они зависят от типа Випа
@@ -474,6 +475,7 @@ class CreatorAllDevicesAndLib
                 //процент погрешности измерения
                 PercentAccuracyCurrent = 10,
                 PercentAccuracyVoltages = 5,
+                IsTemperatureTest = true
             };
             //настройки для приборов они зависят от типа Випа
             typeVip71.SetDeviceParameters(new DeviceParameters()

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Windows;
 using Newtonsoft.Json;
 
 namespace StandETT;
@@ -12,8 +13,11 @@ public class Thermometer : BaseDevice
     public Thermometer(string name) : base(name)
     {
         IsDeviceType = "Термометр";
+        IsThermomether = Visibility.Visible;
+       
+        IsTemperatureTest = true;
     }
-
+    
     protected override void Device_Receiving(byte[] data)
     {
         var receive = Encoding.UTF8.GetString(data);
