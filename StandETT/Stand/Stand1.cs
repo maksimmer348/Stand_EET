@@ -2026,8 +2026,11 @@ public class Stand1 : Notify
                 //
 
                 device.ErrorStatus = null;
-                device.StatusTest = StatusDeviceTest.None;
+                
+                StatusTestRelaysVip(device, StatusDeviceTest.None);
+                //device.StatusTest = StatusDeviceTest.None;
 
+                
                 device.Close();
                 await Task.Delay(TimeSpan.FromMilliseconds(80), ctsAllCancel.Token);
                 device.Start();
@@ -2059,8 +2062,9 @@ public class Stand1 : Notify
                 percentSubTest: 100, colorSubTest: Brushes.Red, clearAll: true);
             //
 
-            device.StatusTest = StatusDeviceTest.Error;
-
+            StatusTestRelaysVip(device, StatusDeviceTest.Error);
+            //device.StatusTest = StatusDeviceTest.Error;
+            
             t?.Add(false);
             return false;
         }
@@ -2077,8 +2081,8 @@ public class Stand1 : Notify
             SetPriorityStatusStand(5, $"проверка порта - {device.GetConfigDevice().PortName}, ошибка!",
                 percentSubTest: 100, colorSubTest: Brushes.Red, clearAll: true);
             //
-
-            device.StatusTest = StatusDeviceTest.Error;
+            StatusTestRelaysVip(device, StatusDeviceTest.Error);
+            //device.StatusTest = StatusDeviceTest.Error;
 
             if (resetAll)
             {
@@ -2088,6 +2092,21 @@ public class Stand1 : Notify
 
             t?.Add(false);
             throw new Exception(e.Message);
+        }
+    }
+
+    private static void StatusTestRelaysVip(BaseDevice device, StatusDeviceTest statusTest)
+    {
+        if (device is MainRelay m)
+        {
+            foreach (var relay in m.Relays)
+            {
+                relay.StatusTest = statusTest;
+            }
+        }
+        else
+        {
+            device.StatusTest = statusTest;
         }
     }
 
