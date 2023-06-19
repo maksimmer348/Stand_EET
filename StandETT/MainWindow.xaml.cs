@@ -29,24 +29,23 @@ namespace StandETT
 
             DataContext = vm;
         }
-
-
-        private bool doClose = false;
-        private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (doClose) return;
-            e.Cancel = true;
-            await ClosingTasks();
-        }
-
-        private async Task ClosingTasks()
-        {
-            //TODO Вернуть!
-            await vm.stand.ResetAllTests();
-            doClose = true;
-            await Task.Delay(TimeSpan.FromMilliseconds(100));
-            Close();
-        }
+        
+        // private bool doClose = false;
+        // private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        // {
+        //     if (doClose) return;
+        //     e.Cancel = true;
+        //     await ClosingTasks();
+        // }
+        //
+        // private async Task ClosingTasks()
+        // {
+        //     //TODO Вернуть!
+        //     await vm.stand.ResetAllTests();
+        //     doClose = true;
+        //     await Task.Delay(TimeSpan.FromMilliseconds(100));
+        //     Close();
+        // }
 
     }
 }
