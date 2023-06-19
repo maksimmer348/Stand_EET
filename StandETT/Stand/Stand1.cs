@@ -1572,31 +1572,32 @@ public class Stand1 : Notify
         //для 12 штук
         // tickInterval = 15 * 12;
         // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 14;
+        // lastMeasurementSec = intervalMeasurementSec * 16;
+        //для 2 штук
+        // tickInterval = 15 * 2;
+        // intervalMeasurementSec = tickInterval * 2;
+        // lastMeasurementSec = intervalMeasurementSec * 16;
 
-        //для 12 штук c уевел время
+        // для 2 штук c уменш время
+        // tickInterval = 15 * 3;
+        // intervalMeasurementSec = tickInterval * 2;
+        // lastMeasurementSec = intervalMeasurementSec * 4;
+        //TODO убрать после отладки
+        
+        //для 12 штук c уменш время
         if (IsTestMode)
         {
             tickInterval = 300;
             intervalMeasurementSec = tickInterval * 4;
-            lastMeasurementSec = intervalMeasurementSec * 14;
+            lastMeasurementSec = intervalMeasurementSec * 16;
         }
         else
         {
             tickInterval = 300;
             intervalMeasurementSec = 1800;
-            lastMeasurementSec = 28800;
+            lastMeasurementSec = intervalMeasurementSec * 16;
         }
-        //для 2 штук
-        // tickInterval = 15 * 2;
-        // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 14;
-
-        // для 2 штук c уменш время
-         tickInterval = 15 * 3;
-         intervalMeasurementSec = tickInterval * 2;
-         lastMeasurementSec = intervalMeasurementSec * 4;
-        //TODO убрать после отладки
+       
 
         //
         TestRun = TypeOfTestRun.CycleMeasurement;

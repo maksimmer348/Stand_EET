@@ -42,8 +42,9 @@ namespace StandETT
         private async Task ClosingTasks()
         {
             //TODO Вернуть!
-            // await vm.stand.ResetAllTests();
-            // doClose = true;
+            await vm.stand.ResetAllTests();
+            doClose = true;
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
             Close();
         }
 
