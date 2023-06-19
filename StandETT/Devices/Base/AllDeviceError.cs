@@ -9,6 +9,7 @@ public class AllDeviceError
     public bool ErrorParam { get; set; } = false;
     public bool ErrorLength { get; set; } = false;
     public bool ErrorTimeout { get; set; } = false;
+    public bool ErrorThread { get; set; } = false;
 
     public void ResetAllError()
     {
@@ -19,26 +20,24 @@ public class AllDeviceError
         ErrorParam = false;
         ErrorLength = false;
         ErrorTimeout = false;
+        ErrorThread = false;
     }
     
     public bool CheckIsUnselectError(DeviceErrors e = DeviceErrors.All)
     {
-        if (e == DeviceErrors.ErrorPort)
-            return ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
-        if (e == DeviceErrors.ErrorDevice)
-            return ErrorPort || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
-        if (e == DeviceErrors.ErrorTerminator)
-            return ErrorPort || ErrorDevice || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
-        if (e == DeviceErrors.ErrorReceive)
-            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorParam || ErrorLength || ErrorTimeout;
-        if (e == DeviceErrors.ErrorParam)
-            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorLength || ErrorTimeout;
-        if (e == DeviceErrors.ErrorLength)
-            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorTimeout;
-        if (e == DeviceErrors.ErrorTimeout)
-            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength;
-        return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
-               ErrorTimeout;
+        return e switch
+        {
+            DeviceErrors.ErrorPort => ErrorPort,
+            DeviceErrors.ErrorDevice => ErrorDevice,
+            DeviceErrors.ErrorTerminator => ErrorTerminator,
+            DeviceErrors.ErrorReceive => ErrorReceive,
+            DeviceErrors.ErrorParam => ErrorParam,
+            DeviceErrors.ErrorLength => ErrorLength,
+            DeviceErrors.ErrorTimeout => ErrorTimeout,
+            DeviceErrors.ErrorThread => ErrorThread,
+            _ => ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
+                 ErrorTimeout
+        };
     }
 }
 
@@ -52,4 +51,5 @@ public enum DeviceErrors
     ErrorParam,
     ErrorLength,
     ErrorTimeout,
+    ErrorThread
 }

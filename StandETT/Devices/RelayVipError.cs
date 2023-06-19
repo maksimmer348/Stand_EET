@@ -8,10 +8,9 @@ public class RelayVipError
     public bool VoltageOut1Low { get; set; } = false;
     public bool VoltageOut2High { get; set; } = false;
     public bool VoltageOut2Low { get; set; } = false;
-    public bool TemperatureIn { get; set; }
-    public bool TemperatureOut { get; set; }
+    public bool TemperatureIn { get; set; } = false;
+    public bool TemperatureOut { get; set; } = false;
     
-
     public bool CheckIsUnselectError(VipError e = VipError.All)
     {
         return CurrentInErr ||

@@ -16,9 +16,9 @@ public class ReportCreator
     {
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
-    
+
     MainRelay mainRelay = MainRelay.GetInstance();
-    
+
     private string pathReport = "";
     private string pathErrorReport = "";
 
@@ -57,7 +57,7 @@ public class ReportCreator
     {
         // Debug.WriteLine($"CreateReport/ 1ch - {vip.Channel1AddrNum}/test - {vip.CurrentTestVip}");
         // Debug.WriteLine($"CreateReport/ 2ch - {vip.Channel2AddrNum}/test - {vip.CurrentTestVip}");
-        
+
         using var excelPackage = new ExcelPackage(pathReport, "");
         ExcelWorkbook excelWorkBook = excelPackage.Workbook;
         ExcelWorksheet excelWorksheet = excelWorkBook.Worksheets.First(x => x.Name.Contains("Лист1"));
@@ -99,7 +99,7 @@ public class ReportCreator
 
     public async Task CreateErrorReport(Vip vip, ObservableCollection<BaseDevice> observableCollection,
         bool isTemperatureTest,
-        bool isReset = false)
+        bool isResetTest = false)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
 
@@ -114,7 +114,7 @@ public class ReportCreator
 
         var timeNow = $"/\n{DateTime.Now:HH:mm:ss}";
 
-        if (!isReset)
+        if (!isResetTest)
         {
             excelWorksheet.Cells[addr.channel1Addr].Value =
                 vip.ErrorVip.VoltageOut1High || vip.ErrorVip.VoltageOut1Low ? $"{vip.VoltageOut1}{timeNow}" : null;
@@ -127,7 +127,7 @@ public class ReportCreator
                 vip.ErrorVip.TemperatureIn ? $"{vip.TemperatureIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddrOut].Value =
                 vip.ErrorVip.TemperatureOut ? $"{vip.TemperatureOut}{timeNow}" : null;
-            
+
             if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorDevice))
                 excelWorksheet.Cells[addr.errConnectAddr].Value = $"Устр.{timeNow}";
             else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorLength))
@@ -148,7 +148,8 @@ public class ReportCreator
                 excelWorksheet.Cells[addr.errConnectAddr].Value = $"Реле{timeNow}";
             else if (!isTemperatureTest)
             {
-                var s = observableCollection.Where(x => x is not Thermometer &&x.AllDeviceError.CheckIsUnselectError());
+                var s = observableCollection.Where(x =>
+                    x is not Thermometer && x.AllDeviceError.CheckIsUnselectError());
                 if (s.Any())
                 {
                     excelWorksheet.Cells[addr.errConnectAddr].Value = $"Внеш. устр{timeNow}";
@@ -156,20 +157,40 @@ public class ReportCreator
             }
             else
             {
-                var s = observableCollection.Where(x => x is not Thermometer &&x.AllDeviceError.CheckIsUnselectError());
-                if (s.Any())
+                var deviceErrThread = observableCollection
+                    ?.Where(x =>
+                        x is not Thermometer && x.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorThread))
+                    .ToList();
+                var errorsT = string.Empty;
+                if (deviceErrThread != null && deviceErrThread.Any())
                 {
-                    excelWorksheet.Cells[addr.errConnectAddr].Value = $"Внеш. устр{timeNow}";
+                    foreach (var device in deviceErrThread)
+                    {
+                        errorsT += device.Name;
+                    }
+
+                    excelWorksheet.Cells[addr.errConnectAddr].Value = $"Ош. потока{errorsT}{timeNow}";
                 }
                 else
-                    excelWorksheet.Cells[addr.errConnectAddr].Value = (string)null;
+                {
+                    var isError = observableCollection?.Where(x =>
+                        x is not Thermometer && x.AllDeviceError.CheckIsUnselectError());
+                    if (isError != null && isError.Any())
+                    {
+                        excelWorksheet.Cells[addr.errConnectAddr].Value = $"Внеш. устр{timeNow}";
+                    }
+                    else
+                    {
+                        excelWorksheet.Cells[addr.errConnectAddr].Value = (string)null;
+                    }
+                }
             }
         }
         else
         {
             if (vip.CurrentTestVip == TypeOfTestRun.AvailabilityCheckVip)
             {
-                excelWorksheet.Cells[addr.errResetAddr ].Value = $"Сброс ПИ{timeNow}";
+                excelWorksheet.Cells[addr.errResetAddr].Value = $"Сброс ПИ{timeNow}";
             }
 
             else if (vip.CurrentTestVip == TypeOfTestRun.MeasurementZero)
@@ -397,7 +418,7 @@ public class ReportCreator
                 errConnectAdd = $"K{errConnectAddrNum}";
                 errResetAdd = $"K{errResetAddrNum}";
                 break;
-                
+
             case 9:
                 nameAddr = $"L4";
 
@@ -456,7 +477,8 @@ public class ReportCreator
                 break;
         }
 
-        return (nameAddr, channel1ErrAddr, channel2ErrAddr, currentErrAddr, tempAddr, tempAddrOut, errConnectAdd, errResetAdd);
+        return (nameAddr, channel1ErrAddr, channel2ErrAddr, currentErrAddr, tempAddr, tempAddrOut, errConnectAdd,
+            errResetAdd);
     }
 }
 

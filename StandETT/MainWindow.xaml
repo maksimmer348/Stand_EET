@@ -457,6 +457,10 @@
                                        DockPanel.Dock="Left">
                                 Номер отчета Випов
                             </TextBlock>
+                            
+                            <TextBlock Text="Тестовый режим" Margin="20,10,10,10"
+                                        DockPanel.Dock="Left"/>
+                            <CheckBox Margin="0,10,0,0" IsChecked="{Binding IsTestMode}"></CheckBox>
                         </DockPanel>
                     </Grid>
 

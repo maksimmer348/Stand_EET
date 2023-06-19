@@ -441,7 +441,7 @@ public class Stand1 : Notify
     bool stopMeasurement = false;
     public bool IsResetAll = false;
     bool isTemperatureTest;
-
+    public bool IsTestMode;
     private string captionAction;
 
     public string CaptionAction
@@ -518,6 +518,7 @@ public class Stand1 : Notify
         get => temperatureCurrentOut;
         set => Set(ref temperatureCurrentOut, value);
     }
+
 
     //
 
@@ -793,20 +794,15 @@ public class Stand1 : Notify
     //--випы--vips--relay--check--проверка--
     public async Task<bool> PrimaryCheckVips(int innerCountCheck = 3, int innerDelay = 3000)
     {
-        //TODO удалить после отладки
-        foreach (var vip in vips)
+        if (IsTestMode)
         {
-            // if (vip.Id % 2 == 0)
-            // if (vip.Id is 11 or 12)
-            // {
-            // if (vip.Id is 8 or 9 or 10)
-            if (vip.Id is not 2)
-                vip.Name = vip.Id.ToString();
-            // }
-        }
+            foreach (var vip in vips)
+            {
+                if (vip.Id is not 2)
+                    vip.Name = vip.Id.ToString();
+            }
 
-        ReportNum = "отчет Тест";
-        //TODO удалить после отладки
+        }
 
         TestRun = TypeOfTestRun.PrimaryCheckVips;
         ProgressColor = Brushes.Green;
@@ -821,12 +817,14 @@ public class Stand1 : Notify
         {
             throw new Exception("Введите корректный номер отчета");
         }
-
-        //TODO вернуть после отладки
-        // if (report.CheckHeadersReport(new HeaderReport(ReportNum, vips[0].Type)))
-        // {
-        //     throw new Exception("Отчет с таким номером уже сущетвует");
-        // }
+        
+        if (!IsTestMode)
+        {
+            if (report.CheckHeadersReport(new HeaderReport(ReportNum, vips[0].Type)))
+            {
+                throw new Exception("Отчет с таким номером уже сущетвует");
+            }
+        }
 
         TempChecks t = TempChecks.Start();
         await ResetAllVips(innerCountCheck, innerDelay);
@@ -1371,7 +1369,10 @@ public class Stand1 : Notify
 
             //цикл нагревание пластины 
 
-            timeHeatSec = 20;
+            if (IsTestMode)
+            {
+                timeHeatSec = 20;
+            }
             var timeHeat = timeHeatSec / 10;
             float extPercent = 0;
 
@@ -1547,15 +1548,15 @@ public class Stand1 : Notify
     //время и испытаний
     //TODO сделать тик таймера 15*12 секунд = 180 секунд = 3 минуты (возможно теперь больше)
     // double tickInterval = 30;
-    double tickInterval = 15 * 12;
+    double tickInterval = 300;
 
     //TODO сделать последующие замеры 1800 секунд = 30 минут
     //double intervalMeasurementSec = 60;
-    double intervalMeasurementSec;
+    double intervalMeasurementSec = 1800;
 
     //TODO сделать последний замер/заверщение замеров 28800 секунд = 8 часов
     //double lastMeasurementSec = 960;
-    private double lastMeasurementSec;
+    private double lastMeasurementSec = 28800;
 
     //для визуализации отсчета времени
     double tickTimeSec;
@@ -1574,19 +1575,27 @@ public class Stand1 : Notify
         // lastMeasurementSec = intervalMeasurementSec * 14;
 
         //для 12 штук c уевел время
-        tickInterval = 300;
-        intervalMeasurementSec = tickInterval * 4;
-        lastMeasurementSec = intervalMeasurementSec * 14;
-
+        if (IsTestMode)
+        {
+            tickInterval = 300;
+            intervalMeasurementSec = tickInterval * 4;
+            lastMeasurementSec = intervalMeasurementSec * 14;
+        }
+        else
+        {
+            tickInterval = 300;
+            intervalMeasurementSec = 1800;
+            lastMeasurementSec = 28800;
+        }
         //для 2 штук
         // tickInterval = 15 * 2;
         // intervalMeasurementSec = tickInterval * 2;
         // lastMeasurementSec = intervalMeasurementSec * 14;
 
-        //для 2 штук c уменш время
-        // tickInterval = 15 * 3;
-        // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 4;
+        // для 2 штук c уменш время
+         tickInterval = 15 * 3;
+         intervalMeasurementSec = tickInterval * 2;
+         lastMeasurementSec = intervalMeasurementSec * 4;
         //TODO убрать после отладки
 
         //
@@ -1733,7 +1742,7 @@ public class Stand1 : Notify
 
                         Debug.WriteLine($"firstIntervalMeasurement/{countMeasurementCycle}");
 
-                        await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
+                        await MeasurementTick(vip, currentMainTest, t, tvr, tv);
                     }
 
                     firstIntervalMeasurement = false;
@@ -1769,7 +1778,7 @@ public class Stand1 : Notify
                         //
 
                         Debug.WriteLine($"lastIntervalMeasurementStop/{countMeasurementCycle}");
-                        await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
+                        await MeasurementTick(vip, currentMainTest, t, tvr, tv);
                     }
 
                     //
@@ -1834,7 +1843,7 @@ public class Stand1 : Notify
                         //
 
                         Debug.WriteLine($"intervalMeasurementCycle/{countMeasurementCycle}");
-                        await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
+                        await MeasurementTick(vip, currentMainTest, t, tvr, tv);
                     }
                 }
                 else
@@ -1861,7 +1870,7 @@ public class Stand1 : Notify
                             colorSubTest: Brushes.NavajoWhite);
                         //
                         Debug.WriteLine($"intervalCheckCycle/{countMeasurementCycle}");
-                        await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
+                        await MeasurementTick(vip, currentMainTest, t, tvr, tv);
                     }
                 }
 
@@ -1924,29 +1933,34 @@ public class Stand1 : Notify
     }
 
 
-    //--tick--test--ass----mesaure
-    async Task<(bool result, Vip vip)> MeasurementTick(Vip vipTested, TypeOfTestRun currentMainTest,
-        int countChecked = 3,
-        int loopDelay = 1000, TempChecks t = null, TempChecks tvr = null,
-        TempChecks tv = null)
+    //--tick--test--ass--mesaure--
+    async Task<(bool result, Vip vip)> MeasurementTick(Vip vipTested, TypeOfTestRun currentMainTest
+        , TempChecks t, TempChecks tvr,
+        TempChecks tv, int countChecked = 3,
+        int loopDelay = 1000)
     {
         try
         {
-            Debug.WriteLine(
-                $"Вип {vipTested.Id}/до проверки");
-
+            // Debug.WriteLine(
+            //     $"Вип {vipTested.Id}/до проверки");
             if (t.IsOk) await TestVip(vipTested, currentMainTest, t, tvr, tv);
             await Task.Delay(TimeSpan.FromMilliseconds(1000));
-
-            Debug.WriteLine(
-                $"Вип {vipTested.Id}/после проверки");
+            // Debug.WriteLine(
+            //     $"Вип {vipTested.Id}/после проверки");
             return (t?.IsOk ?? true, vipTested);
         }
         catch (Exception e) when (e.Message.Contains("cancelled"))
         {
-            Debug.WriteLine(
-                $"Вип {vipTested.Id}/task cancelled");
-            tv.Add(false);
+            // Debug.WriteLine(
+            //     $"Вип {vipTested.Id}/task cancelled");
+            vipTested.ErrorStatusVip += $" \"Не критическая ошибка потока\" ";
+
+            if (vipTested.StatusTest != StatusDeviceTest.Error)
+            {
+                vipTested.StatusTest = StatusDeviceTest.Warning;
+            }
+
+            //tv?.Add(false);
             return (t?.IsOk ?? true, vipTested);
         }
         catch (Exception e)
@@ -2022,13 +2036,12 @@ public class Stand1 : Notify
                             await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsConnectDevice.Token);
                         }
                     }
-                    catch (TaskCanceledException e)
+                    catch (TaskCanceledException e) when (ctsConnectDevice.IsCancellationRequested)
                     {
                         Debug.WriteLine(
                             "ctsConnectDevice.Token/Проверка на физическое существование порта (одичночного)/" +
                             "сброс ожидание преред попыткой");
                         ctsConnectDevice = new CancellationTokenSource();
-
                         //если тесты остановлены, немделнно выходим из метода с ошибкой
                         if (resetAll)
                         {
@@ -2214,12 +2227,23 @@ public class Stand1 : Notify
 
                     await Task.Delay(TimeSpan.FromMilliseconds(80), ctsConnectDevice.Token);
                 }
-
-                catch (TaskCanceledException e)
+                //TODO удалиьт если чтот пойдет не так
+                catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
+                {
+                    Debug.WriteLine("ctsAllCancel.Token/Проверка на физическое существование порта (несколько)/" +
+                                    "сбпрос ожидание преред попыткой");
+                    ctsAllCancel = new CancellationTokenSource();
+                    ctsConnectDevice = new CancellationTokenSource();
+                    //если тесты остановлены, немделнно выходим из метода с ошибкой
+                    t?.Add(false);
+                    return false;
+                }
+                catch (TaskCanceledException e) when (ctsConnectDevice.IsCancellationRequested)
                 {
                     Debug.WriteLine(
-                        "ctsConnectDevice.Token/Нагрев основания, Проверка на физическое существование порта (несколько)/" +
+                        "ctsConnectDevice.Token/ Проверка на физическое существование порта (несколько)/" +
                         "сбпрос ожидание преред попыткой");
+
                     ctsConnectDevice = new CancellationTokenSource();
                     //если тесты остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
@@ -2278,6 +2302,7 @@ public class Stand1 : Notify
         {
             Debug.WriteLine("ctsAllCancel.Token/Проверка на физическое существование порта (несколько)/" +
                             "сбпрос ожидание преред попыткой");
+            ctsAllCancel = new CancellationTokenSource();
             ctsConnectDevice = new CancellationTokenSource();
             t?.Add(false);
             return false;
@@ -2309,7 +2334,7 @@ public class Stand1 : Notify
 
     //--write--cmd--
     /// <summary>
-    /// Запись одинакоывой команды с проверкой
+    /// Запись одинаковой команды с проверкой
     /// </summary>
     /// <param name="deviceCheck">Проверяемое утросйство</param>
     /// <param name="nameCmd">Имя команды</param>
@@ -2326,6 +2351,7 @@ public class Stand1 : Notify
         string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 600, TempChecks t = null,
         bool isReceiveVal = false)
     {
+        Debug.WriteLine($"Запись одинаковой команды с проверкой");
         KeyValuePair<BaseDevice, string> deviceReceived = default;
 
         if (resetAll)
@@ -2351,11 +2377,8 @@ public class Stand1 : Notify
         {
             for (int i = 1; i <= countChecked; i++)
             {
-                //
-                // Debug.WriteLine(
-                // $"Запись команды {nameCmd}, в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, попытка {i}/{countChecked}");
-                //
-
+                Debug.WriteLine(
+                    $"Запись одинаковой команды с проверкой {nameCmd}, в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, попытка {i}/{countChecked}");
                 //
                 SetPriorityStatusStand(4, $"запись команды в устройство", deviceCheck, percentSubTest: 0,
                     currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}",
@@ -2369,22 +2392,39 @@ public class Stand1 : Notify
                 {
                     if (i > 1)
                     {
-                        //добавить кансел и проверить как будет работаьть
+                        Debug.WriteLine(
+                            $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                            $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType},{i}>{countChecked}");
+
                         ctsReceiveDevice?.Cancel();
-                        //где создаются проставить дебаги чтобы понять какой вызвает task canncelled
                         ctsReceiveDevice = new CancellationTokenSource();
-                        // Debug.WriteLine("ctsReceiveDevice");
-                        await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsReceiveDevice.Token);
+                        try
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(loopDelay), ctsReceiveDevice.Token);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine("ctsReceiveDevice.Token/ Запись одинакоывой команды с проверкой/" +
+                                            "сброс попытки преред попыткой");
+                            ctsReceiveDevice = new CancellationTokenSource();
+                        }
                     }
 
                     if (!resetAll && !deviceCheck.PortIsOpen)
                     {
                         if (deviceCheck is not RelayVip || !mainRelay.PortIsOpen)
                         {
+                            Debug.WriteLine(
+                                $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                                $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, порт закрыт, переподключение...");
+
                             SetPriorityStatusStand(4, $"порт закрыт, переподключение...", clearAll: true);
 
                             if (!await CheckConnectPort(deviceCheck, 3))
                             {
+                                Debug.WriteLine(
+                                    $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                                    $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, порт не открыт, ошибка!");
                                 //
                                 SetPriorityStatusStand(4, $"порт не открыт, ошибка!", deviceCheck,
                                     colorSubTest: Brushes.Red);
@@ -2393,7 +2433,13 @@ public class Stand1 : Notify
                                 return deviceReceived;
                             }
 
+                            Debug.WriteLine(
+                                $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                                $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, переподключение удачно, порт открыт");
+
+                            //
                             SetPriorityStatusStand(4, $"переподключение удачно, порт открыт");
+                            //
                             await Task.Delay(TimeSpan.FromMilliseconds(50));
                         }
                     }
@@ -2403,8 +2449,12 @@ public class Stand1 : Notify
                     deviceCheck.IsReceive = isReceiveVal;
 
 
-                    //запись команды в каждое устройсттво
+                    //запись команды в каждое устройство
                     deviceCheck.WriteCmd(nameCmd, paramSet);
+
+                    Debug.WriteLine(
+                        $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                        $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, запись команды в каждое устройство");
 
                     //
                     SetPriorityStatusStand(4, $"запись команды в устройство", deviceCheck, percentSubTest: 50,
@@ -2422,11 +2472,13 @@ public class Stand1 : Notify
 
                     if (t == null)
                     {
+                        Debug.WriteLine(
+                            $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                            $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, запись команды в устройство, ок! (нет проверки ответа)");
                         SetPriorityStatusStand(4, $"запись команды в устройство, ок!");
                         return new KeyValuePair<BaseDevice, string>();
                     }
                 }
-
                 catch (TaskCanceledException e) when (ctsReceiveDevice.IsCancellationRequested)
                 {
                     Debug.WriteLine("ctsReceiveDevice.Token/ Запись одинакоывой команды с проверкой/" +
@@ -2436,12 +2488,25 @@ public class Stand1 : Notify
 
                     await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token);
 
+                    if (t == null)
+                    {
+                        Debug.WriteLine(
+                            $"Запись одинакоывой команды с проверкой {nameCmd}, " +
+                            $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, запись команды в устройство, ок! (нет проверки ответа, ответ пришел раньше)");
+                        SetPriorityStatusStand(4, $"запись команды в устройство, ок!");
+                        return new KeyValuePair<BaseDevice, string>();
+                    }
+
                     //если тест остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
                     {
+                        Debug.WriteLine(
+                            $"Запись одинакоывой команды с проверкой {nameCmd}," +
+                            $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType},тест остановлены");
                         deviceReceived = GetReceiveLast(deviceCheck);
 
                         t?.Add(false);
+
                         if (deviceReceived.Key == null)
                         {
                             return new KeyValuePair<BaseDevice, string>(deviceCheck, "Stop tests");
@@ -2457,6 +2522,9 @@ public class Stand1 : Notify
                 if (verifiedDevice.Value)
                 {
                     verifiedDevice.Key.StatusTest = StatusDeviceTest.Ok;
+                    Debug.WriteLine(
+                        $"Запись одинакоывой команды с проверкой {nameCmd}," +
+                        $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType},запись команды в устройство, ок!");
 
                     //
                     SetPriorityStatusStand(4, $"запись команды в устройство, ок!", deviceCheck, percentSubTest: 100,
@@ -2474,6 +2542,10 @@ public class Stand1 : Notify
                 if (verifiedDevice.Key.AllDeviceError.ErrorDevice ||
                     verifiedDevice.Key.AllDeviceError.ErrorPort)
                 {
+                    Debug.WriteLine(
+                        $"Запись одинакоывой команды с проверкой {nameCmd}," +
+                        $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType},проверка порта если ошибка порта");
+
                     await CheckConnectPort(verifiedDevice.Key, 1, t: tp);
                 }
                 else if (verifiedDevice.Key.AllDeviceError.ErrorTimeout)
@@ -2516,13 +2588,23 @@ public class Stand1 : Notify
         {
             Debug.WriteLine("ctsAllCancel.Token/ Запись одинакоывой команды с проверкой/" +
                             "спрос ожидание преред попыткой");
+            ctsAllCancel = new CancellationTokenSource();
             ctsConnectDevice = new CancellationTokenSource();
             t?.Add(false);
             return deviceReceived;
         }
-
+        catch (Exception e) when (e.Message.Contains("cancelled"))
+        {
+            deviceCheck.AllDeviceError.ErrorThread = true;
+            throw new Exception(
+                $"Устройство - {deviceCheck} ошибка потока/Команда {nameCmd}/ ctsAllCancel = {ctsAllCancel.Token.CanBeCanceled}/ctsConnectDevice {ctsConnectDevice.Token.CanBeCanceled}/" +
+                e.Message);
+        }
         catch (Exception e)
         {
+            Debug.WriteLine(
+                $"Запись одинакоывой команды с проверкой {nameCmd}," +
+                $"в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType},общая ошибка");
             //
             SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", deviceCheck, percentSubTest: 100,
                 colorSubTest: Brushes.Red);
@@ -2534,7 +2616,9 @@ public class Stand1 : Notify
                 return deviceReceived;
             }
 
-            throw new Exception(e.Message);
+            throw new Exception(
+                $"Устройство -{deviceCheck}/Команда {nameCmd}/ctsAllCancel = {ctsAllCancel.Token.CanBeCanceled}/ctsConnectDevice {ctsConnectDevice.Token.CanBeCanceled}/" +
+                e.Message);
         }
     }
 
@@ -2556,7 +2640,8 @@ public class Stand1 : Notify
         string cmd = null, string paramSet = null, string paramGet = null, int countChecked = 3, int loopDelay = 600,
         TempChecks t = null, bool isReceiveVal = false)
     {
-        deviceChecks.RemoveAll(i => i.Name.Contains("SL"));
+        //deviceChecks.RemoveAll(i => i.Name.Contains("SL"));
+        Debug.WriteLine("Запись одинаковых команд с проверкой");
         var deviceReceived = new Dictionary<BaseDevice, List<string>>();
 
         if (resetAll)
@@ -2590,13 +2675,14 @@ public class Stand1 : Notify
                         currentCountCheckedSubTest: $"Попытка: {i.ToString()}/{countChecked}",
                         colorSubTest: Brushes.Orange);
                     //
-
+                    Debug.WriteLine($"Запись запись команд в устройства/{i}");
                     if (i > 1)
                     {
                         //
 
                         if (devices.Count > 0)
                         {
+                            Debug.WriteLine($"Запись запись команд в устройства/{i}>{countChecked}");
                             var percent = (float)Math.Round((1 / (float)tempDevices.Count) * 100 / i);
                             if (percent > 100)
                             {
@@ -2689,6 +2775,8 @@ public class Stand1 : Notify
 
                 catch (TaskCanceledException e) when (ctsReceiveDevice.IsCancellationRequested)
                 {
+                    Debug.WriteLine("ctsReceiveDevice.Token/Запись одинаковых команд с проверкой/" +
+                                    "сброс ответа из устройства (max)");
                     ctsReceiveDevice = new CancellationTokenSource();
                     await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token);
 
@@ -2771,9 +2859,23 @@ public class Stand1 : Notify
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
+            ctsAllCancel = new CancellationTokenSource();
             ctsConnectDevice = new CancellationTokenSource();
             t?.Add(false);
             return deviceReceived;
+        }
+        catch (Exception e) when (e.Message.Contains("cancelled"))
+        {
+            var errStr = "Устройства - ";
+            foreach (var deviceCheck in deviceChecks)
+            {
+                deviceCheck.AllDeviceError.ErrorThread = true;
+                errStr += $"{deviceCheck}/Команда {deviceCheck.NameCurrentCmd}\n";
+            }
+
+            throw new Exception(
+                $"{errStr}/ ctsAllCancel = {ctsAllCancel.Token.CanBeCanceled}/ctsConnectDevice {ctsConnectDevice.Token.CanBeCanceled}/" +
+                e.Message);
         }
         catch (Exception e)
         {
@@ -2788,7 +2890,15 @@ public class Stand1 : Notify
                 return deviceReceived;
             }
 
-            throw new Exception(e.Message);
+            var errStr = "Устройства - ";
+            foreach (var deviceCheck in deviceChecks)
+            {
+                errStr += $"{deviceCheck}/Команда {deviceCheck.NameCurrentCmd}\n";
+            }
+
+            throw new Exception(
+                $"{errStr}/ctsAllCancel = {ctsAllCancel.Token.CanBeCanceled}/ctsConnectDevice {ctsConnectDevice.Token.CanBeCanceled}/" +
+                e.Message);
         }
 
         //
@@ -3636,6 +3746,7 @@ public class Stand1 : Notify
                 }
                 catch (TaskCanceledException) when (ctsAllCancel.IsCancellationRequested)
                 {
+                    ctsAllCancel = new CancellationTokenSource();
                     t?.Add(false);
                     return false;
                 }
@@ -3690,6 +3801,7 @@ public class Stand1 : Notify
                     }
                     catch (TaskCanceledException) when (ctsAllCancel.IsCancellationRequested)
                     {
+                        ctsAllCancel = new CancellationTokenSource();
                         t?.Add(false);
                         return false;
                     }
@@ -3746,6 +3858,7 @@ public class Stand1 : Notify
                 }
                 catch (TaskCanceledException) when (ctsAllCancel.IsCancellationRequested)
                 {
+                    ctsAllCancel = new CancellationTokenSource();
                     t?.Add(false);
                     return false;
                 }

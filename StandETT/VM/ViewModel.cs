@@ -495,15 +495,11 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             try
             {
-                
                 //--available
                 bool available = await stand.AvailabilityCheckVip();
-                
-                // await Task.Delay(TimeSpan.FromMilliseconds(1000));
-                
                 // stand.StartMeasurementCycle();
                 // return;
-                
+
                 if (available)
                 {
                     //--zero
@@ -633,14 +629,14 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             if (errorStr.Contains("реле Випов") || errorStr.Contains("Ошибка измерений"))
                 goToSelectTab = 1;
-            if ( errorStr.Contains("внешние устр."))
+            if (errorStr.Contains("внешние устр."))
             {
                 goToSelectTab = 0;
             }
             else
                 goToSelectTab = 0;
         }
-           
+
         else
             goToSelectTab = goToSelectTab;
     }
@@ -991,7 +987,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         return Error == null ||
                !Error.Contains("параметров") && !Error.Contains("Випа") && !Error.Contains("документации");
     }
-    
+
     private decimal ConvertValToDouble(string str)
     {
         var replace = str.Replace(",", ".");
@@ -2184,6 +2180,26 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             Set(ref reportNum, value);
             stand.ReportNum = value;
+        }
+    }
+
+    bool isTestMode;
+
+    public bool IsTestMode
+    {
+        get => isTestMode;
+        set
+        {
+            if (!Set(ref isTestMode, value)) return;
+            if (value)
+            {
+                ReportNum = "Тестовый отчет";
+            }
+            else
+            {
+                ReportNum = string.Empty;
+            }
+            stand.IsTestMode = value;
         }
     }
 
