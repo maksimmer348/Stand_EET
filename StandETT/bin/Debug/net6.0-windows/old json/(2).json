@@ -1,0 +1,323 @@
+[
+  {
+    "$type": "StandETT.VoltMeter, StandETT",
+    "IsDeviceType": "Вольтметр",
+    "Name": "GDM-78255A",
+    "Config": {
+      "TypePort": 1,
+      "PortName": "COM8",
+      "Baud": 115200,
+      "StopBits": 1,
+      "Parity": 0,
+      "DataBits": 8,
+      "Dtr": true
+    },
+    "RowIndex": 1,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.ThermoCurrentMeter, StandETT",
+    "IsDeviceType": "Термометр/Амперметр",
+    "Name": "GDM-78255A",
+    "Config": {
+      "TypePort": 1,
+      "PortName": "COM7",
+      "Baud": 115200,
+      "StopBits": 1,
+      "Parity": 0,
+      "DataBits": 8,
+      "Dtr": true
+    },
+    "RowIndex": 1,
+    "ColumnIndex": 2
+  },
+  {
+    "$type": "StandETT.Supply, StandETT",
+    "IsDeviceType": "Блок питания",
+    "Name": "PSW7-800-2.88",
+    "Config": {
+      "TypePort": 1,
+      "PortName": "COM5",
+      "Baud": 115200,
+      "StopBits": 1,
+      "Parity": 0,
+      "DataBits": 8,
+      "Dtr": true
+    },
+    "RowIndex": 1,
+    "ColumnIndex": 1
+  },
+  {
+    "$type": "StandETT.BigLoad, StandETT",
+    "IsDeviceType": "Большая нагрузка/Генератор",
+    "Name": "AFG-72112",
+    "Config": {
+      "TypePort": 1,
+      "PortName": "COM6",
+      "Baud": 115200,
+      "StopBits": 1,
+      "Parity": 0,
+      "DataBits": 8,
+      "Dtr": true
+    },
+    "RowIndex": 1,
+    "ColumnIndex": 4
+  },
+  {
+    "$type": "StandETT.RelayMeter, StandETT",
+    "Id": 0,
+    "IsDeviceType": "Набор реле измерений",
+    "Name": "MRS",
+    "Config": {
+      "TypePort": 1,
+      "PortName": "COM9",
+      "Baud": 9600,
+      "StopBits": 1,
+      "Parity": 0,
+      "DataBits": 8,
+      "Dtr": true
+    },
+    "RowIndex": 1,
+    "ColumnIndex": 5
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-0",
+    "Name": "0",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-1",
+    "Name": "1",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-2",
+    "Name": "2",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-3",
+    "Name": "3",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-4",
+    "Name": "C",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-5",
+    "Name": "5",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-6",
+    "Name": "6",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-7",
+    "Name": "7",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-8",
+    "Name": "8",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-9",
+    "Name": "9",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-10",
+    "Name": "A",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  },
+  {
+    "$type": "StandETT.RelayVip, StandETT",
+    "Id": 0,
+    "StatusOnOff": 0,
+    "OnOffColor": "#FFA9A9A9",
+    "IsTested": false,
+    "IsDeviceType": "Реле ВИПА-11",
+    "Name": "B",
+    "Config": {
+      "TypePort": 0,
+      "PortName": null,
+      "Baud": 0,
+      "StopBits": 0,
+      "Parity": 0,
+      "DataBits": 0,
+      "Dtr": false
+    },
+    "RowIndex": 0,
+    "ColumnIndex": 0
+  }
+]

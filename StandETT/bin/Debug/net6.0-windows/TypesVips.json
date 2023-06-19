@@ -1,0 +1,64 @@
+[
+  {
+    "BaseDeviceValues": [],
+    "Parameters": {
+      "BigLoadValues": {
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "HeatValues": {
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SupplyValues": {
+        "Voltage": "0.3",
+        "Current": "4.1",
+        "VoltageAvailability": "0.3",
+        "CurrentAvailability": "4.1",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltCurrentValues": {
+        "CurrMaxLimit": "0.5",
+        "VoltMaxLimit": "0.5",
+        "TermocoupleType": "0",
+        "ShuntResistance": "0.0075",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltValues": {
+        "VoltMaxLimit": "10",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SmallLoadValues": null
+    },
+    "Name": "Vip70",
+    "Specifications": "ЯКЛЮ.436638.001 ТУ",
+    "MaxTemperatureIn": 24.0,
+    "MaxTemperatureOut": 24.0,
+    "PercentAccuracyTemperature": 30.0,
+    "MaxVoltageIn": 0.0,
+    "PercentAccuracyVoltages": 10.0,
+    "MaxVoltageOut1": 8.5,
+    "VoltageOut2Using": false,
+    "MaxVoltageOut2": 8.8,
+    "MaxCurrentIn": 0.25,
+    "PercentAccuracyCurrent": 50.0,
+    "PrepareMaxCurrentIn": 0.25,
+    "AvailabilityMaxCurrentIn": 0.25,
+    "PrepareMaxVoltageOut1": 8.5,
+    "PrepareMaxVoltageOut2": 8.8,
+    "EnableTypeVipName": true,
+    "ZeroTestInterval": 2000.0,
+    "TestIntervalTime": "00:00:00",
+    "TestFirstIntervalTime": "00:00:00",
+    "TestAllTime": "00:00:00",
+    "SetTestAllTime": false,
+    "IsTemperatureTest": false
+  }
+]

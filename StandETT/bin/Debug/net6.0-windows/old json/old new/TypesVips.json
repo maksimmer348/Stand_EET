@@ -1,0 +1,116 @@
+[
+  {
+    "BaseDeviceValues": [],
+    "Parameters": {
+      "BigLoadValues": {
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "HeatValues": {
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SupplyValues": {
+        "Voltage": "0.6",
+        "Current": "0.6",
+        "VoltageAvailability": "0.6",
+        "CurrentAvailability": "0.6",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltCurrentValues": {
+        "CurrMaxLimit": "10",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltValues": {
+        "VoltMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SmallLoadValues": null
+    },
+    "Name": "ВИП71-01",
+    "Specifications": "ЯКЛЮ.436638.001 ТУ",
+    "MaxTemperature": 70.0,
+    "PercentAccuracyTemperature": 5.0,
+    "MaxVoltageIn": 0.0,
+    "PercentAccuracyVoltages": 50.0,
+    "MaxVoltageOut1": 0.6,
+    "VoltageOut2Using": false,
+    "MaxVoltageOut2": 0.0,
+    "MaxCurrentIn": 0.6,
+    "PercentAccuracyCurrent": 50.0,
+    "PrepareMaxCurrentIn": 0.6,
+    "AvailabilityMaxCurrentIn": 0.6,
+    "PrepareMaxVoltageOut1": 0.6,
+    "PrepareMaxVoltageOut2": 0.0,
+    "EnableTypeVipName": true,
+    "ZeroTestInterval": 2000.0,
+    "TestIntervalTime": "02:00:00",
+    "TestAllTime": "08:00:00"
+  },
+  {
+    "BaseDeviceValues": [],
+    "Parameters": {
+      "BigLoadValues": {
+        "Freq": "300",
+        "Ampl": "4",
+        "Dco": "2",
+        "Squ": "40",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "HeatValues": {
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SupplyValues": {
+        "Voltage": "0.6",
+        "Current": "0.6",
+        "VoltageAvailability": "0.6",
+        "CurrentAvailability": "0.6",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltCurrentValues": {
+        "CurrMaxLimit": "10",
+        "VoltMaxLimit": "100",
+        "TermocoupleType": "k",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "VoltValues": {
+        "VoltMaxLimit": "100",
+        "OutputOn": "1",
+        "OutputOff": "0"
+      },
+      "SmallLoadValues": null
+    },
+    "Name": "ВИП71-01",
+    "Specifications": "ЯКЛЮ.436638.001 ТУ",
+    "MaxTemperature": 70.0,
+    "PercentAccuracyTemperature": 5.0,
+    "MaxVoltageIn": 0.0,
+    "PercentAccuracyVoltages": 50.0,
+    "MaxVoltageOut1": 0.6,
+    "VoltageOut2Using": false,
+    "MaxVoltageOut2": 0.0,
+    "MaxCurrentIn": 0.6,
+    "PercentAccuracyCurrent": 50.0,
+    "PrepareMaxCurrentIn": 0.6,
+    "AvailabilityMaxCurrentIn": 0.6,
+    "PrepareMaxVoltageOut1": 0.6,
+    "PrepareMaxVoltageOut2": 0.0,
+    "EnableTypeVipName": true,
+    "ZeroTestInterval": 2000.0,
+    "TestIntervalTime": "02:00:00",
+    "TestAllTime": "08:00:00"
+  }
+]

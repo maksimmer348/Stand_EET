@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#My files
+Devices.json
+#Times.json
 # User-specific files
 *.rsuser
 *.suo
@@ -18,7 +21,7 @@ mono_crash.*
 
 # Build results
 #[Dd]ebug/
-#[Dd]ebugPublic/
+[Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
 x64/
@@ -27,7 +30,7 @@ x86/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
-[Bb]in/
+#[Bb]in/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
@@ -50,7 +53,7 @@ TestResult.xml
 nunit-*.xml
 
 # Build Results of an ATL Project
-[Dd]ebugPS/
+#[Dd]ebugPS/
 [Rr]eleasePS/
 dlldata.c
 

@@ -1,0 +1,392 @@
+[
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get func"
+    },
+    "Value": {
+      "Transmit": "conf:stat:func?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get curr meter"
+    },
+    "Value": {
+      "Transmit": "conf:stat:rang?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Set curr meter"
+    },
+    "Value": {
+      "Transmit": "conf:curr:dc ",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get volt"
+    },
+    "Value": {
+      "Transmit": "val1?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4980",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "FF",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 2000,
+      "IsXor": true,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "Receive": "72112",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get curr meter"
+    },
+    "Value": {
+      "Transmit": "conf:stat:rang?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get volt meter"
+    },
+    "Value": {
+      "Transmit": "conf:stat:rang?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "1",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "0",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4e502e",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AD",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "8"
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "1",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4e512e",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AE",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "8"
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "3",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4e532e",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B0",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "8"
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "C",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4e5c2e",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AE",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "8"
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "2",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4e522e",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AF",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "8"
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "CRLF Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": "78255A",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": ""
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "Receive": "800-2.88",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null
+    }
+  }
+]

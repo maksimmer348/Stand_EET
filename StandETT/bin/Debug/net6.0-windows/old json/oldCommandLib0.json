@@ -1,0 +1,1865 @@
+[
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": "72112",
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4980",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "FF",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "0",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4E502E",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AD4B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "1",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4E512E",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AE4B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "2",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4E522E",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AF4B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "3",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4E532E",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B04B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "C",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "4E5C2E",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B94B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Set curr meter"
+    },
+    "Value": {
+      "Transmit": "conf:curr:dc ",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Set temp meter"
+    },
+    "Value": {
+      "Transmit": "conf:temp",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Set tco type"
+    },
+    "Value": {
+      "Transmit": "sens:temp:tco:type ",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get func"
+    },
+    "Value": {
+      "Transmit": "conf:stat:func?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get curr meter"
+    },
+    "Value": {
+      "Transmit": "conf:stat:rang?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get volt meter"
+    },
+    "Value": {
+      "Transmit": "conf:stat:rang?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get all value"
+    },
+    "Value": {
+      "Transmit": "val1?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Get tco type"
+    },
+    "Value": {
+      "Transmit": "sens:temp:tco:type?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Set volt"
+    },
+    "Value": {
+      "Transmit": "SOUR:VOLT:LEV:IMM:AMPL ",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Set curr"
+    },
+    "Value": {
+      "Transmit": "SOUR:CURR:LEV:IMM:AMPL ",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Set output on"
+    },
+    "Value": {
+      "Transmit": "OUTPut 1",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Set output off"
+    },
+    "Value": {
+      "Transmit": "OUTPut 0",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Get volt"
+    },
+    "Value": {
+      "Transmit": "SOUR:VOLT:LEV:IMM:AMPL?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Get curr"
+    },
+    "Value": {
+      "Transmit": "SOUR:CURR:LEV:IMM:AMPL?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Get output"
+    },
+    "Value": {
+      "Transmit": "OUTPut?",
+      "Terminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set freq"
+    },
+    "Value": {
+      "Transmit": "SOUR1:FREQ ",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set dco"
+    },
+    "Value": {
+      "Transmit": "SOUR1:DCO ",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set ampl"
+    },
+    "Value": {
+      "Transmit": "SOUR1:AMPL ",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set squ"
+    },
+    "Value": {
+      "Transmit": "SOUR1:SQU:DCYC ",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set output off"
+    },
+    "Value": {
+      "Transmit": "OUTP OFF",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Set output on"
+    },
+    "Value": {
+      "Transmit": "OUTP ON",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Get freq"
+    },
+    "Value": {
+      "Transmit": "SOUR1:FREQ?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Get squ"
+    },
+    "Value": {
+      "Transmit": "SOUR1:SQU:DCYC?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Get ampl"
+    },
+    "Value": {
+      "Transmit": "SOUR1:AMPL?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Get dco"
+    },
+    "Value": {
+      "Transmit": "SOUR1:DCO?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "AFG-72112",
+      "NameCmd": "Get output"
+    },
+    "Value": {
+      "Transmit": "OUTPut?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": null,
+      "ReceiveTerminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 01"
+    },
+    "Value": {
+      "Transmit": "4901",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "01",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 02"
+    },
+    "Value": {
+      "Transmit": "4902",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "02",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 03"
+    },
+    "Value": {
+      "Transmit": "4903",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "03",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 04"
+    },
+    "Value": {
+      "Transmit": "4904",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "04",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 05"
+    },
+    "Value": {
+      "Transmit": "4905",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "05",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 06"
+    },
+    "Value": {
+      "Transmit": "4906",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "06",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 07"
+    },
+    "Value": {
+      "Transmit": "4907",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "07",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 08"
+    },
+    "Value": {
+      "Transmit": "4908",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "08",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 09"
+    },
+    "Value": {
+      "Transmit": "4909",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "09",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 0A"
+    },
+    "Value": {
+      "Transmit": "49AC",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "0A",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 0B"
+    },
+    "Value": {
+      "Transmit": "490B",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "0B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 0C"
+    },
+    "Value": {
+      "Transmit": "490C",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "0C",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 11"
+    },
+    "Value": {
+      "Transmit": "4911",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "11",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 12"
+    },
+    "Value": {
+      "Transmit": "4912",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "12",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 13"
+    },
+    "Value": {
+      "Transmit": "4913",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "13",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 14"
+    },
+    "Value": {
+      "Transmit": "4914",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "14",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 15"
+    },
+    "Value": {
+      "Transmit": "4915",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "15",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 16"
+    },
+    "Value": {
+      "Transmit": "4916",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "16",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 17"
+    },
+    "Value": {
+      "Transmit": "4917",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "17",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 18"
+    },
+    "Value": {
+      "Transmit": "4918",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "18",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 19"
+    },
+    "Value": {
+      "Transmit": "4919",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "19",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 1A"
+    },
+    "Value": {
+      "Transmit": "491A",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "1A",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 1B"
+    },
+    "Value": {
+      "Transmit": "491B",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "1B",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "MRS",
+      "NameCmd": "On 1C"
+    },
+    "Value": {
+      "Transmit": "491C",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "1C",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 400,
+      "IsXor": true,
+      "Length": "3",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "0",
+      "NameCmd": "On"
+    },
+    "Value": {
+      "Transmit": "4E5061",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AD1",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 5500,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "1",
+      "NameCmd": "On"
+    },
+    "Value": {
+      "Transmit": "4E5161",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AE1",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 5500,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "2",
+      "NameCmd": "On"
+    },
+    "Value": {
+      "Transmit": "4E5261",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AF1",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 5500,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "3",
+      "NameCmd": "On"
+    },
+    "Value": {
+      "Transmit": "4E5361",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B01",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 5500,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "C",
+      "NameCmd": "On"
+    },
+    "Value": {
+      "Transmit": "4E5C61",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B91",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 5500,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "0",
+      "NameCmd": "Off"
+    },
+    "Value": {
+      "Transmit": "4E50B8",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AD99",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "1",
+      "NameCmd": "Off"
+    },
+    "Value": {
+      "Transmit": "4E51B8",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AE99",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "2",
+      "NameCmd": "Off"
+    },
+    "Value": {
+      "Transmit": "4E52B8",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "AF99",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "3",
+      "NameCmd": "Off"
+    },
+    "Value": {
+      "Transmit": "4E53B8",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B099",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "C",
+      "NameCmd": "Off"
+    },
+    "Value": {
+      "Transmit": "4E5CB8",
+      "Terminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "Receive": "B999",
+      "ReceiveTerminator": {
+        "Name": "None",
+        "Type": 0,
+        "ReceiveTerminator": null,
+        "TypeEncod": 1
+      },
+      "MessageType": 1,
+      "Delay": 200,
+      "IsXor": true,
+      "Length": "4",
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "PSW7-800-2.88",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": "80-13",
+      "ReceiveTerminator": {
+        "Name": "LF Text(\\n)",
+        "Type": 1,
+        "ReceiveTerminator": "\n",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  },
+  {
+    "Key": {
+      "NameDevice": "GDM-78255A",
+      "NameCmd": "Status"
+    },
+    "Value": {
+      "Transmit": "*idn?",
+      "Terminator": {
+        "Name": "CRLF Text(\\r\\n)",
+        "Type": 4,
+        "ReceiveTerminator": "\r\n",
+        "TypeEncod": 0
+      },
+      "Receive": "78255A",
+      "ReceiveTerminator": {
+        "Name": "LFCR Text(\\n\\r)",
+        "Type": 3,
+        "ReceiveTerminator": "\n\r",
+        "TypeEncod": 0
+      },
+      "MessageType": 0,
+      "Delay": 200,
+      "IsXor": false,
+      "Length": null,
+      "IsParam": false
+    }
+  }
+]
