@@ -276,7 +276,7 @@ public class BaseDevice : Notify
     public int ColumnIndex { get; set; }
 
     public bool IsNotCmd { get; set; }
-
+    
     public bool IsTemperatureTest { get; set; }
 
     public Visibility IsThermomether { get; set; } = Visibility.Hidden;
@@ -345,8 +345,9 @@ public class BaseDevice : Notify
     /// <returns></returns>
     public virtual bool Open()
     {
-        PortIsOpen = true;
-        return port.Open();
+       var open =  port.Open();
+        PortIsOpen = open;
+        return open;
     }
 
     /// <summary>

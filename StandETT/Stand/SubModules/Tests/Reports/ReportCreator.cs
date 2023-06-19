@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,9 @@ public class ReportCreator
     {
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
     }
-
+    
+    MainRelay mainRelay = MainRelay.GetInstance();
+    
     private string pathReport = "";
     private string pathErrorReport = "";
 
@@ -94,7 +97,9 @@ public class ReportCreator
         await excelPackage.SaveAsync();
     }
 
-    public async Task CreateErrorReport(Vip vip, bool isReset = false)
+    public async Task CreateErrorReport(Vip vip, ObservableCollection<BaseDevice> observableCollection,
+        bool isTemperatureTest,
+        bool isReset = false)
     {
         using var excelPackage = new ExcelPackage(pathReport, "");
 
@@ -122,8 +127,43 @@ public class ReportCreator
                 vip.ErrorVip.TemperatureIn ? $"{vip.TemperatureIn}{timeNow}" : null;
             excelWorksheet.Cells[addr.tempAddrOut].Value =
                 vip.ErrorVip.TemperatureOut ? $"{vip.TemperatureOut}{timeNow}" : null;
-            excelWorksheet.Cells[addr.errConnectAddr].Value =
-                vip.Relay.AllDeviceError.CheckIsUnselectError() ? $"X{timeNow}" : null;
+            
+            if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorDevice))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Устр.{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorLength))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Дл. сообщ.{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorParam))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Пар. сообщ.{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorPort))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Порт{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorReceive))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Ответ{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorTerminator))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Терминатор Т1000{timeNow}";
+            else if (vip.Relay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorTimeout))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Таймаут{timeNow}";
+            else if (mainRelay.AllDeviceError.CheckIsUnselectError(DeviceErrors.ErrorPort))
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Порт{timeNow}";
+            else if (mainRelay.AllDeviceError.CheckIsUnselectError())
+                excelWorksheet.Cells[addr.errConnectAddr].Value = $"Реле{timeNow}";
+            else if (!isTemperatureTest)
+            {
+                var s = observableCollection.Where(x => x is not Thermometer &&x.AllDeviceError.CheckIsUnselectError());
+                if (s.Any())
+                {
+                    excelWorksheet.Cells[addr.errConnectAddr].Value = $"Внеш. устр{timeNow}";
+                }
+            }
+            else
+            {
+                var s = observableCollection.Where(x => x is not Thermometer &&x.AllDeviceError.CheckIsUnselectError());
+                if (s.Any())
+                {
+                    excelWorksheet.Cells[addr.errConnectAddr].Value = $"Внеш. устр{timeNow}";
+                }
+                else
+                    excelWorksheet.Cells[addr.errConnectAddr].Value = (string)null;
+            }
         }
         else
         {

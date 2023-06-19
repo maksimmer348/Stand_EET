@@ -48,7 +48,6 @@ public abstract class Notify : INotifyPropertyChanged
             filed = value;
             OnPropertyChanged(propertyName);
 
-        
             foreach (var dependentPropertyName in dependentPropertyNames)
             {
                 OnPropertyChanged(dependentPropertyName);

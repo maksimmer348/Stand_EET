@@ -108,9 +108,9 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         stand.TimerOk += TimerOkMeasurement;
 
         //TODO вернуть после отладки
-        // AllTabsDisable();
+        AllTabsDisable();
         //TODO удалить после отладки
-        AllTabsEnable();
+        // AllTabsEnable();
 
         SettingsTab = true;
         SettingsVipsTab = true;
@@ -212,7 +212,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
     void AllTabsDisable()
     {
         //TODO удалить после отладки
-        return;
+        // return;
         //TODO вернуть после отладки
         PrimaryCheckDevicesTab = false;
         PrimaryCheckVipsTab = false;
@@ -315,7 +315,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 }
                 catch (Exception e)
                 {
-                    var errMsg = "Непредвиденная ошибка! ";
+                    var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                     MessageBox.Show(errMsg + e.Message);
                 }
 
@@ -360,7 +360,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             }
             catch (Exception e)
             {
-                var errMsg = "Непредвиденная ошибка! ";
+                var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                 MessageBox.Show(errMsg + e.Message);
             }
         }
@@ -381,7 +381,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             }
             catch (Exception e)
             {
-                var errMsg = "Непредвиденная ошибка! ";
+                var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                 MessageBox.Show(errMsg + e.Message);
             }
         }
@@ -403,7 +403,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             }
             catch (Exception e)
             {
-                var errMsg = "Непредвиденная ошибка! ";
+                var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                 MessageBox.Show(errMsg + e.Message);
             }
         }
@@ -476,7 +476,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                 }
                 catch (Exception ex)
                 {
-                    var errMsg = "Непредвиденная ошибка! ";
+                    var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                     MessageBox.Show(errMsg + ex.Message);
                 }
 
@@ -495,8 +495,15 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         {
             try
             {
+                
                 //--available
                 bool available = await stand.AvailabilityCheckVip();
+                
+                // await Task.Delay(TimeSpan.FromMilliseconds(1000));
+                
+                // stand.StartMeasurementCycle();
+                // return;
+                
                 if (available)
                 {
                     //--zero
@@ -551,7 +558,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
                         }
                         catch (Exception ex)
                         {
-                            var errMsg = "Непредвиденная ошибка! ";
+                            var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                             MessageBox.Show(errMsg + ex.Message);
                         }
                     }
@@ -590,7 +597,7 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
         }
         catch (Exception e)
         {
-            var errMsg = "Непредвиденная ошибка! ";
+            var errMsg = "Непредвиденная ошибка отключения стенда!\n";
             MessageBox.Show(errMsg + e.Message);
         }
 
@@ -615,19 +622,27 @@ public class ViewModel : Notify, IDataErrorInfo, INotifyDataErrorInfo
             }
             catch (Exception e)
             {
-                var errMsg = "Непредвиденная ошибка! ";
+                var errMsg = "Непредвиденная ошибка отключения стенда!\n";
                 MessageBox.Show(errMsg + e.Message);
             }
         }
 
-        goToSelectTab = result switch
+        if (result == MessageBoxResult.Yes)
+            goToSelectTab = 4;
+        else if (result == MessageBoxResult.No)
         {
-            MessageBoxResult.Yes => 4,
-            MessageBoxResult.No => errorStr.Contains("реле Випов") || errorStr.Contains("Ошибка измерений")
-                ? 1
-                : 0,
-            _ => goToSelectTab
-        };
+            if (errorStr.Contains("реле Випов") || errorStr.Contains("Ошибка измерений"))
+                goToSelectTab = 1;
+            if ( errorStr.Contains("внешние устр."))
+            {
+                goToSelectTab = 0;
+            }
+            else
+                goToSelectTab = 0;
+        }
+           
+        else
+            goToSelectTab = goToSelectTab;
     }
 
 

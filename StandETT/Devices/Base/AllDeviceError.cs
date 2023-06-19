@@ -10,28 +10,35 @@ public class AllDeviceError
     public bool ErrorLength { get; set; } = false;
     public bool ErrorTimeout { get; set; } = false;
 
-
+    public void ResetAllError()
+    {
+        ErrorPort = false;
+        ErrorDevice = false;
+        ErrorTerminator = false;
+        ErrorReceive = false;
+        ErrorParam = false;
+        ErrorLength = false;
+        ErrorTimeout = false;
+    }
+    
     public bool CheckIsUnselectError(DeviceErrors e = DeviceErrors.All)
     {
-        return e switch
-        {
-            DeviceErrors.ErrorPort => ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
-                                      ErrorTimeout,
-            DeviceErrors.ErrorDevice => ErrorPort || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
-                                        ErrorTimeout,
-            DeviceErrors.ErrorTerminator => ErrorPort || ErrorDevice || ErrorReceive || ErrorParam || ErrorLength ||
-                                            ErrorTimeout,
-            DeviceErrors.ErrorReceive => ErrorPort || ErrorDevice || ErrorTerminator || ErrorParam || ErrorLength ||
-                                         ErrorTimeout,
-            DeviceErrors.ErrorParam => ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorLength ||
-                                       ErrorTimeout,
-            DeviceErrors.ErrorLength => ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam ||
-                                        ErrorTimeout,
-            DeviceErrors.ErrorTimeout => ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam ||
-                                         ErrorLength,
-            _ => ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
-                 ErrorTimeout
-        };
+        if (e == DeviceErrors.ErrorPort)
+            return ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
+        if (e == DeviceErrors.ErrorDevice)
+            return ErrorPort || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
+        if (e == DeviceErrors.ErrorTerminator)
+            return ErrorPort || ErrorDevice || ErrorReceive || ErrorParam || ErrorLength || ErrorTimeout;
+        if (e == DeviceErrors.ErrorReceive)
+            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorParam || ErrorLength || ErrorTimeout;
+        if (e == DeviceErrors.ErrorParam)
+            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorLength || ErrorTimeout;
+        if (e == DeviceErrors.ErrorLength)
+            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorTimeout;
+        if (e == DeviceErrors.ErrorTimeout)
+            return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength;
+        return ErrorPort || ErrorDevice || ErrorTerminator || ErrorReceive || ErrorParam || ErrorLength ||
+               ErrorTimeout;
     }
 }
 

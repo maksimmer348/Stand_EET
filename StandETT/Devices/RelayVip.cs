@@ -25,7 +25,6 @@ public class RelayVip : BaseDevice
         MainRelay.Config.Parity = parity;
         MainRelay.Config.DataBits = dataBits;
         MainRelay.Config.Dtr = dtr;
-        // MainRelay.Config.IsGdmConfig = isGdmConfig;
     }
 
     public override void Close()
@@ -147,7 +146,6 @@ public class RelayVip : BaseDevice
     {
         if (NameCurrentCmd.Contains("On"))
         {
-            //StatusOnOff = OnOffStatus.None;
             CtsRelayReceive.Cancel();
         }
     }

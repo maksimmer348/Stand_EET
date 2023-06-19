@@ -37,12 +37,14 @@ public class MainRelay : BaseDevice
     /// <returns></returns>
     public override bool Open()
     {
+        var open = port.Open();
+        
         foreach (var relay in Relays)
         {
-            relay.PortIsOpen = true;
+            relay.PortIsOpen = open;
         }
-
-        return port.Open();
+        
+        return open;
     }
 
     public static MainRelay GetInstance()
@@ -101,25 +103,24 @@ public class MainRelay : BaseDevice
     {
         try
         {
-            Debug.WriteLine($"ROW receive - {receive}");
+            // Debug.WriteLine($"ROW receive - {receive}");
             //clear receive
             receive = signalInterferences.Aggregate(receive, (r, s) => r.TrimStart(s).TrimEnd(s));
             //init prefix
-            var prefix = receive.Contains("6f") ? null : receive.Substring(2, 2);
+            var prefix = receive.Substring(2, 2);
 
             var currentRelayVipPrefix = Relays.FirstOrDefault(x => x.Prefix.ToLower() == prefix);
 
             if (currentRelayVipPrefix != null)
             {
-                Debug.WriteLine(
-                    $"CLEAR receive - {receive}/cmd - {currentRelayVipPrefix.NameCurrentCmd}/name prefix - {currentRelayVipPrefix.Name}");
+                // Debug.WriteLine(
+                    // $"CLEAR receive - {receive}/cmd - {currentRelayVipPrefix.NameCurrentCmd}/name prefix - {currentRelayVipPrefix.Name}");
                 currentRelayVipPrefix.Device_Receiving(currentRelayVipPrefix, receive, cmd);
             }
             else
             {
-                Debug.WriteLine(
-                    $"CLEAR receive - {receive}/cmd - {currentRelayVip.NameCurrentCmd}/name NO prefix - {currentRelayVip.Name}");
-                currentRelayVip.Device_Receiving(currentRelayVip, receive, cmd);
+                // Debug.WriteLine(
+                    // $"CLEAR receive - {receive}/cmd - {currentRelayVip.NameCurrentCmd}/name NO prefix - {currentRelayVip.Name}");
             }
         }
         catch (ArgumentOutOfRangeException e)

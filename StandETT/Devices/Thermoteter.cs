@@ -14,15 +14,14 @@ public class Thermometer : BaseDevice
     {
         IsDeviceType = "Термометр";
         IsThermomether = Visibility.Visible;
-       
-        IsTemperatureTest = true;
+        
     }
     
     protected override void Device_Receiving(byte[] data)
     {
         var receive = Encoding.UTF8.GetString(data);
         var res = intParse(receive);
-        Debug.WriteLine($"Termodat receive - {res}");
+        // Debug.WriteLine($"Termodat receive - {res}");
 
         TermodatReceiving?.Invoke(this, res.ToString(), CurrentCmd);
     }
@@ -63,9 +62,8 @@ public class Thermometer : BaseDevice
         port.TransmitCmdString(cmdPacket);
     }
 
-
     private string GenerateCmdPacket(int deviceAddr, long deviceChannel, long cmd,
-        long numberOfRegistersToRead) //для регистров в которых учитывается канал
+        long numberOfRegistersToRead) //Modbas system decode
     {
         switch (deviceChannel)
         {
@@ -84,13 +82,13 @@ public class Thermometer : BaseDevice
 
         long value = 1;
         value = numberOfRegistersToRead;
-        int lrc = 0;
+        var lrc = 0;
         int sum1, sum2, sum3, sum4, sum5, sum6;
-        string packet = ":";
+        var packet = ":";
 
         packet = packet + deviceAddr.ToString("X2") + "03" + cmd.ToString("X4") + value.ToString("X4");
         string sub1 = packet.Substring(1, 2);
-        sum1 = Convert.ToInt16(sub1, 16); // int.TryParse(sub1, out sum1);
+        sum1 = Convert.ToInt16(sub1, 16);
         string sub2 = packet.Substring(3, 2);
         sum2 = Convert.ToInt16(sub2, 16);
 
@@ -103,9 +101,8 @@ public class Thermometer : BaseDevice
         sum5 = Convert.ToInt16(sub5, 16);
         string sub6 = packet.Substring(11, 2);
         sum6 = Convert.ToInt16(sub6, 16);
-
-        //// Longitudinal redundancy check Caclulation
-        lrc = sum1 + sum2 + sum3 + sum4 + sum5 + sum6; //slaveAddress + registerAddress + value;
+        
+        lrc = sum1 + sum2 + sum3 + sum4 + sum5 + sum6;
         lrc = ~lrc; // NOT
         lrc = lrc + 1;
 

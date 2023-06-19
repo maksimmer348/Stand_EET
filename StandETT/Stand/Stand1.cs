@@ -747,8 +747,7 @@ public class Stand1 : Notify
 
         currentDevice = devices.GetTypeDevice<Thermometer>();
 
-        //TODO currentDevice.IsTemperatureTest; после отладки
-        isTemperatureTest = false; // currentDevice.IsTemperatureTest;
+        isTemperatureTest = currentDevice.IsTemperatureTest;
 
         if (!isTemperatureTest)
         {
@@ -798,10 +797,10 @@ public class Stand1 : Notify
         foreach (var vip in vips)
         {
             // if (vip.Id % 2 == 0)
-            // if (vip.Id is 11 or 10)
+            // if (vip.Id is 11 or 12)
             // {
-            if (vip.Id is 8 or 9 or 10)
-                // if (vip.Id is 1)
+            // if (vip.Id is 8 or 9 or 10)
+            if (vip.Id is not 2)
                 vip.Name = vip.Id.ToString();
             // }
         }
@@ -828,7 +827,6 @@ public class Stand1 : Notify
         // {
         //     throw new Exception("Отчет с таким номером уже сущетвует");
         // }
-
 
         TempChecks t = TempChecks.Start();
         await ResetAllVips(innerCountCheck, innerDelay);
@@ -1038,7 +1036,7 @@ public class Stand1 : Notify
             {
                 if (td.IsOk) await TestVip(vipTested, currentMainTest, td, tvr, tv);
             }
-            
+
             if (IsResetAll) return false;
 
             if (vipsStopped.Any())
@@ -1445,6 +1443,7 @@ public class Stand1 : Notify
                     }
                     catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
                     {
+                        Debug.WriteLine("ctsAllCancel.IsCancellationRequested/сброс Нагрев основания, ошибка!");
                         SetPriorityStatusStand(3, $"Нагрев основания, ошибка!", currentDevice, percentSubTest: 100,
                             colorSubTest: Brushes.Red, clearAll: true);
                         ctsAllCancel = new CancellationTokenSource();
@@ -1563,7 +1562,7 @@ public class Stand1 : Notify
     double intervalTime;
     double stopTime;
 
-    //--mesaure--cycle--cucle--start--loop
+    //--cycle--cucle--start--loop
     public bool StartMeasurementCycle()
     {
         ResetCheckVips();
@@ -1574,15 +1573,20 @@ public class Stand1 : Notify
         // intervalMeasurementSec = tickInterval * 2;
         // lastMeasurementSec = intervalMeasurementSec * 14;
 
+        //для 12 штук c уевел время
+        tickInterval = 300;
+        intervalMeasurementSec = tickInterval * 4;
+        lastMeasurementSec = intervalMeasurementSec * 14;
+
         //для 2 штук
-        // tickInterval = 15*2;
+        // tickInterval = 15 * 2;
         // intervalMeasurementSec = tickInterval * 2;
         // lastMeasurementSec = intervalMeasurementSec * 14;
 
         //для 2 штук c уменш время
-        tickInterval = 15 * 3;
-        intervalMeasurementSec = tickInterval * 2;
-        lastMeasurementSec = intervalMeasurementSec * 4;
+        // tickInterval = 15 * 3;
+        // intervalMeasurementSec = tickInterval * 2;
+        // lastMeasurementSec = intervalMeasurementSec * 4;
         //TODO убрать после отладки
 
         //
@@ -1690,7 +1694,6 @@ public class Stand1 : Notify
         try
         {
             var currentMainTest = TypeOfTestRun.CycleCheck;
-            //TODO опопрвить как надо
 
             string stopString;
 
@@ -1837,7 +1840,7 @@ public class Stand1 : Notify
                 else
                 {
                     currentMainTest = TypeOfTestRun.CycleCheck;
-                    Debug.WriteLine($"intervalCycleCheck/{countMeasurementCycle}");
+                    // Debug.WriteLine($"intervalCycleCheck/{countMeasurementCycle}");
                     foreach (var vip in vipsTested)
                     {
                         //
@@ -1857,12 +1860,12 @@ public class Stand1 : Notify
                             percentSubTest: extPercent,
                             colorSubTest: Brushes.NavajoWhite);
                         //
-
+                        Debug.WriteLine($"intervalCheckCycle/{countMeasurementCycle}");
                         await MeasurementTick(vip, currentMainTest, t: t, tvr: tvr, tv: tv);
                     }
                 }
 
-                if (resetAll || stopMeasurement) return;
+                if (resetAll || stopMeasurement || IsResetAll) return;
 
                 if (!t.IsOk)
                 {
@@ -1921,7 +1924,7 @@ public class Stand1 : Notify
     }
 
 
-    //--tick--test--ass
+    //--tick--test--ass----mesaure
     async Task<(bool result, Vip vip)> MeasurementTick(Vip vipTested, TypeOfTestRun currentMainTest,
         int countChecked = 3,
         int loopDelay = 1000, TempChecks t = null, TempChecks tvr = null,
@@ -1929,8 +1932,21 @@ public class Stand1 : Notify
     {
         try
         {
-            if (t.IsOk) await TestVip(vipTested, currentMainTest, t, tvr, tv);
+            Debug.WriteLine(
+                $"Вип {vipTested.Id}/до проверки");
 
+            if (t.IsOk) await TestVip(vipTested, currentMainTest, t, tvr, tv);
+            await Task.Delay(TimeSpan.FromMilliseconds(1000));
+
+            Debug.WriteLine(
+                $"Вип {vipTested.Id}/после проверки");
+            return (t?.IsOk ?? true, vipTested);
+        }
+        catch (Exception e) when (e.Message.Contains("cancelled"))
+        {
+            Debug.WriteLine(
+                $"Вип {vipTested.Id}/task cancelled");
+            tv.Add(false);
             return (t?.IsOk ?? true, vipTested);
         }
         catch (Exception e)
@@ -1955,7 +1971,6 @@ public class Stand1 : Notify
     {
         var stoppedVips = vips.Where(x =>
             x.StatusTest == StatusDeviceTest.Error || x.Relay.AllDeviceError.CheckIsUnselectError());
-
         return new ObservableCollection<Vip>(stoppedVips);
     }
 
@@ -2009,6 +2024,9 @@ public class Stand1 : Notify
                     }
                     catch (TaskCanceledException e)
                     {
+                        Debug.WriteLine(
+                            "ctsConnectDevice.Token/Проверка на физическое существование порта (одичночного)/" +
+                            "сброс ожидание преред попыткой");
                         ctsConnectDevice = new CancellationTokenSource();
 
                         //если тесты остановлены, немделнно выходим из метода с ошибкой
@@ -2026,11 +2044,10 @@ public class Stand1 : Notify
                 //
 
                 device.ErrorStatus = null;
-                
+
                 StatusTestRelaysVip(device, StatusDeviceTest.None);
                 //device.StatusTest = StatusDeviceTest.None;
 
-                
                 device.Close();
                 await Task.Delay(TimeSpan.FromMilliseconds(80), ctsAllCancel.Token);
                 device.Start();
@@ -2064,12 +2081,14 @@ public class Stand1 : Notify
 
             StatusTestRelaysVip(device, StatusDeviceTest.Error);
             //device.StatusTest = StatusDeviceTest.Error;
-            
+
             t?.Add(false);
             return false;
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
+            Debug.WriteLine("ctsAllCancel.Token/Проверка на физическое существование порта (одичночного)" +
+                            "/сброс ожидание ответа от порта");
             ctsAllCancel = new CancellationTokenSource();
             t?.Add(false);
             return false;
@@ -2198,6 +2217,9 @@ public class Stand1 : Notify
 
                 catch (TaskCanceledException e)
                 {
+                    Debug.WriteLine(
+                        "ctsConnectDevice.Token/Нагрев основания, Проверка на физическое существование порта (несколько)/" +
+                        "сбпрос ожидание преред попыткой");
                     ctsConnectDevice = new CancellationTokenSource();
                     //если тесты остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
@@ -2254,6 +2276,8 @@ public class Stand1 : Notify
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
+            Debug.WriteLine("ctsAllCancel.Token/Проверка на физическое существование порта (несколько)/" +
+                            "сбпрос ожидание преред попыткой");
             ctsConnectDevice = new CancellationTokenSource();
             t?.Add(false);
             return false;
@@ -2328,8 +2352,8 @@ public class Stand1 : Notify
             for (int i = 1; i <= countChecked; i++)
             {
                 //
-                Debug.WriteLine(
-                    $"Запись команды {nameCmd}, в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, попытка {i}/{countChecked}");
+                // Debug.WriteLine(
+                // $"Запись команды {nameCmd}, в устройство {deviceCheck.Name}/{deviceCheck.IsDeviceType}, попытка {i}/{countChecked}");
                 //
 
                 //
@@ -2405,14 +2429,18 @@ public class Stand1 : Notify
 
                 catch (TaskCanceledException e) when (ctsReceiveDevice.IsCancellationRequested)
                 {
+                    Debug.WriteLine("ctsReceiveDevice.Token/ Запись одинакоывой команды с проверкой/" +
+                                    "спрос ожидание преред попыткой");
+
                     ctsReceiveDevice = new CancellationTokenSource();
 
-                    await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token); //TODO было 100ms
+                    await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token);
 
                     //если тест остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
                     {
                         deviceReceived = GetReceiveLast(deviceCheck);
+
                         t?.Add(false);
                         if (deviceReceived.Key == null)
                         {
@@ -2460,7 +2488,6 @@ public class Stand1 : Notify
                          verifiedDevice.Key.AllDeviceError.ErrorParam ||
                          verifiedDevice.Key.AllDeviceError.ErrorLength)
                 {
-                    //TODO костыль возможно придется избавится
                     if (verifiedDevice.Key.AllDeviceError.ErrorLength && verifiedDevice.Key is RelayVip)
                     {
                         verifiedDevice.Key.ErrorStatus =
@@ -2487,24 +2514,16 @@ public class Stand1 : Notify
         }
         catch (TaskCanceledException e) when (ctsAllCancel.IsCancellationRequested)
         {
+            Debug.WriteLine("ctsAllCancel.Token/ Запись одинакоывой команды с проверкой/" +
+                            "спрос ожидание преред попыткой");
             ctsConnectDevice = new CancellationTokenSource();
             t?.Add(false);
             return deviceReceived;
         }
 
-        // //добавить catch без when тобы понять 
-        // catch (TaskCanceledException e)
-        // {
-        //     Debug.WriteLine($"ctsAllCancel: {ctsAllCancel.IsCancellationRequested}");
-        //     Debug.WriteLine($"ctsConnectDevice: {ctsConnectDevice.IsCancellationRequested}");
-        //     Debug.WriteLine($"ctsReceiveDevice: {ctsReceiveDevice.IsCancellationRequested}");
-        //     throw;
-        // }
         catch (Exception e)
         {
-            // //
-            // Debug.WriteLine(e);
-            // //
+            //
             SetPriorityStatusStand(4, $"запись команды в устройство, ошибка!", deviceCheck, percentSubTest: 100,
                 colorSubTest: Brushes.Red);
             //
@@ -2629,7 +2648,7 @@ public class Stand1 : Notify
                                 //
                                 SetPriorityStatusStand(4, $"переподключение удачно, порт открыт", clearAll: true);
                                 //
-                                await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token); //TODO было 100ms
+                                await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token);
                             }
                         }
 
@@ -2671,7 +2690,7 @@ public class Stand1 : Notify
                 catch (TaskCanceledException e) when (ctsReceiveDevice.IsCancellationRequested)
                 {
                     ctsReceiveDevice = new CancellationTokenSource();
-                    await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token); //TODO было 100ms
+                    await Task.Delay(TimeSpan.FromMilliseconds(50), ctsAllCancel.Token);
 
                     //если тесты остановлены, немделнно выходим из метода с ошибкой
                     if (resetAll)
@@ -3191,7 +3210,6 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"переключение канала 1 канала измерения напряжения Вип - {vip.Name}, ошибка!",
                 percentSubTest: 100,
                 colorSubTest: Brushes.Red, clearAll: true);
-            //Debug.WriteLine($"releMeter {vip.Id}/1ch " + devices?.FirstOrDefault(r => r is RelayMeter)?.ErrorStatus);
         }
 
         if (channel == SetTestChannel.ChannelV2)
@@ -3201,7 +3219,6 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"переключение канала 2 канала измерения напряжения Вип - {vip.Name}, ошибка!",
                 percentSubTest: 100,
                 colorSubTest: Brushes.Red, clearAll: true);
-            //Debug.WriteLine($"releMeter {vip.Id}/1ch " + devices?.FirstOrDefault(r => r is RelayMeter)?.ErrorStatus);
         }
 
         if (channel == SetTestChannel.ChannelA)
@@ -3210,8 +3227,6 @@ public class Stand1 : Notify
             SetPriorityStatusStand(2, $"переключение канала канала измерения тока Вип - {vip.Name}, ошибка!",
                 percentSubTest: 100,
                 colorSubTest: Brushes.Red, clearAll: true);
-
-            //Debug.WriteLine($"releMeter {vip.Id}/2ch " + devices?.FirstOrDefault(r => r is RelayMeter)?.ErrorStatus);
         }
 
         relayMeter.StatusTest = StatusDeviceTest.Error;
@@ -3507,7 +3522,6 @@ public class Stand1 : Notify
                 vip.VoltageOut2 = 0;
                 vip.CurrentIn = 0;
 
-                //TODO проверить как работает
                 await CreateErrReport(vip, typeTest);
 
                 tvr?.Add(tpr.IsOk);
@@ -3538,7 +3552,6 @@ public class Stand1 : Notify
                 vip.VoltageOut2 = 0;
                 vip.CurrentIn = 0;
 
-                //TODO проверить как работает
                 await CreateErrReport(vip, typeTest);
 
                 tvr?.Add(tpr.IsOk);
@@ -3598,9 +3611,9 @@ public class Stand1 : Notify
             //задание задержки для переключения каналов измерений напряжений 1 и 2 и канала измерения тока
             var delay = typeTest switch
             {
-                TypeOfTestRun.AvailabilityCheckVip => 3000,
+                TypeOfTestRun.AvailabilityCheckVip => 2000,
                 TypeOfTestRun.MeasurementZero => vip.Type.ZeroTestInterval,
-                TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck => 3000,
+                TypeOfTestRun.CycleMeasurement or TypeOfTestRun.CycleCheck => 2000,
                 _ => 1000
             };
 
@@ -4030,13 +4043,12 @@ public class Stand1 : Notify
                 currentVipSubTest: vip, clearAll: true);
             //
 
-            //TODO проверить как работает
             if (typeTest is TypeOfTestRun.CycleMeasurement or TypeOfTestRun.MeasurementZero)
             {
                 await report.CreateReport(vip, true);
             }
 
-            await report.CreateErrorReport(vip, isResetTest);
+            await report.CreateErrorReport(vip, devices, isTemperatureTest, isResetTest);
         }
         catch (InvalidOperationException e)
         {
@@ -4459,7 +4471,8 @@ public class Stand1 : Notify
 
     private void Device_Receiving(BaseDevice device, string receive, DeviceCmd cmd)
     {
-        Debug.WriteLine($"{device.Name}/{device.IsDeviceType}/{receive}/{s.ElapsedMilliseconds}");
+        // Debug.WriteLine($"{device.Name}/{device.IsDeviceType}/{receive}/{s.ElapsedMilliseconds}");
+
         //сброс ошибки таймаута - ответ пришел
         device.AllDeviceError.ErrorTimeout = false;
 
@@ -4935,89 +4948,95 @@ public class Stand1 : Notify
 
                             //--output
                             TempChecks tpt = TempChecks.Start();
+                            TempChecks tpp = TempChecks.Start();
 
-                            var cmdResult =
-                                await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
-                                    t: tpt);
+                            await CheckConnectPort(device, t: tpp);
 
-                            if (r.StatusOnOff is OnOffStatus.On)
+                            if (tpp.IsOk)
                             {
-                                var vipIsErrP = GetErrorVip(tvVip, cmdResult);
+                                var cmdResult =
+                                    await WriteIdentCommand(device, getOutputCmdName, countChecked: innerCountCheck,
+                                        t: tpt);
 
-                                if (vipIsErrP)
+                                if (r.StatusOnOff is OnOffStatus.On)
                                 {
-                                    r.StatusOnOff = OnOffStatus.Off;
-                                    r.StatusTest = StatusDeviceTest.Error;
+                                    var vipIsErrP = GetErrorVip(tvVip, cmdResult);
 
-                                    tv?.Add(!vipIsErrP);
-                                    t?.Add(tpt.IsOk);
-                                    return (device, tpt.IsOk);
-                                }
-                            }
-
-                            if (tpt.IsOk && r.StatusOnOff is OnOffStatus.Off or OnOffStatus.None)
-                            {
-                                RelaySwitch = true;
-
-                                var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName,
-                                    countChecked: innerCountCheck,
-                                    loopDelay: delay, t: tp);
-
-                                RelaySwitch = false;
-                                if (tp.IsOk)
-                                {
-                                    var vipIsErr = GetErrorVip(tvVip, receiveOutput);
-                                    //проверить есть или нет ошибок 
-                                    if (vipIsErr)
+                                    if (vipIsErrP)
                                     {
                                         r.StatusOnOff = OnOffStatus.Off;
-                                        r.StatusTest = StatusDeviceTest.Ok;
+                                        r.StatusTest = StatusDeviceTest.Error;
 
-                                        tv?.Add(!vipIsErr);
-                                        t?.Add(tp.IsOk);
-                                        return (device, tp.IsOk);
+                                        tv?.Add(!vipIsErrP);
+                                        t?.Add(tpt.IsOk);
+                                        return (device, tpt.IsOk);
                                     }
-
-                                    // RelaySwitch = false;
                                 }
 
-                                if (!tp.IsOk)
+                                if (tpt.IsOk && r.StatusOnOff is OnOffStatus.Off or OnOffStatus.None)
                                 {
-                                    if (tpt.IsOk)
-                                    {
-                                        r.ErrorStatus = null;
-                                        r.AllDeviceError.ErrorReceive = false;
-                                        r.AllDeviceError.ErrorTimeout = false;
-                                        r.AllDeviceError.ErrorLength = false;
-                                        var vipIsErrP = GetErrorVip(tvVip, cmdResult);
+                                    RelaySwitch = true;
 
-                                        if (vipIsErrP)
+                                    var receiveOutput = await WriteIdentCommand(r, SetOutputOnCmdName,
+                                        countChecked: innerCountCheck,
+                                        loopDelay: delay, t: tp);
+
+                                    RelaySwitch = false;
+                                    if (tp.IsOk)
+                                    {
+                                        var vipIsErr = GetErrorVip(tvVip, receiveOutput);
+                                        //проверить есть или нет ошибок 
+                                        if (vipIsErr)
                                         {
                                             r.StatusOnOff = OnOffStatus.Off;
-                                            r.StatusTest = StatusDeviceTest.Error;
+                                            r.StatusTest = StatusDeviceTest.Ok;
 
-                                            tv?.Add(!vipIsErrP);
-                                            t?.Add(tpt.IsOk);
-                                            return (device, tpt.IsOk);
+                                            tv?.Add(!vipIsErr);
+                                            t?.Add(tp.IsOk);
+                                            return (device, tp.IsOk);
                                         }
+
+                                        // RelaySwitch = false;
                                     }
 
-                                    r.StatusOnOff = OnOffStatus.Off;
-                                    r.StatusTest = StatusDeviceTest.Error;
+                                    if (!tp.IsOk)
+                                    {
+                                        if (tpt.IsOk)
+                                        {
+                                            r.ErrorStatus = null;
+                                            r.AllDeviceError.ErrorReceive = false;
+                                            r.AllDeviceError.ErrorTimeout = false;
+                                            r.AllDeviceError.ErrorLength = false;
+                                            var vipIsErrP = GetErrorVip(tvVip, cmdResult);
+
+                                            if (vipIsErrP)
+                                            {
+                                                r.StatusOnOff = OnOffStatus.Off;
+                                                r.StatusTest = StatusDeviceTest.Error;
+
+                                                tv?.Add(!vipIsErrP);
+                                                t?.Add(tpt.IsOk);
+                                                return (device, tpt.IsOk);
+                                            }
+                                        }
+
+                                        r.StatusOnOff = OnOffStatus.Off;
+                                        r.StatusTest = StatusDeviceTest.Error;
+                                    }
                                 }
-                            }
 
-                            if (tpt.IsOk && tp.IsOk)
-                            {
-                                //
-                                SetPriorityStatusStand(3, $"выход устройства включен", device, percentSubTest: 100,
-                                    colorSubTest: Brushes.BlueViolet, clearAll: true);
-                                //
-                                r.StatusOnOff = OnOffStatus.On;
-                                r.StatusTest = StatusDeviceTest.Ok;
+                                if (tpt.IsOk && tp.IsOk)
+                                {
+                                    //
+                                    SetPriorityStatusStand(3, $"выход устройства включен", device, percentSubTest: 100,
+                                        colorSubTest: Brushes.BlueViolet, clearAll: true);
+                                    //
+                                    r.StatusOnOff = OnOffStatus.On;
+                                    r.StatusTest = StatusDeviceTest.Ok;
 
-                                t?.Add(true);
-                                return (device, true);
+                                    t?.Add(true);
+                                    return (device, true);
+                                }
                             }
                         }
 
@@ -5406,7 +5425,15 @@ public class Stand1 : Notify
                     }
                     else
                     {
-                        myDecimalValue = Decimal.Parse(str, NumberStyles.Float);
+                        try
+                        {
+                            myDecimalValue = Decimal.Parse(str, NumberStyles.Float, CultureInfo.InvariantCulture);
+                        }
+                        catch (Exception e)
+                        {
+                            myDecimalValue = 0m;
+                        }
+
                         decimal x1 = Math.Floor(myDecimalValue);
                         decimal x2 = myDecimalValue - Math.Floor(x1);
                         if (x2 == 0)
@@ -5414,7 +5441,6 @@ public class Stand1 : Notify
                             return x1.ToString(CultureInfo.InvariantCulture);
                         }
                     }
-
 
                     return myDecimalValue.ToString(CultureInfo.InvariantCulture);
                 }
