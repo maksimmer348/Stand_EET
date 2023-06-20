@@ -1546,17 +1546,12 @@ public class Stand1 : Notify
     private System.Timers.Timer tickTimer;
 
     //время и испытаний
-    //TODO сделать тик таймера 15*12 секунд = 180 секунд = 3 минуты (возможно теперь больше)
-    // double tickInterval = 30;
-    double tickInterval = 300;
+    
+    private double tickInterval;
 
-    //TODO сделать последующие замеры 1800 секунд = 30 минут
-    //double intervalMeasurementSec = 60;
-    double intervalMeasurementSec = 1800;
+    private double intervalMeasurementSec;
 
-    //TODO сделать последний замер/заверщение замеров 28800 секунд = 8 часов
-    //double lastMeasurementSec = 960;
-    private double lastMeasurementSec = 28800;
+    private double lastMeasurementSec;
 
     //для визуализации отсчета времени
     double tickTimeSec;
@@ -1587,13 +1582,13 @@ public class Stand1 : Notify
         //для 12 штук c уменш время
         if (IsTestMode)
         {
-            tickInterval = 300;
+            tickInterval = 240;
             intervalMeasurementSec = tickInterval * 4;
             lastMeasurementSec = intervalMeasurementSec * 16;
         }
         else
         {
-            tickInterval = 300;
+            tickInterval = 240;
             intervalMeasurementSec = 1800;
             lastMeasurementSec = intervalMeasurementSec * 16;
         }
@@ -3670,10 +3665,22 @@ public class Stand1 : Notify
                 return tpr.IsOk;
             }
         }
-
-        // общая провека для ответа термометра
+        
+        // общая провека для ответа вн прибора
         TempChecks tp = TempChecks.Start();
         tp.Add(tpr.IsOk);
+
+        //TODO проверить как работает
+        if (tp.IsOk)
+        {
+            // TempChecks tpl = TempChecks.Start();
+            currentDevice = devices.GetTypeDevice<BigLoad>();
+            await OutputDevice(currentDevice, t: tp);
+            
+            // TempChecks tps = TempChecks.Start();
+            currentDevice = devices.GetTypeDevice<Supply>();
+            await OutputDevice(currentDevice, t: tp);
+        }
 
         //задание чекера для температуры in
         TempChecks tti = TempChecks.Start();

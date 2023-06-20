@@ -1598,37 +1598,37 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U рабочий" />
+                                <TextBlock Text="Рабочий U" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltageSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="1">
-                                <TextBlock Text="I рабочий" />
+                                <TextBlock Text="Рабочий I" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding CurrentSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2"
                                         Grid.Column="0">
-                                <TextBlock Text="U наличия" />
+                                <TextBlock Text="Наличия U" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltageAvailabilitySupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="2"
                                         Grid.Column="1">
-                                <TextBlock Text="I наличия" />
+                                <TextBlock Text="Наличия I" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding CurrentAvailabilitySupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3"
                                         Grid.Column="0">
-                                <TextBlock Text="Output On" />
+                                <TextBlock Text="Выход вкл. (Output On)" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding OutputOnSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="3"
                                         Grid.Column="1">
-                                <TextBlock Text="Output Off" />
+                                <TextBlock Text="Выход выкл. (Output Off)" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding OutputOffSupply, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
@@ -1659,13 +1659,13 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U измерений" />
+                                <TextBlock Text="Предел измерения U" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltCurrentMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="1">
-                                <TextBlock Text="I измерений" />
+                                <TextBlock Text="Предел измерения I" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding CurrentMeterCurrentMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
@@ -1696,7 +1696,7 @@
                             </StackPanel>
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0">
-                                <TextBlock Text="U измерений" />
+                                <TextBlock Text="Предел измерения U" />
                                 <TextBox Style="{StaticResource TextBoxStyle}"
                                          Text="{Binding VoltMeterVoltMax, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True,  NotifyOnValidationError=True}" />
                             </StackPanel>
