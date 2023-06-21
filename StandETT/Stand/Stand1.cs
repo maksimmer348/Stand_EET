@@ -798,7 +798,8 @@ public class Stand1 : Notify
         {
             foreach (var vip in vips)
             {
-                if (vip.Id is not 2)
+                // if (vip.Id is not 2)
+                // if (vip.Id is 1 or 3) 
                     vip.Name = vip.Id.ToString();
             }
 
@@ -1563,25 +1564,27 @@ public class Stand1 : Notify
     {
         ResetCheckVips();
 
-        //TODO убрать после отладки
-        //для 12 штук
-        // tickInterval = 15 * 12;
-        // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 16;
-        //для 2 штук
-        // tickInterval = 15 * 2;
-        // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 16;
-
-        // для 2 штук c уменш время
-        // tickInterval = 15 * 3;
-        // intervalMeasurementSec = tickInterval * 2;
-        // lastMeasurementSec = intervalMeasurementSec * 4;
-        //TODO убрать после отладки
+       
         
         //для 12 штук c уменш время
         if (IsTestMode)
         {
+            //TODO убрать после отладки
+            //для 12 штук
+            // tickInterval = 15 * 12;
+            // intervalMeasurementSec = tickInterval * 2;
+            // lastMeasurementSec = intervalMeasurementSec * 16;
+            //для 2 штук
+            // tickInterval = 15 * 2;
+            // intervalMeasurementSec = tickInterval * 2;
+            // lastMeasurementSec = intervalMeasurementSec * 16;
+
+            // для 2 штук c уменш время
+            // tickInterval = 15 * 3;
+            // intervalMeasurementSec = tickInterval * 2;
+            // lastMeasurementSec = intervalMeasurementSec * 4;
+            //TODO убрать после отладки
+            
             tickInterval = 240;
             intervalMeasurementSec = tickInterval * 4;
             lastMeasurementSec = intervalMeasurementSec * 16;
@@ -3607,6 +3610,9 @@ public class Stand1 : Notify
             currentVipSubTest: vip, clearAll: true);
         //
 
+        // общая провека для ответа вн прибора
+        TempChecks tp = TempChecks.Start();
+        
         // Включение реле Випа (если уже не включен)
         if (typeTest is TypeOfTestRun.AvailabilityCheckVip or TypeOfTestRun.MeasurementZero)
         {
@@ -3664,23 +3670,23 @@ public class Stand1 : Notify
                 tv?.Add(!vipIsErr);
                 return tpr.IsOk;
             }
+            
+            //TODO проверить как работает
+            if (tp.IsOk)
+            {
+                // TempChecks tpl = TempChecks.Start();
+                currentDevice = devices.GetTypeDevice<BigLoad>();
+                // await OutputDevice(currentDevice, t: tp);
+                await WriteIdentCommand(currentDevice, "Status", t: tp);
+                
+                // TempChecks tps = TempChecks.Start();
+                currentDevice = devices.GetTypeDevice<Supply>();
+                // await OutputDevice(currentDevice, t: tp);
+                await WriteIdentCommand(currentDevice, "Status", t: tp);
+            }
         }
         
-        // общая провека для ответа вн прибора
-        TempChecks tp = TempChecks.Start();
         tp.Add(tpr.IsOk);
-
-        //TODO проверить как работает
-        if (tp.IsOk)
-        {
-            // TempChecks tpl = TempChecks.Start();
-            currentDevice = devices.GetTypeDevice<BigLoad>();
-            await OutputDevice(currentDevice, t: tp);
-            
-            // TempChecks tps = TempChecks.Start();
-            currentDevice = devices.GetTypeDevice<Supply>();
-            await OutputDevice(currentDevice, t: tp);
-        }
 
         //задание чекера для температуры in
         TempChecks tti = TempChecks.Start();
